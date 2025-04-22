@@ -1,0 +1,19 @@
+package main
+
+import (
+	"context"
+
+	"github.com/magefile/mage/mg"
+)
+
+var (
+	Default = All
+	Aliases = map[string]any{
+		"lint": LintDefault,
+	}
+)
+
+func All(ctx context.Context) error {
+	mg.CtxDeps(ctx, LintDefault, Compile)
+	return nil
+}
