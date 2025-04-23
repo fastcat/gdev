@@ -55,27 +55,27 @@ func (h *HTTP) Ping(ctx context.Context) error {
 }
 
 // Child implements api.API.
-func (h *HTTP) Child(ctx context.Context, name string) (api.ChildWithStatus, error) {
+func (h *HTTP) Child(ctx context.Context, name string) (*api.ChildWithStatus, error) {
 	panic("unimplemented")
 }
 
 // DeleteChild implements api.API.
-func (h *HTTP) DeleteChild(ctx context.Context, name string) (api.ChildWithStatus, error) {
+func (h *HTTP) DeleteChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
 	panic("unimplemented")
 }
 
 // PutChild implements api.API.
-func (h *HTTP) PutChild(ctx context.Context, child api.Child) (api.ChildWithStatus, error) {
+func (h *HTTP) PutChild(ctx context.Context, child api.Child) (*api.ChildWithStatus, error) {
 	panic("unimplemented")
 }
 
 // StartChild implements api.API.
-func (h *HTTP) StartChild(ctx context.Context, name string) (api.ChildWithStatus, error) {
+func (h *HTTP) StartChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
 	panic("unimplemented")
 }
 
 // StopChild implements api.API.
-func (h *HTTP) StopChild(ctx context.Context, name string) (api.ChildWithStatus, error) {
+func (h *HTTP) StopChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
 	panic("unimplemented")
 }
 

@@ -3,9 +3,10 @@ package api
 import "time"
 
 type Child struct {
-	Name string `json:"name" validate:"required"`
-	Init []Exec `json:"init"`
-	Main Exec   `json:"main" validate:"required"`
+	Name        string       `json:"name" validate:"required"`
+	Init        []Exec       `json:"init"`
+	Main        Exec         `json:"main" validate:"required"`
+	HealthCheck *HealthCheck `json:"healthCheck,omitempty"`
 }
 
 type Exec struct {
@@ -20,6 +21,7 @@ type ExecState string
 const (
 	ExecNotStarted ExecState = "not-started"
 	ExecRunning    ExecState = "running"
+	ExecStopping   ExecState = "stopping"
 	ExecEnded      ExecState = "ended"
 )
 
@@ -37,9 +39,10 @@ type HealthStatus struct {
 }
 
 type ChildStatus struct {
-	Init   []ExecStatus
-	Main   ExecStatus
-	Health HealthStatus
+	State  ChildState   `json:"state"`
+	Init   []ExecStatus `json:"init"`
+	Main   ExecStatus   `json:"main"`
+	Health HealthStatus `json:"health"`
 }
 
 type ChildState string
@@ -49,12 +52,12 @@ const (
 	ChildInitRunning ChildState = "init-running"
 	ChildInitError   ChildState = "init-error"
 	ChildRunning     ChildState = "running"
+	ChildStopping    ChildState = "stopping"
 	ChildError       ChildState = "error"
 )
 
 type ChildWithStatus struct {
 	Child
-	State  ChildState  `json:"state"`
 	Status ChildStatus `json:"status"`
 }
 
