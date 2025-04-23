@@ -13,12 +13,12 @@ func pm() *cobra.Command {
 	pm := &cobra.Command{
 		Use:  "pm",
 		Args: cobra.NoArgs,
-		RunE: PMStatus,
+		RunE: PMAutoStart,
 	}
 	pm.AddCommand(&cobra.Command{
-		Use:  "start",
+		Use:  "status",
 		Args: cobra.NoArgs,
-		RunE: PMStart,
+		RunE: PMStatus,
 	})
 	pm.AddCommand(&cobra.Command{
 		Use:    "daemon",
@@ -35,15 +35,21 @@ func PMStatus(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		return fmt.Errorf("pm is not running: %w", err)
 	}
-	fmt.Println("pm is running")
+	summary, err := c.Summary(cmd.Context())
+	if err != nil {
+		return err
+	}
+	// TODO: format
+	fmt.Println(summary)
 	return nil
 }
 
-func PMStart(cmd *cobra.Command, _ []string) error {
+func PMAutoStart(cmd *cobra.Command, _ []string) error {
 	c := client.NewHTTP()
 	err := c.Ping(cmd.Context())
 	if err == nil {
-		return fmt.Errorf("pm is already running")
+		fmt.Println("pm is already running")
+		return nil
 	}
 
 	path := os.Args[0]
