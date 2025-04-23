@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"fastcat.org/go/gdev/cmd"
 	"fastcat.org/go/gdev/instance"
@@ -10,10 +9,7 @@ import (
 )
 
 func main() {
-	if err := cmd.Main(); err != nil {
-		// TODO: extract a preferred exit code from the error if we can
-		os.Exit(1)
-	}
+	cmd.Main()
 }
 
 func newCustomCmd() *cobra.Command {
