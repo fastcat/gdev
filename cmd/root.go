@@ -5,7 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var Root = &cobra.Command{
-	// will be replaced in Main
-	Use: instance.AppName,
+func Root() *cobra.Command {
+	return &cobra.Command{
+		Use: instance.AppName,
+	}
 }
