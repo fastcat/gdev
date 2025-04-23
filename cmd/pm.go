@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"fastcat.org/go/gdev/pm/client"
 	"fastcat.org/go/gdev/pm/server"
@@ -14,6 +15,11 @@ func pm() *cobra.Command {
 		Args: cobra.NoArgs,
 		RunE: PMStatus,
 	}
+	pm.AddCommand(&cobra.Command{
+		Use:  "start",
+		Args: cobra.NoArgs,
+		RunE: PMStart,
+	})
 	pm.AddCommand(&cobra.Command{
 		Use:    "daemon",
 		Args:   cobra.NoArgs,
@@ -40,8 +46,12 @@ func PMStart(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("pm is already running")
 	}
 
-	// TODO: invoke "argv[0] pm daemon"
-	panic("unimplemented")
+	path := os.Args[0]
+	// remove the start arg and replace it with "daemon"
+	args := os.Args[1 : len(os.Args)-1]
+	args = append(args, "daemon")
+
+	return StartDaemon(cmd.Context(), "pm", path, args, map[string]string{"FOO": "BAR"})
 }
 
 func pmDaemon(cmd *cobra.Command, _ []string) error {

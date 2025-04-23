@@ -1,0 +1,206 @@
+[0;1;32m●[0m bengal
+    State: [0;1;32mrunning[0m
+    Units: 258 loaded (incl. loaded aliases)
+     Jobs: 0 queued
+   Failed: 0 units
+    Since: Mon 2025-04-21 12:01:03 EDT; 2 days ago
+  systemd: 257.5-2
+  Tainted: [0;1;38:5:185munmerged-bin[0m
+   CGroup: /user.slice/user-1000.slice/user@1000.service
+           ├─app.slice
+           │ ├─app-gnome-code-276322.scope
+           │ │ ├─[0;38;5;245m276322 /usr/share/code/code[0m
+           │ │ ├─[0;38;5;245m276404 "/usr/share/code/code --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --enable-crash-reporter=0883b369-3d03-4163-889e-8ae0e0cf1207,no_channel --user-data-dir=/home/cheetah/.config/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,15729856811655638913,9367735304757981616,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version"[0m
+           │ │ ├─[0;38;5;245m276481 "/usr/share/code/code --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --enable-crash-reporter=0883b369-3d03-4163-889e-8ae0e0cf1207,no_channel --user-data-dir=/home/cheetah/.config/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,15729856811655638913,9367735304757981616,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version"[0m
+           │ │ ├─[0;38;5;245m276575 "/usr/share/code/code --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --enable-crash-reporter=0883b369-3d03-4163-889e-8ae0e0cf1207,no_channel --user-data-dir=/home/cheetah/.config/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,15729856811655638913,9367735304757981616,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version"[0m
+           │ │ ├─[0;38;5;245m276847 "/usr/share/code/code --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --enable-crash-reporter=0883b369-3d03-4163-889e-8ae0e0cf1207,no_channel --user-data-dir=/home/cheetah/.config/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,15729856811655638913,9367735304757981616,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version"[0m
+           │ │ ├─[0;38;5;245m276857 "/usr/share/code/code --type=utility --utility-sub-type=node.mojom.NodeService --lang=en-US --service-sandbox-type=none --dns-result-order=ipv4first --inspect-port=0 --enable-crash-reporter=0883b369-3d03-4163-889e-8ae0e0cf1207,no_channel --user-data-dir=/home/cheetah/.config/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,15729856811655638913,9367735304757981616,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version"[0m
+           │ │ ├─[0;38;5;245m276899 /usr/share/code/code /usr/share/code/resources/app/extensions/json-language-features/server/dist/node/jsonServerMain --node-ipc --clientProcessId=276857[0m
+           │ │ ├─[0;38;5;245m276941 /usr/share/code/code /home/cheetah/.vscode/extensions/streetsidesoftware.code-spell-checker-4.0.47/packages/_server/dist/main.cjs --node-ipc --clientProcessId=276857[0m
+           │ │ ├─[0;38;5;245m277014 /usr/bin/bash --init-file /usr/share/code/resources/app/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh[0m
+           │ │ ├─[0;38;5;245m280335 /home/cheetah/.go/bin/gopls[0m
+           │ │ ├─[0;38;5;245m280346 /home/cheetah/.go/bin/gopls "** telemetry **"[0m
+           │ │ ├─[0;38;5;245m306881 /usr/share/code/code /home/cheetah/.vscode/extensions/redhat.vscode-yaml-1.17.0/dist/languageserver.js --node-ipc --clientProcessId=276857[0m
+           │ │ ├─[0;38;5;245m586814 systemctl --user status[0m
+           │ │ └─[0;38;5;245m586815 pager[0m
+           │ ├─app-gnome-dropbox-19071.scope
+           │ │ └─[0;38;5;245m19228 /home/cheetah/.dropbox-dist/dropbox-lnx.x86_64-222.4.5042/dropbox[0m
+           │ ├─app-gnome-firefox-19499.scope
+           │ │ ├─[0;38;5;245m 19499 /usr/bin/firefox[0m
+           │ │ ├─[0;38;5;245m 19601 /usr/lib/firefox/firefox-bin -contentproc -ipcHandle 0 -initialChannelId {c4e87631-bc77-4b67-820c-b5884729bfae} -parentPid 19499 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1 forkserver[0m
+           │ │ ├─[0;38;5;245m 19609 "/usr/lib/firefox/firefox-bin -contentproc -parentBuildID 20250414091429 -prefsHandle 0 -prefsLen 44385 -prefMapHandle 1 -prefMapSize 269842 -sandboxReporter 2 -chrootClient 3 -ipcHandle 4 -initialChannelId {5938a801-123f-4ecc-ae56-eaace035efa3} -parentPid 19499 -crashReporter 5 -appDir /usr/lib/firefox/browser 2 socket"[0m
+           │ │ ├─[0;38;5;245m 19656 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44526 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {44a011a8-b561-4e93-a62f-47f95fe48749} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 3 tab"[0m
+           │ │ ├─[0;38;5;245m 19666 "/usr/lib/firefox/firefox-bin -contentproc -parentBuildID 20250414091429 -prefsHandle 0 -prefsLen 44526 -prefMapHandle 1 -prefMapSize 269842 -sandboxReporter 2 -chrootClient 3 -ipcHandle 4 -initialChannelId {875f6237-2646-44de-bca3-86223040ba84} -parentPid 19499 -crashReporter 5 -appDir /usr/lib/firefox/browser 4 rdd"[0m
+           │ │ ├─[0;38;5;245m 19699 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 35757 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {58ec8a7f-4dee-407b-9659-ba1d37765687} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 5 tab"[0m
+           │ │ ├─[0;38;5;245m 19705 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 35757 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {fac3fec2-ea12-4a5d-aa22-999744fd3ada} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 6 tab"[0m
+           │ │ ├─[0;38;5;245m 19827 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 52915 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {64de9832-31b3-4514-b7d9-91122ed23eb9} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 7 tab"[0m
+           │ │ ├─[0;38;5;245m 19900 "/usr/lib/firefox/firefox-bin -contentproc -parentBuildID 20250414091429 -sandboxingKind 0 -prefsHandle 0 -prefsLen 53098 -prefMapHandle 1 -prefMapSize 269842 -sandboxReporter 2 -chrootClient 3 -ipcHandle 4 -initialChannelId {e63deb06-5277-4b0c-a147-83a752cd067e} -parentPid 19499 -crashReporter 5 -appDir /usr/lib/firefox/browser 8 utility"[0m
+           │ │ ├─[0;38;5;245m503887 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44104 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {baf09e23-3636-4b96-9569-9b2fd30b3cfc} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1458 tab"[0m
+           │ │ ├─[0;38;5;245m558024 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44104 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {c980224c-1cf4-4acf-9533-4966998b0053} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1508 tab"[0m
+           │ │ ├─[0;38;5;245m577496 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44104 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {78981208-8981-4bd3-9dcc-7caca34f0c36} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1532 tab"[0m
+           │ │ ├─[0;38;5;245m580552 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44104 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {aa2b574d-d632-41f7-9806-b5f07b51a9c8} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1535 tab"[0m
+           │ │ ├─[0;38;5;245m581455 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44104 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {1e64fff7-0f43-43b6-95a0-255b418b3b13} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1541 tab"[0m
+           │ │ ├─[0;38;5;245m582507 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44104 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {8788c1e8-e0d3-4dfe-b220-5f888cd8933f} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1545 tab"[0m
+           │ │ ├─[0;38;5;245m583879 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44104 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {fac9d93a-aec5-427a-b6fb-45f375c6903c} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1546 tab"[0m
+           │ │ ├─[0;38;5;245m584908 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44104 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {61d415fc-6dd7-4d71-8650-0f676130decb} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1547 tab"[0m
+           │ │ └─[0;38;5;245m586345 "/usr/lib/firefox/firefox-bin -contentproc -isForBrowser -prefsHandle 0 -prefsLen 44104 -prefMapHandle 1 -prefMapSize 269842 -jsInitHandle 2 -jsInitLen 247540 -parentBuildID 20250414091429 -sandboxReporter 3 -chrootClient 4 -ipcHandle 5 -initialChannelId {b98cbcd9-3dbc-46fe-bcbd-5010f0b352d6} -parentPid 19499 -crashReporter 6 -greomni /usr/lib/firefox/omni.ja -appomni /usr/lib/firefox/browser/omni.ja -appDir /usr/lib/firefox/browser 1548 tab"[0m
+           │ ├─app-gnome-guake-19063.scope
+           │ │ └─[0;38;5;245m19063 /usr/bin/python3 /usr/bin/guake[0m
+           │ ├─app-gnome-io.github.Hexchat-20233.scope
+           │ │ └─[0;38;5;245m20233 /usr/bin/hexchat --existing[0m
+           │ ├─app-gnome-org.gnome.SettingsDaemon.DiskUtilityNotify-19021.scope
+           │ │ └─[0;38;5;245m19021 /usr/libexec/gsd-disk-utility-notify[0m
+           │ ├─app-gnome-org.gnome.Software-19028.scope
+           │ │ └─[0;38;5;245m19028 /usr/bin/gnome-software --gapplication-service[0m
+           │ ├─app-gnome-org.remmina.Remmina-225094.scope
+           │ │ └─[0;38;5;245m225094 /bin/sh /usr/bin/remmina-file-wrapper[0m
+           │ ├─app-gnome-signal\x2ddesktop-20069.scope
+           │ │ ├─[0;38;5;245m20069 /opt/Signal/signal-desktop[0m
+           │ │ ├─[0;38;5;245m20122 /opt/Signal/signal-desktop --type=zygote --no-zygote-sandbox[0m
+           │ │ ├─[0;38;5;245m20124 /opt/Signal/signal-desktop --type=zygote[0m
+           │ │ ├─[0;38;5;245m20149 /opt/Signal/signal-desktop --type=zygote[0m
+           │ │ ├─[0;38;5;245m20273 /opt/Signal/signal-desktop --type=zygote --no-zygote-sandbox[0m
+           │ │ ├─[0;38;5;245m20289 /proc/self/exe --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --enable-crash-reporter=0a917658-9dc0-4ca5-b8e4-4330f63bcd4d,no_channel --user-data-dir=/home/cheetah/.config/Signal --standard-schemes=attachment --fetch-schemes=attachment --streaming-schemes=attachment --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17974133861377260476,4747283128461187738,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=EnableOopPrintDrivers,HardwareMediaKeyHandling,SpareRendererForSitePerProcess --variations-seed-version[0m
+           │ │ ├─[0;38;5;245m20461 /proc/self/exe --type=renderer --enable-crash-reporter=0a917658-9dc0-4ca5-b8e4-4330f63bcd4d,no_channel --user-data-dir=/home/cheetah/.config/Signal --standard-schemes=attachment --fetch-schemes=attachment --streaming-schemes=attachment --app-path=/opt/Signal/resources/app.asar --no-sandbox --no-zygote --enable-blink-features=CSSPseudoDir,CSSLogical --disable-blink-features=Accelerated2dCanvas,AcceleratedSmallCanvases --disable-gpu-compositing --lang=en-US --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --time-ticks-at-unix-epoch=-1745250671421139 --launch-time-ticks=601778931 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17974133861377260476,4747283128461187738,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=EnableOopPrintDrivers,HardwareMediaKeyHandling,SpareRendererForSitePerProcess --variations-seed-version[0m
+           │ │ └─[0;38;5;245m21230 /proc/self/exe --type=utility --utility-sub-type=audio.mojom.AudioService --lang=en-US --service-sandbox-type=none --enable-crash-reporter=0a917658-9dc0-4ca5-b8e4-4330f63bcd4d,no_channel --user-data-dir=/home/cheetah/.config/Signal --standard-schemes=attachment --fetch-schemes=attachment --streaming-schemes=attachment --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,17974133861377260476,4747283128461187738,262144 --enable-features=PdfUseShowSaveFilePicker --disable-features=EnableOopPrintDrivers,HardwareMediaKeyHandling,SpareRendererForSitePerProcess --variations-seed-version[0m
+           │ ├─app-gnome-slack-19733.scope
+           │ │ ├─[0;38;5;245m19733 /usr/bin/slack[0m
+           │ │ ├─[0;38;5;245m19907 /usr/lib/slack/chrome_crashpad_handler --monitor-self-annotation=ptype=crashpad-handler --no-upload-gzip --database=/home/cheetah/.config/Slack/Crashpad "--url=https://slack.com/apps/sentryproxy/api/5277886/minidump/?sentry_key=fd30fe469dbf4aec9db40548e5acf91e" --annotation=_productName=Slack --annotation=_version=4.43.52 "--annotation=lsb-release=Debian GNU/Linux trixie/sid" --annotation=plat=Linux --annotation=prod=Electron "--annotation=sentry___initialScope={\"release\":\"Slack@4.43.52\",\"environment\":\"production\",\"user\":{\"id\":\"709a07e9-4d82-4597-be54-d3d63b4ed010\"},\"tags\":{\"uuid\":\"709a07e9-4d82-4597-be54-d3d63b4ed010\"},\"extra\":{\"sessionId\":\"NzA5YTA3ZTktNGQ4Mi00NTk3LWJlNTQtZDNkNjNiNGVkMDEwXzE3NDUyNTEyNzAxOTQ=\"}}" --annotation=ver=35.1.2 --initial-client-fd=44 --shared-client-connection[0m
+           │ │ ├─[0;38;5;245m19931 /proc/self/exe --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --crashpad-handler-pid=19907 --enable-crash-reporter=b77747ac-4402-4d76-b73c-6382a059cd7b,no_channel --user-data-dir=/home/cheetah/.config/Slack --standard-schemes=app,slack-webapp-dev --enable-sandbox --secure-schemes=app,slack-webapp-dev --bypasscsp-schemes=slack-webapp-dev --cors-schemes=slack-webapp-dev --fetch-schemes=slack-webapp-dev --service-worker-schemes=slack-webapp-dev --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,4670398259671221151,8760876374556843275,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,PdfUseShowSaveFilePicker,WebRTCPipeWireCapturer --disable-features=AllowAggressiveThrottlingWithWebSocket,CalculateNativeWinOcclusion,EnableOopPrintDrivers,EnableWatermarkView,HardwareMediaKeyHandling,IntensiveWakeUpThrottling,LogJsConsoleMessages,PostQuantumKyber,RequestInitiatorSiteLockEnfocement,SkipEmptyDisplayHotplugEvent,SpareRendererForSitePerProcess,WebRtcHideLocalIpsWithMdns,WinRetrieveSuggestionsOnlyOnDemand --variations-seed-version[0m
+           │ │ └─[0;38;5;245m20657 /proc/self/exe --type=utility --utility-sub-type=audio.mojom.AudioService --lang=en-US --service-sandbox-type=none --crashpad-handler-pid=19907 --enable-crash-reporter=b77747ac-4402-4d76-b73c-6382a059cd7b,no_channel --user-data-dir=/home/cheetah/.config/Slack --standard-schemes=app,slack-webapp-dev --enable-sandbox --secure-schemes=app,slack-webapp-dev --bypasscsp-schemes=slack-webapp-dev --cors-schemes=slack-webapp-dev --fetch-schemes=slack-webapp-dev --service-worker-schemes=slack-webapp-dev --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,4670398259671221151,8760876374556843275,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports,PdfUseShowSaveFilePicker,WebRTCPipeWireCapturer --disable-features=AllowAggressiveThrottlingWithWebSocket,CalculateNativeWinOcclusion,EnableOopPrintDrivers,EnableWatermarkView,HardwareMediaKeyHandling,IntensiveWakeUpThrottling,LogJsConsoleMessages,PostQuantumKyber,RequestInitiatorSiteLockEnfocement,SkipEmptyDisplayHotplugEvent,SpareRendererForSitePerProcess,WebRtcHideLocalIpsWithMdns,WinRetrieveSuggestionsOnlyOnDemand --variations-seed-version[0m
+           │ ├─app-gnome-virt\x2dmanager-53014.scope
+           │ │ └─[0;38;5;245m53014 python3 /usr/bin/virt-manager[0m
+           │ ├─app-gnome\x2dsession\x2dmanager.slice
+           │ │ └─gnome-session-manager@gnome.service
+           │ │   └─[0;38;5;245m18852 /usr/libexec/gnome-session-binary --systemd-service --session=gnome[0m
+           │ ├─app-org.gnome.Terminal.slice
+           │ │ ├─gnome-terminal-server.service
+           │ │ │ └─[0;38;5;245m341456 /usr/libexec/gnome-terminal-server[0m
+           │ │ ├─vte-spawn-1e6f4cc1-c3ed-4791-989d-fe6fe167de09.scope
+           │ │ │ └─[0;38;5;245m341466 bash[0m
+           │ │ └─vte-spawn-213ab1b8-dc50-458d-8ddc-8abd50c0dcd1.scope
+           │ │   ├─[0;38;5;245m586096 bash[0m
+           │ │   └─[0;38;5;245m586145 journalctl --user -f[0m
+           │ ├─dconf.service
+           │ │ └─[0;38;5;245m19949 /usr/libexec/dconf-service[0m
+           │ ├─gcr-ssh-agent.service
+           │ │ └─[0;38;5;245m18824 /usr/libexec/gcr-ssh-agent --base-dir /run/user/1000/gcr[0m
+           │ ├─gnome-keyring-daemon.service
+           │ │ ├─[0;38;5;245m18713 /usr/bin/gnome-keyring-daemon --foreground --components=pkcs11,secrets --control-directory=/run/user/1000/keyring[0m
+           │ │ └─[0;38;5;245m21054 /usr/bin/ssh-agent -D -a /run/user/1000/keyring/.ssh[0m
+           │ ├─gnome-session-monitor.service
+           │ │ └─[0;38;5;245m18825 /usr/libexec/gnome-session-ctl --monitor[0m
+           │ ├─gpg-agent.service
+           │ │ └─[0;38;5;245m27738 /usr/bin/gpg-agent --supervised[0m
+           │ ├─mpris-proxy.service
+           │ │ └─[0;38;5;245m18710 /usr/bin/mpris-proxy[0m
+           │ ├─speech-dispatcher.service
+           │ │ ├─[0;38;5;245m36427 /usr/bin/speech-dispatcher -s -t 0[0m
+           │ │ └─[0;38;5;245m36441 /usr/lib/speech-dispatcher-modules/sd_dummy /etc/speech-dispatcher/modules/dummy.conf[0m
+           │ ├─vte-spawn-5910f1fb-edbb-492e-8fe4-9626afe1a713.scope
+           │ │ └─[0;38;5;245m102588 /bin/bash[0m
+           │ ├─xdg-desktop-portal-gnome.service
+           │ │ └─[0;38;5;245m19202 /usr/libexec/xdg-desktop-portal-gnome[0m
+           │ └─xdg-desktop-portal-gtk.service
+           │   └─[0;38;5;245m19374 /usr/libexec/xdg-desktop-portal-gtk[0m
+           ├─background.slice
+           │ └─localsearch-3.service
+           │   └─[0;38;5;245m19200 /usr/libexec/localsearch-3[0m
+           ├─init.scope
+           │ ├─[0;38;5;245m18690 /usr/lib/systemd/systemd --user[0m
+           │ └─[0;38;5;245m18692 "(sd-pam)"[0m
+           └─session.slice
+             ├─at-spi-dbus-bus.service
+             │ ├─[0;38;5;245m18807 /usr/libexec/at-spi-bus-launcher[0m
+             │ ├─[0;38;5;245m18814 /usr/bin/dbus-daemon --config-file=/usr/share/defaults/at-spi2/accessibility.conf --nofork --print-address 11 --address=unix:path=/run/user/1000/at-spi/bus_0[0m
+             │ └─[0;38;5;245m18918 /usr/libexec/at-spi2-registryd --use-gnome-session[0m
+             ├─dbus.service
+             │ ├─[0;38;5;245m18714 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only[0m
+             │ ├─[0;38;5;245m18983 /usr/bin/gjs -m /usr/share/gnome-shell/org.gnome.Shell.Notifications[0m
+             │ ├─[0;38;5;245m19136 /usr/libexec/ibus-portal[0m
+             │ ├─[0;38;5;245m19182 /usr/bin/gjs -m /usr/share/gnome-shell/org.gnome.ScreenSaver[0m
+             │ ├─[0;38;5;245m19243 /usr/libexec/goa-daemon[0m
+             │ └─[0;38;5;245m19264 /usr/libexec/goa-identity-service[0m
+             ├─gvfs-afc-volume-monitor.service
+             │ └─[0;38;5;245m19286 /usr/libexec/gvfs-afc-volume-monitor[0m
+             ├─gvfs-daemon.service
+             │ ├─[0;38;5;245m 18841 /usr/libexec/gvfsd[0m
+             │ ├─[0;38;5;245m 18849 /usr/libexec/gvfsd-fuse /run/user/1000/gvfs -f[0m
+             │ ├─[0;38;5;245m 25700 /usr/libexec/gvfsd-trash --spawner :1.15 /org/gtk/gvfs/exec_spaw/0[0m
+             │ ├─[0;38;5;245m 25723 /usr/libexec/gvfsd-network --spawner :1.15 /org/gtk/gvfs/exec_spaw/1[0m
+             │ ├─[0;38;5;245m 25729 /usr/libexec/gvfsd-dnssd --spawner :1.15 /org/gtk/gvfs/exec_spaw/2[0m
+             │ ├─[0;38;5;245m 36784 /usr/libexec/gvfsd-http --spawner :1.15 /org/gtk/gvfs/exec_spaw/9[0m
+             │ └─[0;38;5;245m227912 /usr/libexec/gvfsd-recent --spawner :1.15 /org/gtk/gvfs/exec_spaw/20[0m
+             ├─gvfs-goa-volume-monitor.service
+             │ └─[0;38;5;245m19203 /usr/libexec/gvfs-goa-volume-monitor[0m
+             ├─gvfs-gphoto2-volume-monitor.service
+             │ └─[0;38;5;245m19276 /usr/libexec/gvfs-gphoto2-volume-monitor[0m
+             ├─gvfs-metadata.service
+             │ └─[0;38;5;245m21164 /usr/libexec/gvfsd-metadata[0m
+             ├─gvfs-mtp-volume-monitor.service
+             │ └─[0;38;5;245m19271 /usr/libexec/gvfs-mtp-volume-monitor[0m
+             ├─gvfs-udisks2-volume-monitor.service
+             │ └─[0;38;5;245m19051 /usr/libexec/gvfs-udisks2-volume-monitor[0m
+             ├─org.freedesktop.IBus.session.GNOME.service
+             │ ├─[0;38;5;245m19001 /usr/bin/ibus-daemon --panel disable --xim[0m
+             │ ├─[0;38;5;245m19108 /usr/libexec/ibus-memconf[0m
+             │ ├─[0;38;5;245m19111 /usr/libexec/ibus-extension-gtk3[0m
+             │ ├─[0;38;5;245m19125 /usr/libexec/ibus-x11 --kill-daemon[0m
+             │ └─[0;38;5;245m19320 /usr/libexec/ibus-engine-simple[0m
+             ├─org.gnome.SettingsDaemon.A11ySettings.service
+             │ └─[0;38;5;245m19002 /usr/libexec/gsd-a11y-settings[0m
+             ├─org.gnome.SettingsDaemon.Color.service
+             │ └─[0;38;5;245m19003 /usr/libexec/gsd-color[0m
+             ├─org.gnome.SettingsDaemon.Datetime.service
+             │ └─[0;38;5;245m19004 /usr/libexec/gsd-datetime[0m
+             ├─org.gnome.SettingsDaemon.Housekeeping.service
+             │ └─[0;38;5;245m19009 /usr/libexec/gsd-housekeeping[0m
+             ├─org.gnome.SettingsDaemon.Keyboard.service
+             │ └─[0;38;5;245m19011 /usr/libexec/gsd-keyboard[0m
+             ├─org.gnome.SettingsDaemon.MediaKeys.service
+             │ └─[0;38;5;245m19012 /usr/libexec/gsd-media-keys[0m
+             ├─org.gnome.SettingsDaemon.Power.service
+             │ └─[0;38;5;245m19020 /usr/libexec/gsd-power[0m
+             ├─org.gnome.SettingsDaemon.PrintNotifications.service
+             │ ├─[0;38;5;245m19022 /usr/libexec/gsd-print-notifications[0m
+             │ └─[0;38;5;245m19141 /usr/libexec/gsd-printer[0m
+             ├─org.gnome.SettingsDaemon.Rfkill.service
+             │ └─[0;38;5;245m19027 /usr/libexec/gsd-rfkill[0m
+             ├─org.gnome.SettingsDaemon.ScreensaverProxy.service
+             │ └─[0;38;5;245m19029 /usr/libexec/gsd-screensaver-proxy[0m
+             ├─org.gnome.SettingsDaemon.Sharing.service
+             │ └─[0;38;5;245m19034 /usr/libexec/gsd-sharing[0m
+             ├─org.gnome.SettingsDaemon.Smartcard.service
+             │ └─[0;38;5;245m19038 /usr/libexec/gsd-smartcard[0m
+             ├─org.gnome.SettingsDaemon.Sound.service
+             │ └─[0;38;5;245m19041 /usr/libexec/gsd-sound[0m
+             ├─org.gnome.SettingsDaemon.UsbProtection.service
+             │ └─[0;38;5;245m19042 /usr/libexec/gsd-usb-protection[0m
+             ├─org.gnome.SettingsDaemon.Wacom.service
+             │ └─[0;38;5;245m19044 /usr/libexec/gsd-wacom[0m
+             ├─org.gnome.SettingsDaemon.XSettings.service
+             │ └─[0;38;5;245m19046 /usr/libexec/gsd-xsettings[0m
+             ├─org.gnome.Shell@x11.service
+             │ ├─[0;38;5;245m 18883 /usr/bin/gnome-shell[0m
+             │ ├─[0;38;5;245m 18915 /usr/libexec/mutter-x11-frames[0m
+             │ ├─[0;38;5;245m 19748 /usr/lib/slack/slack --type=zygote --no-zygote-sandbox[0m
+             │ ├─[0;38;5;245m 19757 /usr/lib/slack/slack --type=zygote[0m
+             │ ├─[0;38;5;245m 19759 /usr/lib/slack/slack --type=zygote[0m
+             │ ├─[0;38;5;245m 19928 /usr/lib/slack/slack --type=zygote --no-zygote-sandbox[0m
+             │ ├─[0;38;5;245m 20057 /usr/lib/slack/slack --type=zygote[0m
+             │ ├─[0;38;5;245m225098 /usr/bin/remmina[0m
+             │ ├─[0;38;5;245m276328 "/usr/share/code/code --type=zygote --no-zygote-sandbox"[0m
+             │ ├─[0;38;5;245m276329 "/usr/share/code/code --type=zygote"[0m
+             │ ├─[0;38;5;245m276331 "/usr/share/code/code --type=zygote"[0m
+             │ ├─[0;38;5;245m276401 "/usr/share/code/code --type=gpu-process --enable-crash-reporter=0883b369-3d03-4163-889e-8ae0e0cf1207,no_channel --user-data-dir=/home/cheetah/.config/Code --gpu-preferences=UAAAAAAAAAAgAAAEAAAAAAAAAAAAAAAAAABgAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAABAAAAAAAAAAEAAAAAAAAAAIAAAAAAAAAAgAAAAAAAAA --shared-files --field-trial-handle=3,i,15729856811655638913,9367735304757981616,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version"[0m
+             │ └─[0;38;5;245m276820 "/usr/share/code/code --type=renderer --enable-crash-reporter=0883b369-3d03-4163-889e-8ae0e0cf1207,no_channel --user-data-dir=/home/cheetah/.config/Code --standard-schemes=vscode-webview,vscode-file --enable-sandbox --secure-schemes=vscode-webview,vscode-file --cors-schemes=vscode-webview,vscode-file --fetch-schemes=vscode-webview,vscode-file --service-worker-schemes=vscode-webview --code-cache-schemes=vscode-webview,vscode-file --app-path=/usr/share/code/resources/app --enable-sandbox --enable-blink-features=HighlightAPI --js-flags=--nodecommit_pooled_pages --disable-blink-features=FontMatchingCTMigration,StandardizedBrowserZoom, --lang=en-US --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=9 --time-ticks-at-unix-epoch=-1745291552982686 --launch-time-ticks=65318348445 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,15729856811655638913,9367735304757981616,262144 --enable-features=DocumentPolicyIncludeJSCallStacksInCrashReports --disable-features=CalculateNativeWinOcclusion,SpareRendererForSitePerProcess --variations-seed-version --vscode-window-config=vscode:390f1b2c-a08a-41ee-afe7-749ed117f9b2"[0m
+             ├─pulseaudio.service
+             │ ├─[0;38;5;245m238371 /usr/bin/pulseaudio --daemonize=no --log-target=journal[0m
+             │ └─[0;38;5;245m238374 /usr/libexec/pulse/gsettings-helper[0m
+             ├─xdg-desktop-portal.service
+             │ └─[0;38;5;245m18930 /usr/libexec/xdg-desktop-portal[0m
+             ├─xdg-document-portal.service
+             │ ├─[0;38;5;245m18940 /usr/libexec/xdg-document-portal[0m
+             │ └─[0;38;5;245m18946 fusermount3 -o rw,nosuid,nodev,fsname=portal,auto_unmount,subtype=portal -- /run/user/1000/doc[0m
+             └─xdg-permission-store.service
+               └─[0;38;5;245m18935 /usr/libexec/xdg-permission-store[0m

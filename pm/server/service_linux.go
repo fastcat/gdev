@@ -29,7 +29,7 @@ func isolateProcess(
 			// auto-harvest the transient unit once all its processes exit
 			{Name: "CollectMode", Value: godbus.MakeVariant("inactive-or-failed")},
 			// put the given PID into it now
-			{Name: "PIDs", Value: godbus.MakeVariant([]uint32{uint32(process.Pid)})},
+			dbus.PropPids(uint32(process.Pid)),
 		},
 		ch,
 	)
