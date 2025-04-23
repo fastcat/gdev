@@ -6,7 +6,11 @@ import (
 )
 
 func Root() *cobra.Command {
-	return &cobra.Command{
+	root := &cobra.Command{
 		Use: instance.AppName,
 	}
+	for _, c := range instance.Commands {
+		root.AddCommand(c())
+	}
+	return root
 }
