@@ -19,3 +19,6 @@
 
 # env file
 .env
+
+# gopls debug launches
+__debug_bin*

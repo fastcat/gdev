@@ -100,9 +100,10 @@ func readOne[T any](r io.Reader) (T, error) {
 	if d.More() {
 		return value, ErrTrailingGarbage
 	}
-	if err := v.Struct(value); err != nil {
-		return value, err
-	}
+	// TODO: need to work out validating slices
+	// if err := v.Struct(value); err != nil {
+	// 	return value, err
+	// }
 	return value, nil
 }
 

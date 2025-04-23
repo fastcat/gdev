@@ -2,12 +2,14 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -71,7 +73,15 @@ func (h *HTTP) Run(ctx context.Context) error {
 func NewHTTPMux(impl api.API) *http.ServeMux {
 	m := http.NewServeMux()
 	w := &httpWrapper{impl}
-	m.HandleFunc("GET /{$}", w.Ping)
+	reg := func(method, path string, handler http.HandlerFunc) {
+		expr := method + " " + path
+		if strings.HasSuffix(path, "/") {
+			expr += "{$}"
+		}
+		m.HandleFunc(expr, handler)
+	}
+	reg(http.MethodGet, api.PathPing, w.Ping)
+	reg(http.MethodGet, api.PathSummary, w.Summary)
 	return m
 }
 
@@ -88,5 +98,22 @@ func (h *httpWrapper) Ping(w http.ResponseWriter, r *http.Request) {
 		_, _ = fmt.Fprintf(w, "%v\n", err)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func (h *httpWrapper) Summary(w http.ResponseWriter, r *http.Request) {
+	resp, err := h.impl.Summary(r.Context())
+	if err != nil {
+		// TODO: status code errors
+		w.Header().Set("content-type", "text/plain")
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprintf(w, "%v\n", err)
+	} else {
+		w.Header().Set("content-type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		e := json.NewEncoder(w)
+		if err := e.Encode(resp); err != nil {
+			log.Printf("failed to write %s response: %v", api.PathSummary, err)
+		}
 	}
 }

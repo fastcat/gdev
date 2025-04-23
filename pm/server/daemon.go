@@ -73,7 +73,19 @@ func (d *daemon) StopChild(ctx context.Context, name string) (*api.ChildWithStat
 
 // Summary implements api.API.
 func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
-	panic("unimplemented")
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	ret := make([]api.ChildSummary, 0, len(d.children))
+	for _, child := range d.children {
+		status := child.Status()
+		ret = append(ret, api.ChildSummary{
+			Name:  child.def.Name,
+			State: status.State,
+			// TODO: find a running init container
+			Pid: status.Main.Pid,
+		})
+	}
+	return ret, nil
 }
 
 func (d *daemon) terminate() error {
