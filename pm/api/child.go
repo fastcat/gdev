@@ -1,5 +1,7 @@
 package api
 
+import "time"
+
 type Child struct {
 	Name string `json:"name" validate:"required"`
 	Init []Exec `json:"init"`
@@ -28,9 +30,16 @@ type ExecStatus struct {
 	ExitCode int       `json:"exitCode"`
 }
 
+type HealthStatus struct {
+	Healthy       bool       `json:"healthy"`
+	LastHealthy   *time.Time `json:"lastHealthy,omitempty"`
+	LastUnhealthy *time.Time `json:"lastUnhealthy,omitempty"`
+}
+
 type ChildStatus struct {
-	Init []ExecStatus
-	Main ExecStatus
+	Init   []ExecStatus
+	Main   ExecStatus
+	Health HealthStatus
 }
 
 type ChildState string
@@ -53,4 +62,16 @@ type ChildSummary struct {
 	Name  string     `json:"name"`
 	State ChildState `json:"state"`
 	Pid   int        `json:"pid,omitzero"`
+}
+
+type HealthCheck struct {
+	Http           *HttpHealthCheck `json:"http,omitempty" validate:"required"`
+	TimeoutSeconds int              `json:"timeout" validate:"required,gt=0"`
+}
+
+// FUTURE: add more health check types, validate via `required_without_all=<others>,excluded_with=<others>`
+
+type HttpHealthCheck struct {
+	Port int    `json:"port" validate:"required,gt=0,lte=65535"`
+	Path string `json:"path" validate:"required"`
 }
