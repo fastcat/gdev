@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	instance.AppName = "edev"
 	cmd.Main()
 }
 
