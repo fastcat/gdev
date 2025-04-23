@@ -28,7 +28,7 @@ func NewHTTP() (*HTTP, error) {
 		return nil, err
 	}
 
-	impl := &server{
+	impl := &daemon{
 		// TODO
 	}
 
