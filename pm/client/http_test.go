@@ -34,7 +34,7 @@ func TestHttp_Ping(t *testing.T) {
 	t.Cleanup(s.Close)
 	s.Start()
 
-	c := NewHttp()
+	c := NewHTTP()
 	err = c.Ping(t.Context())
 	require.NoError(t, err)
 	assert.Equal(t, 1, hits)

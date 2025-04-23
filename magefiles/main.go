@@ -14,6 +14,6 @@ var (
 )
 
 func All(ctx context.Context) error {
-	mg.CtxDeps(ctx, LintDefault, Compile)
+	mg.CtxDeps(ctx, LintDefault, Compile, Test)
 	return nil
 }
