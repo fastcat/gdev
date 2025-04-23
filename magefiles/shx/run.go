@@ -2,9 +2,11 @@ package shx
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -50,7 +52,15 @@ func (c *cmd) Run() error {
 		}
 		log.Println("exec:", c.Path, strings.Join(quoted, " "))
 	}
-	return (*exec.Cmd)(c).Run()
+	err := (*exec.Cmd)(c).Run()
+	if err != nil {
+		name := filepath.Base(c.Path)
+		if name == "go" && len(c.Args) > 0 {
+			name += " " + c.Args[0]
+		}
+		return fmt.Errorf("%s: %w", name, err)
+	}
+	return nil
 }
 
 type execOpt func(*exec.Cmd)
