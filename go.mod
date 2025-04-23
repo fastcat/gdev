@@ -3,7 +3,9 @@ module fastcat.org/go/gdev
 go 1.24.2
 
 require (
+	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/go-playground/validator/v10 v10.26.0
+	github.com/godbus/dbus/v5 v5.1.0
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.8.4
 )

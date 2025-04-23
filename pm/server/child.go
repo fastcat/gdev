@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"errors"
 	"log"
 	"os"
@@ -74,7 +75,7 @@ func (c *child) run() {
 					}
 					s := curStatus()
 					var startErr error
-					curProc, startErr = c.start(c.def.Main, procExited)
+					curProc, startErr = c.start(c.def.Name, c.def.Main, procExited)
 					if startErr != nil {
 						*s = api.ExecStatus{
 							State:    api.ExecNotStarted,
@@ -156,7 +157,11 @@ func initialStatus(c *child) api.ChildStatus {
 	return s
 }
 
-func (c *child) start(e api.Exec, exited chan<- error) (*os.Process, error) {
+func (c *child) start(
+	name string,
+	e api.Exec,
+	exited chan<- error,
+) (*os.Process, error) {
 	cmd := exec.Command(e.Cmd, e.Args...)
 	if e.Cwd != "" {
 		cmd.Dir = e.Cwd
@@ -175,6 +180,9 @@ func (c *child) start(e api.Exec, exited chan<- error) (*os.Process, error) {
 		err := cmd.Wait()
 		exited <- err
 	}()
+	if err := isolateProcess(context.TODO(), name, cmd.Process); err != nil {
+		log.Printf("ERROR: failed to isolate process: %v", err)
+	}
 	return cmd.Process, nil
 }
 
