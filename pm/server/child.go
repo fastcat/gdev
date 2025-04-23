@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"slices"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -18,6 +19,7 @@ type child struct {
 	def    api.Child
 	status atomic.Pointer[api.ChildStatus]
 	cmds   chan childCmd
+	wg     sync.WaitGroup
 }
 
 func newChild(def api.Child) *child {
@@ -40,6 +42,10 @@ const (
 )
 
 func (c *child) run() {
+	// TODO: this is non-standard use of the waitgroup
+	c.wg.Add(1)
+	defer c.wg.Done()
+
 	status := initialStatus(c)
 	c.status.Store(cloneStatus(status))
 
@@ -176,7 +182,9 @@ func (c *child) start(
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
+	c.wg.Add(1)
 	go func() {
+		defer c.wg.Done()
 		err := cmd.Wait()
 		exited <- err
 	}()
@@ -210,4 +218,8 @@ func cloneStatus(s api.ChildStatus) *api.ChildStatus {
 
 func (c *child) Status() api.ChildStatus {
 	return *cloneStatus(*c.status.Load())
+}
+
+func (c *child) Wait() {
+	c.wg.Wait()
 }

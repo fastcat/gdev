@@ -1,13 +1,20 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func Main() {
-	if err := Root().Execute(); err != nil {
+	ctx := context.Background()
+	// hook ctrl-c to context cancel
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+	if err := Root().ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		ec := 1
 		var ece ExitCodeErr

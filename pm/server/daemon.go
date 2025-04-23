@@ -3,7 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
+	"time"
 
 	"fastcat.org/go/gdev/pm/api"
 )
@@ -45,7 +47,12 @@ func (d *daemon) PutChild(ctx context.Context, child api.Child) (*api.ChildWithS
 	}
 	c := newChild(child)
 	d.children[child.Name] = c
-	go c.run()
+	go func() {
+		c.run()
+		d.mu.Lock()
+		delete(d.children, child.Name)
+		d.mu.Unlock()
+	}()
 	// ensure it's going
 	c.cmds <- childPing
 	return &api.ChildWithStatus{
@@ -67,4 +74,35 @@ func (d *daemon) StopChild(ctx context.Context, name string) (*api.ChildWithStat
 // Summary implements api.API.
 func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 	panic("unimplemented")
+}
+
+func (d *daemon) terminate() error {
+	log.Print("terminating pm children")
+	d.mu.Lock()
+	children := make([]*child, 0, len(d.children))
+	for _, v := range d.children {
+		children = append(children, v)
+	}
+	d.mu.Unlock()
+	var wg sync.WaitGroup
+	for _, child := range children {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			child.cmds <- childStop
+			// wait for it to stop
+			// TODO: avoid polling
+			check := time.NewTicker(10 * time.Millisecond)
+			defer check.Stop()
+			for range check.C {
+				if s := child.Status().State; s == api.ChildError || s == api.ChildStopped {
+					break
+				}
+			}
+			child.cmds <- childDelete
+			child.Wait()
+		}()
+	}
+	wg.Wait()
+	return nil
 }
