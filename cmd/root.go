@@ -1,8 +1,11 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"fastcat.org/go/gdev/instance"
+	"github.com/spf13/cobra"
+)
 
 var Root = &cobra.Command{
 	// will be replaced in Main
-	Use: AppName,
+	Use: instance.AppName,
 }

@@ -3,6 +3,7 @@ package api
 import "context"
 
 type Client interface {
+	Ping(context.Context) error
 	Summary(context.Context) ([]ChildSummary, error)
 	Child(context.Context, string) (ChildWithStatus, error)
 	PutChild(context.Context, Child) (ChildWithStatus, error)
@@ -11,3 +12,8 @@ type Client interface {
 	DeleteChild(context.Context, string) (ChildWithStatus, error)
 	// TODO: ChildLogs
 }
+
+const (
+	PathPing    = "/"
+	PathSummary = "/summary"
+)
