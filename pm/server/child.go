@@ -211,11 +211,12 @@ func (c *child) start(
 		cmd.Env = append(cmd.Env, k+"="+v)
 	}
 	// set pgid so we can kill process groups
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true, Noctty: true}
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	// TODO: logfiles
 	if err := cmd.Start(); err != nil {
 		return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState
 	}
+	log.Printf("started %s as pid %d", name, cmd.Process.Pid)
 	c.wg.Add(1)
 	go func() {
 		defer c.wg.Done()
@@ -223,9 +224,14 @@ func (c *child) start(
 		exited <- err
 	}()
 	if err := isolateProcess(context.TODO(), name, cmd.Process); err != nil {
-		log.Printf("ERROR: failed to isolate process: %v", err)
+		log.Printf("ERROR: failed to isolate process %d as %q: %v", cmd.Process.Pid, name, err)
 	}
-	return cmd.Process, api.ExecStatus{State: api.ExecRunning}, runningState
+	return cmd.Process,
+		api.ExecStatus{
+			State: api.ExecRunning,
+			Pid:   cmd.Process.Pid,
+		},
+		runningState
 }
 
 func (c *child) terminate(p *os.Process, s *api.ExecStatus) {

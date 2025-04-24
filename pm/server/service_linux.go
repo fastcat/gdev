@@ -22,7 +22,7 @@ func isolateProcess(
 	ch := make(chan string, 1)
 	_, err = conn.StartTransientUnitContext(
 		ctx,
-		instance.AppName+"-pm-"+name,
+		instance.AppName+"-pm-"+name+".scope",
 		"fail", // error if unit already exists
 		[]dbus.Property{
 			dbus.PropDescription(fmt.Sprintf("%s pm service %s", instance.AppName, name)),
