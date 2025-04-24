@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"fastcat.org/go/gdev/pm/api"
+	"fastcat.org/go/gdev/pm/internal"
 )
 
 type HTTP struct {
@@ -82,6 +83,11 @@ func NewHTTPMux(impl api.API) *http.ServeMux {
 	}
 	reg(http.MethodGet, api.PathPing, w.Ping)
 	reg(http.MethodGet, api.PathSummary, w.Summary)
+	reg(http.MethodGet, api.PathOneChild, w.Child)
+	reg(http.MethodPut, api.PathChild, w.PutChild)
+	reg(http.MethodPost, api.PathStartChild, w.StartChild)
+	reg(http.MethodPost, api.PathStopChild, w.StopChild)
+	reg(http.MethodDelete, api.PathOneChild, w.DeleteChild)
 	return m
 }
 
@@ -92,28 +98,97 @@ type httpWrapper struct {
 func (h *httpWrapper) Ping(w http.ResponseWriter, r *http.Request) {
 	err := h.impl.Ping(r.Context())
 	if err != nil {
-		// TODO: status code errors
-		w.Header().Set("content-type", "text/plain")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = fmt.Fprintf(w, "%v\n", err)
-	} else {
-		w.WriteHeader(http.StatusNoContent)
+		h.error(w, err)
+		return
 	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *httpWrapper) Summary(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.impl.Summary(r.Context())
 	if err != nil {
-		// TODO: status code errors
-		w.Header().Set("content-type", "text/plain")
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = fmt.Fprintf(w, "%v\n", err)
-	} else {
-		w.Header().Set("content-type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		e := json.NewEncoder(w)
-		if err := e.Encode(resp); err != nil {
-			log.Printf("failed to write %s response: %v", api.PathSummary, err)
+		h.error(w, err)
+		return
+	}
+	h.json(r, w, resp)
+}
+
+func (h *httpWrapper) Child(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue(api.PathChildParamName)
+	resp, err := h.impl.Child(r.Context(), name)
+	if err != nil {
+		h.error(w, err)
+		return
+	}
+	h.json(r, w, resp)
+}
+
+func (h *httpWrapper) PutChild(w http.ResponseWriter, r *http.Request) {
+	body, err := internal.JSONBody[api.Child](r.Context(), r.Body, "")
+	if err != nil {
+		h.error(w, err)
+		return
+	}
+	resp, err := h.impl.PutChild(r.Context(), body)
+	if err != nil {
+		h.error(w, err)
+		return
+	}
+	h.json(r, w, resp)
+}
+
+func (h *httpWrapper) StartChild(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue(api.PathChildParamName)
+	resp, err := h.impl.StartChild(r.Context(), name)
+	if err != nil {
+		h.error(w, err)
+		return
+	}
+	h.json(r, w, resp)
+}
+
+func (h *httpWrapper) StopChild(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue(api.PathChildParamName)
+	resp, err := h.impl.StopChild(r.Context(), name)
+	if err != nil {
+		h.error(w, err)
+		return
+	}
+	h.json(r, w, resp)
+}
+
+func (h *httpWrapper) DeleteChild(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue(api.PathChildParamName)
+	resp, err := h.impl.DeleteChild(r.Context(), name)
+	if err != nil {
+		h.error(w, err)
+		return
+	}
+	h.json(r, w, resp)
+}
+
+func (h *httpWrapper) error(w http.ResponseWriter, err error) {
+	w.Header().Set("content-type", "text/plain")
+	var sce internal.StatusCodeErr
+	sc := http.StatusInternalServerError
+	if errors.As(err, &sce) {
+		sc = sce.StatusCode()
+	}
+	w.WriteHeader(sc)
+	_, _ = fmt.Fprintf(w, "%v\n", err)
+}
+
+func (h *httpWrapper) json(r *http.Request, w http.ResponseWriter, body any) {
+	w.Header().Set("content-type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	e := json.NewEncoder(w)
+	// humans are likely to poke this with curl, add minimal prettyness
+	e.SetIndent("", " ")
+	if err := e.Encode(body); err != nil {
+		name := r.Pattern
+		if name == "" {
+			name = r.URL.Path
 		}
+		log.Printf("failed to write %s response: %v", name, err)
 	}
 }

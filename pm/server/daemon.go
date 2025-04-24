@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"sync"
 	"time"
 
 	"fastcat.org/go/gdev/pm/api"
+	"fastcat.org/go/gdev/pm/internal"
 )
 
 type daemon struct {
@@ -21,6 +23,14 @@ func NewDaemon() *daemon {
 
 var _ api.API = (*daemon)(nil)
 
+// child safely fetches a child from the map under the mutex
+func (d *daemon) child(name string) *child {
+	d.mu.Lock()
+	c := d.children[name]
+	d.mu.Unlock()
+	return c
+}
+
 // Ping implements api.API.
 func (d *daemon) Ping(ctx context.Context) error {
 	// TODO: check things here?
@@ -29,12 +39,33 @@ func (d *daemon) Ping(ctx context.Context) error {
 
 // Child implements api.API.
 func (d *daemon) Child(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	panic("unimplemented")
+	c := d.child(name)
+	if c == nil {
+		return nil, internal.WithStatus(http.StatusNotFound, fmt.Errorf("child %s not found", name))
+	}
+	return &api.ChildWithStatus{
+		Child:  c.def,
+		Status: c.Status(),
+	}, nil
 }
 
 // DeleteChild implements api.API.
 func (d *daemon) DeleteChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	panic("unimplemented")
+	c := d.child(name)
+	if c == nil {
+		return nil, internal.WithStatus(http.StatusNotFound, fmt.Errorf("child %s not found", name))
+	}
+	s := c.Status()
+	switch s.State {
+	case api.ChildError, api.ChildInitError, api.ChildStopped:
+		// ok
+	default:
+		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("cannot delete child %s in active state %s", name, s.State))
+	}
+	c.cmds <- childDelete
+	// wish we could wait under context
+	c.Wait()
+	return &api.ChildWithStatus{Child: c.def, Status: c.Status()}, nil
 }
 
 // PutChild implements api.API.
@@ -42,8 +73,7 @@ func (d *daemon) PutChild(ctx context.Context, child api.Child) (*api.ChildWithS
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	if _, ok := d.children[child.Name]; ok {
-		// TODO: http code
-		return nil, fmt.Errorf("child %s already exists", child.Name)
+		return nil, internal.WithStatus(http.StatusConflict, fmt.Errorf("child %s already exists", child.Name))
 	}
 	c := newChild(child)
 	d.children[child.Name] = c
@@ -53,7 +83,7 @@ func (d *daemon) PutChild(ctx context.Context, child api.Child) (*api.ChildWithS
 		delete(d.children, child.Name)
 		d.mu.Unlock()
 	}()
-	// ensure it's going
+	// ensure the manager goroutine has started
 	c.cmds <- childPing
 	return &api.ChildWithStatus{
 		Child:  child,
@@ -63,12 +93,62 @@ func (d *daemon) PutChild(ctx context.Context, child api.Child) (*api.ChildWithS
 
 // StartChild implements api.API.
 func (d *daemon) StartChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	panic("unimplemented")
+	c := d.child(name)
+	if c == nil {
+		return nil, internal.WithStatus(http.StatusNotFound, fmt.Errorf("child %s not found", name))
+	}
+	s := c.Status()
+	switch s.State {
+	case api.ChildError, api.ChildInitError, api.ChildStopped:
+		// ok
+	case api.ChildInitRunning, api.ChildRunning:
+		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("child %s already running (%s)", name, s.State))
+	default:
+		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("cannot start child %s from state %s", name, s.State))
+	}
+	c.cmds <- childStart
+	return &api.ChildWithStatus{Child: c.def, Status: c.Status()}, nil
 }
 
 // StopChild implements api.API.
 func (d *daemon) StopChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	panic("unimplemented")
+	c := d.child(name)
+	if c == nil {
+		return nil, internal.WithStatus(http.StatusNotFound, fmt.Errorf("child %s not found", name))
+	}
+	s := c.Status()
+	switch s.State {
+	case api.ChildInitRunning, api.ChildRunning:
+		// ok
+	case api.ChildError, api.ChildInitError:
+		// also ok
+	case api.ChildStopped:
+		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("child %s already stopped", name))
+	case api.ChildStopping:
+		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("child %s already stopping", name))
+	default:
+		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("cannot stop child %s from state %s", name, s.State))
+	}
+	c.cmds <- childStop
+	// wait for it to stop
+	t := time.NewTicker(10 * time.Millisecond)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case c.cmds <- childPing:
+		}
+		if c.Status().State == api.ChildStopped {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-t.C:
+		}
+	}
+	return &api.ChildWithStatus{Child: c.def, Status: c.Status()}, nil
 }
 
 // Summary implements api.API.

@@ -1,17 +1,18 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"fastcat.org/go/gdev/pm/api"
+	"fastcat.org/go/gdev/pm/internal"
 )
 
 func NewHTTP() *HTTP {
@@ -37,42 +38,57 @@ var _ api.API = (*HTTP)(nil)
 
 // Ping implements api.API.
 func (h *HTTP) Ping(ctx context.Context) error {
-	r, err := h.do(ctx, http.MethodGet, api.PathPing, nil)
-	if err != nil {
-		return err
-	}
-	if r.Body != nil {
-		defer r.Body.Close() //nolint:errcheck
-		if _, err := io.Copy(io.Discard, r.Body); err != nil {
-			return err
-		}
-	}
-	return nil
+	_, err := h.do(ctx, http.MethodGet, api.PathPing, nil)
+	return err
 }
 
 // Child implements api.API.
 func (h *HTTP) Child(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	panic("unimplemented")
+	r, err := h.do(ctx, http.MethodGet, withPathValue(api.PathOneChild, api.PathChildParamName, name), nil)
+	if err != nil {
+		return nil, err
+	}
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
 }
 
 // DeleteChild implements api.API.
 func (h *HTTP) DeleteChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	panic("unimplemented")
+	r, err := h.do(ctx, http.MethodDelete, withPathValue(api.PathOneChild, api.PathChildParamName, name), nil)
+	if err != nil {
+		return nil, err
+	}
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
 }
 
 // PutChild implements api.API.
 func (h *HTTP) PutChild(ctx context.Context, child api.Child) (*api.ChildWithStatus, error) {
-	panic("unimplemented")
+	body, err := json.Marshal(child)
+	if err != nil {
+		return nil, err
+	}
+	r, err := h.do(ctx, http.MethodPut, api.PathChild, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
 }
 
 // StartChild implements api.API.
 func (h *HTTP) StartChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	panic("unimplemented")
+	r, err := h.do(ctx, http.MethodPost, withPathValue(api.PathStartChild, api.PathChildParamName, name), nil)
+	if err != nil {
+		return nil, err
+	}
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
 }
 
 // StopChild implements api.API.
 func (h *HTTP) StopChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	panic("unimplemented")
+	r, err := h.do(ctx, http.MethodPost, withPathValue(api.PathStopChild, api.PathChildParamName, name), nil)
+	if err != nil {
+		return nil, err
+	}
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
 }
 
 // Summary implements api.API.
@@ -81,30 +97,7 @@ func (h *HTTP) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 	if err != nil {
 		return nil, err
 	}
-	if r.Body == nil {
-		return nil, fmt.Errorf("%s: no response body", api.PathSummary)
-	}
-	defer r.Body.Close() //nolint:errcheck
-	return readOne[[]api.ChildSummary](r.Body)
-}
-
-var ErrTrailingGarbage = errors.New("trailing garbage (JSON)")
-
-func readOne[T any](r io.Reader) (T, error) {
-	d := json.NewDecoder(r)
-	d.DisallowUnknownFields()
-	var value T
-	if err := d.Decode(&value); err != nil {
-		return value, err
-	}
-	if d.More() {
-		return value, ErrTrailingGarbage
-	}
-	// TODO: need to work out validating slices
-	// if err := v.Struct(value); err != nil {
-	// 	return value, err
-	// }
-	return value, nil
+	return internal.JSONBody[[]api.ChildSummary](ctx, r.Body, `required`)
 }
 
 func (h *HTTP) do(
@@ -149,4 +142,8 @@ func (h *HTTP) url(p string) string {
 	u = u.ResolveReference(&url.URL{Path: "/./" + p})
 	u.Path = path.Clean(u.Path)
 	return u.String()
+}
+
+func withPathValue(match, name, value string) string {
+	return strings.Replace(match, "{"+name+"}", value, 1)
 }
