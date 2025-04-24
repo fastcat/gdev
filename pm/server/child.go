@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"slices"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -62,51 +63,54 @@ func (c *child) run() {
 	var curProc *os.Process
 	procExited := make(chan error, 1)
 
-	var restart <-chan time.Time
 	var kill <-chan time.Time
+	var restart <-chan time.Time
+	const restartDelay = time.Second // TODO: scale
 	const killDelay = 5 * time.Second
 	// long initial delay, will be reset to a proper interval when active
 	healthCheck := time.NewTicker(time.Hour)
+	defer healthCheck.Stop()
 
+MANAGER:
 	for {
 		select {
 		case cmd := <-c.cmds:
 			switch cmd {
 			case childStart:
 				switch status.State {
-				case api.ChildStopped:
+				case api.ChildStopped, api.ChildError, api.ChildInitError:
+					// start over from scratch
 					curExec = 0
-					if len(c.def.Init) != 0 {
-						panic("unimplemented")
-					}
 					s := curStatus()
-					var startErr error
-					curProc, startErr = c.start(c.def.Name, c.def.Main, procExited)
-					if startErr != nil {
-						*s = api.ExecStatus{
-							State:    api.ExecNotStarted,
-							StartErr: startErr.Error(),
-						}
-						status.State = api.ChildError
-					} else {
-						*s = api.ExecStatus{
-							State: api.ExecRunning,
-							Pid:   curProc.Pid,
-						}
-						status.State = api.ChildRunning
-					}
+					curProc, *s, status.State = c.start(curExec, procExited)
 				default:
-					panic("unimplemented")
+					log.Printf("cannot start child %s from state %s", c.def.Name, status.State)
 				}
 			case childStop:
 				if curProc == nil {
+					switch status.State {
+					case api.ChildError, api.ChildInitError:
+						curExec = 0
+						// cancel any restart
+						status.State = api.ChildStopped
+					case api.ChildStopped:
+						// ok
+					default:
+						// this is weird
+						log.Printf("nothing to stop for child %s in state %s?", c.def.Name, status.State)
+					}
 					break
 				}
 				c.terminate(curProc, curStatus())
 				kill = time.After(killDelay)
 				status.State = api.ChildStopping
 			case childDelete:
-				panic("unimplemented")
+				if status.State != api.ChildStopped {
+					log.Printf("cannot delete child %s in state %s", c.def.Name, status.State)
+					break
+				}
+				// TODO: assert curProc != nil?
+				break MANAGER
 			}
 		case <-kill:
 			if curProc == nil {
@@ -117,8 +121,9 @@ func (c *child) run() {
 			status.State = api.ChildStopping
 		case err := <-procExited:
 			if curProc == nil {
-				break
+				panic("unimplemented: wtf")
 			}
+			curProc = nil
 			s := curStatus()
 			s.State = api.ExecEnded
 			var ee *exec.ExitError
@@ -133,11 +138,33 @@ func (c *child) run() {
 			case api.ChildStopping:
 				// stop completed
 				status.State = api.ChildStopped
+				// reset the starting process to the beginning
+				curExec = 0
+			case api.ChildInitRunning:
+				if s.ExitCode == 0 {
+					log.Printf("child %s init %d complete, moving on", c.def.Name, curExec)
+					// start next container
+					curExec++
+					s := curStatus()
+					curProc, *s, status.State = c.start(curExec, procExited)
+				} else {
+					log.Printf("child %s init %d failed with code %d, will restart", c.def.Name, curExec, s.ExitCode)
+					status.State = api.ChildInitError
+					restart = time.After(restartDelay)
+				}
+			case api.ChildRunning:
+				// TODO: one-shot support
+				log.Printf("child %s service exited with code %d, will restart", c.def.Name, s.ExitCode)
+				// treat this as an error
+				status.State = api.ChildError
+				restart = time.After(restartDelay)
 			default:
-				panic("unimplemented")
+				log.Printf("wtf? child %s got exit notification in state %s", c.def.Name, status.State)
 			}
 		case <-restart:
-			panic("unimplemented")
+			log.Printf("child %s exec %d: restarting", c.def.Name, curExec)
+			s := curStatus()
+			curProc, *s, status.State = c.start(curExec, procExited)
 		case <-healthCheck.C:
 			if c.def.HealthCheck == nil {
 				continue
@@ -164,10 +191,17 @@ func initialStatus(c *child) api.ChildStatus {
 }
 
 func (c *child) start(
-	name string,
-	e api.Exec,
+	idx int,
 	exited chan<- error,
-) (*os.Process, error) {
+) (*os.Process, api.ExecStatus, api.ChildState) {
+	runningState, errorState := api.ChildRunning, api.ChildError
+	e := c.def.Main
+	name := c.def.Name
+	if idx < len(c.def.Init) {
+		runningState, errorState = api.ChildInitRunning, api.ChildInitError
+		e = c.def.Init[idx]
+		name = c.def.Name + "-init-" + strconv.Itoa(idx)
+	}
 	cmd := exec.Command(e.Cmd, e.Args...)
 	if e.Cwd != "" {
 		cmd.Dir = e.Cwd
@@ -180,7 +214,7 @@ func (c *child) start(
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true, Noctty: true}
 	// TODO: logfiles
 	if err := cmd.Start(); err != nil {
-		return nil, err
+		return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState
 	}
 	c.wg.Add(1)
 	go func() {
@@ -191,7 +225,7 @@ func (c *child) start(
 	if err := isolateProcess(context.TODO(), name, cmd.Process); err != nil {
 		log.Printf("ERROR: failed to isolate process: %v", err)
 	}
-	return cmd.Process, nil
+	return cmd.Process, api.ExecStatus{State: api.ExecRunning}, runningState
 }
 
 func (c *child) terminate(p *os.Process, s *api.ExecStatus) {
