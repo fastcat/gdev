@@ -48,7 +48,7 @@ func (h *HTTP) Child(ctx context.Context, name string) (*api.ChildWithStatus, er
 	if err != nil {
 		return nil, err
 	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
 }
 
 // DeleteChild implements api.API.
@@ -57,7 +57,7 @@ func (h *HTTP) DeleteChild(ctx context.Context, name string) (*api.ChildWithStat
 	if err != nil {
 		return nil, err
 	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
 }
 
 // PutChild implements api.API.
@@ -70,7 +70,7 @@ func (h *HTTP) PutChild(ctx context.Context, child api.Child) (*api.ChildWithSta
 	if err != nil {
 		return nil, err
 	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
 }
 
 // StartChild implements api.API.
@@ -79,7 +79,7 @@ func (h *HTTP) StartChild(ctx context.Context, name string) (*api.ChildWithStatu
 	if err != nil {
 		return nil, err
 	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
 }
 
 // StopChild implements api.API.
@@ -88,7 +88,7 @@ func (h *HTTP) StopChild(ctx context.Context, name string) (*api.ChildWithStatus
 	if err != nil {
 		return nil, err
 	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "")
+	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
 }
 
 // Summary implements api.API.
@@ -97,7 +97,7 @@ func (h *HTTP) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 	if err != nil {
 		return nil, err
 	}
-	return internal.JSONBody[[]api.ChildSummary](ctx, r.Body, `required`)
+	return internal.JSONBody[[]api.ChildSummary](ctx, r.Body, `required`, true)
 }
 
 func (h *HTTP) do(

@@ -124,7 +124,7 @@ func (h *httpWrapper) Child(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *httpWrapper) PutChild(w http.ResponseWriter, r *http.Request) {
-	body, err := internal.JSONBody[api.Child](r.Context(), r.Body, "")
+	body, err := internal.JSONBody[api.Child](r.Context(), r.Body, "", false)
 	if err != nil {
 		h.error(w, err)
 		return
