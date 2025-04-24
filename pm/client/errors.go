@@ -22,13 +22,11 @@ func heFromResp(
 	msg string,
 ) *HTTPError {
 	err := &HTTPError{Resp: r, Err: errors.New(msg)}
-	if r.Body != nil {
-		defer r.Body.Close() //nolint:errcheck
-		body, bodyErr := io.ReadAll(r.Body)
-		err.Body = body
-		if bodyErr != nil {
-			err.Err = fmt.Errorf("%s: reading body: %w", msg, bodyErr)
-		}
+	defer r.Body.Close() //nolint:errcheck
+	body, bodyErr := io.ReadAll(r.Body)
+	err.Body = body
+	if bodyErr != nil {
+		err.Err = fmt.Errorf("%s: reading body: %w", msg, bodyErr)
 	}
 	return err
 }

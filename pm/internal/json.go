@@ -15,7 +15,7 @@ func JSONBody[T any](ctx context.Context, r io.ReadCloser, validation string) (T
 	if r == nil || r == http.NoBody {
 		return value, WithStatus(http.StatusBadRequest, errors.New("body required"))
 	}
-	defer r.Close()
+	defer r.Close() // nolint:errcheck
 	d := json.NewDecoder(r)
 	d.DisallowUnknownFields()
 	if err := d.Decode(&value); err != nil {

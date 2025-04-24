@@ -60,7 +60,10 @@ func (d *daemon) DeleteChild(ctx context.Context, name string) (*api.ChildWithSt
 	case api.ChildError, api.ChildInitError, api.ChildStopped:
 		// ok
 	default:
-		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("cannot delete child %s in active state %s", name, s.State))
+		return nil, internal.WithStatus(
+			http.StatusPreconditionFailed,
+			fmt.Errorf("cannot delete child %s in active state %s", name, s.State),
+		)
 	}
 	c.cmds <- childDelete
 	// wish we could wait under context
@@ -102,9 +105,15 @@ func (d *daemon) StartChild(ctx context.Context, name string) (*api.ChildWithSta
 	case api.ChildError, api.ChildInitError, api.ChildStopped:
 		// ok
 	case api.ChildInitRunning, api.ChildRunning:
-		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("child %s already running (%s)", name, s.State))
+		return nil, internal.WithStatus(
+			http.StatusPreconditionFailed,
+			fmt.Errorf("child %s already running (%s)", name, s.State),
+		)
 	default:
-		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("cannot start child %s from state %s", name, s.State))
+		return nil, internal.WithStatus(
+			http.StatusPreconditionFailed,
+			fmt.Errorf("cannot start child %s from state %s", name, s.State),
+		)
 	}
 	c.cmds <- childStart
 	return &api.ChildWithStatus{Child: c.def, Status: c.Status()}, nil
@@ -123,11 +132,20 @@ func (d *daemon) StopChild(ctx context.Context, name string) (*api.ChildWithStat
 	case api.ChildError, api.ChildInitError:
 		// also ok
 	case api.ChildStopped:
-		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("child %s already stopped", name))
+		return nil, internal.WithStatus(
+			http.StatusPreconditionFailed,
+			fmt.Errorf("child %s already stopped", name),
+		)
 	case api.ChildStopping:
-		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("child %s already stopping", name))
+		return nil, internal.WithStatus(
+			http.StatusPreconditionFailed,
+			fmt.Errorf("child %s already stopping", name),
+		)
 	default:
-		return nil, internal.WithStatus(http.StatusPreconditionFailed, fmt.Errorf("cannot stop child %s from state %s", name, s.State))
+		return nil, internal.WithStatus(
+			http.StatusPreconditionFailed,
+			fmt.Errorf("cannot stop child %s from state %s", name, s.State),
+		)
 	}
 	c.cmds <- childStop
 	// wait for it to stop

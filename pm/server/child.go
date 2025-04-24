@@ -3,7 +3,11 @@ package server
 import (
 	"context"
 	"errors"
+	"io"
 	"log"
+	"net"
+	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"slices"
@@ -68,8 +72,13 @@ func (c *child) run() {
 	const restartDelay = time.Second // TODO: scale
 	const killDelay = 5 * time.Second
 	// long initial delay, will be reset to a proper interval when active
+	const healthCheckInitialInterval = time.Second
+	const healthCheckInterval = 10 * time.Second
 	healthCheck := time.NewTicker(time.Hour)
+	healthCheck.Stop()
 	defer healthCheck.Stop()
+	healthChecks := -1
+	healthResults := make(chan bool, 1)
 
 MANAGER:
 	for {
@@ -166,13 +175,80 @@ MANAGER:
 			s := curStatus()
 			curProc, *s, status.State = c.start(curExec, procExited)
 		case <-healthCheck.C:
-			if c.def.HealthCheck == nil {
-				continue
+			// TODO: do a health check
+			switch {
+			case c.def.HealthCheck.Http != nil:
+				timeout := time.Second
+				if c.def.HealthCheck.TimeoutSeconds > 0 {
+					timeout = time.Duration(c.def.HealthCheck.TimeoutSeconds) * time.Second
+				}
+				go func() { healthResults <- c.httpCheck(c.def.HealthCheck.Http, timeout) }()
+			default:
+				log.Printf("child %s: no recognized health check", c.def.Name)
 			}
-			panic("unimplemented")
+
+			healthChecks++
+			// switch to the slower interval after N attempts
+			if healthChecks == 5 {
+				healthCheck.Reset(healthCheckInterval)
+			}
+		case healthy := <-healthResults:
+			if status.Health.Healthy != healthy {
+				desc := "healthy"
+				if !healthy {
+					desc = "unhealthy"
+				}
+				log.Printf("child %s is now %s", c.def.Name, desc)
+			}
+			status.Health.Healthy = healthy
+			now := time.Now()
+			if healthy {
+				status.Health.LastHealthy = &now
+			} else {
+				status.Health.LastUnhealthy = &now
+			}
 		}
+
+		// if the child main just started, activate the health-check timer
+		if status.State == api.ChildRunning && c.def.HealthCheck != nil {
+			if healthChecks < 0 {
+				healthCheck.Reset(healthCheckInitialInterval)
+				healthChecks = 0
+			}
+		} else {
+			healthCheck.Stop()
+			healthChecks = -1
+		}
+
 		c.status.Store(cloneStatus(status))
 	}
+}
+
+func (c *child) httpCheck(check *api.HttpHealthCheck, timeout time.Duration) bool {
+	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+	defer cancel()
+	u := &url.URL{
+		// TODO: ipv6 hackery?
+		Host: net.JoinHostPort("localhost", strconv.Itoa(check.Port)),
+		Path: check.Path,
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+	if err != nil {
+		log.Printf("failed to construct http req for %s: %v", c.def.Name, err)
+		return false
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Printf("failed to send http req for %s: %v", c.def.Name, err)
+		return false
+	}
+	defer resp.Body.Close() //nolint:errcheck
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		log.Printf("http req for %s returned bad status %d", c.def.Name, resp.StatusCode)
+		return false
+	}
+	_, _ = io.Copy(io.Discard, resp.Body)
+	return true
 }
 
 func initialStatus(c *child) api.ChildStatus {

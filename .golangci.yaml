@@ -1,2 +1,12 @@
 version: "2"
-# defaults for now
+formatters:
+  enable:
+    - golines
+  settings:
+    golines:
+      max-len: 110
+      tab-len: 2
+      shorten-comments: false
+      # https://github.com/segmentio/golines/pull/143
+      reformat-tags: false
+      chain-split-dots: true
