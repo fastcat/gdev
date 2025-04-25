@@ -180,12 +180,21 @@ func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 	ret := make([]api.ChildSummary, 0, len(d.children))
 	for _, child := range d.children {
 		status := child.Status()
-		ret = append(ret, api.ChildSummary{
+		pid := status.Main.Pid
+		if status.State == api.ChildInitRunning || status.State == api.ChildInitError {
+			for _, i := range status.Init {
+				if i.State == api.ExecRunning {
+					pid = i.Pid
+					break
+				}
+			}
+		}
+		cs := api.ChildSummary{
 			Name:  child.def.Name,
 			State: status.State,
-			// TODO: find a running init container
-			Pid: status.Main.Pid,
-		})
+			Pid:   pid,
+		}
+		ret = append(ret, cs)
 	}
 	return ret, nil
 }
