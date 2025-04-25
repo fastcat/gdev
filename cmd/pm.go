@@ -40,7 +40,7 @@ func pm() *cobra.Command {
 
 	pm.AddCommand(pmAdd())
 	pm.AddCommand(&cobra.Command{
-		Use:   "start",
+		Use:   "start <name...>>",
 		Short: "starts one or more pm service(s)",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -56,7 +56,7 @@ func pm() *cobra.Command {
 		},
 	})
 	pm.AddCommand(&cobra.Command{
-		Use:   "stop",
+		Use:   "stop <name...>",
 		Short: "stops one or more pm service(s)",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -64,6 +64,23 @@ func pm() *cobra.Command {
 			for _, name := range args {
 				if stat, err := c.StopChild(cmd.Context(), name); err != nil {
 					return fmt.Errorf("failed to stop %s: %w", name, err)
+				} else {
+					PrettyChildStatus(stat, os.Stdout)
+				}
+			}
+			return nil
+		},
+	})
+
+	pm.AddCommand(&cobra.Command{
+		Use:     "remove <name...>",
+		Aliases: []string{"rm"},
+		Args:    cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			c := client.NewHTTP()
+			for _, name := range args {
+				if stat, err := c.DeleteChild(cmd.Context(), name); err != nil {
+					return fmt.Errorf("failed to remove %s: %w", name, err)
 				} else {
 					PrettyChildStatus(stat, os.Stdout)
 				}
