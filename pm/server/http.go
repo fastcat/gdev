@@ -51,7 +51,7 @@ func NewHTTP() (*HTTP, error) {
 
 func (h *HTTP) Run(ctx context.Context) error {
 	ctx, shutdown := context.WithCancel(ctx)
-	h.daemon.shutdown = shutdown
+	h.daemon.onTerminate = shutdown
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -69,6 +69,7 @@ func (h *HTTP) Run(ctx context.Context) error {
 	if errors.Is(err, http.ErrServerClosed) {
 		err = nil
 	}
+	wg.Wait()
 	err2 := h.daemon.Terminate(ctx)
 	return errors.Join(err, err2)
 }

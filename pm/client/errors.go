@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type HTTPError struct {
@@ -14,6 +15,14 @@ type HTTPError struct {
 }
 
 func (e *HTTPError) Error() string {
+	ct := e.Resp.Header.Get("content-type")
+	if len(e.Body) > 0 && (ct == "text/plain" || ct == "application/json") {
+		return fmt.Sprintf("%v: http response status %d: %s",
+			e.Err,
+			e.Resp.StatusCode,
+			strings.TrimSpace(string(e.Body)),
+		)
+	}
 	return fmt.Sprintf("%v: http response status %d", e.Err, e.Resp.StatusCode)
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"fastcat.org/go/gdev/pm/api"
 	"fastcat.org/go/gdev/pm/client"
@@ -32,7 +33,43 @@ func pm() *cobra.Command {
 		Args:  cobra.NoArgs,
 		RunE:  PMTerminate,
 	})
+
 	pm.AddCommand(pmAdd())
+	pm.AddCommand(&cobra.Command{
+		Use:   "start",
+		Short: "starts one or more pm service(s)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			c := client.NewHTTP()
+			for _, name := range args {
+				if stat, err := c.StartChild(cmd.Context(), name); err != nil {
+					return fmt.Errorf("failed to start %s: %w", name, err)
+				} else {
+					// TODO: pretty
+					fmt.Printf("%s: %v\n", name, stat)
+				}
+			}
+			return nil
+		},
+	})
+	pm.AddCommand(&cobra.Command{
+		Use:   "stop",
+		Short: "stops one or more pm service(s)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			c := client.NewHTTP()
+			for _, name := range args {
+				if stat, err := c.StopChild(cmd.Context(), name); err != nil {
+					return fmt.Errorf("failed to stop %s: %w", name, err)
+				} else {
+					// TODO: pretty
+					fmt.Printf("%s: %v\n", name, stat)
+				}
+			}
+			return nil
+		},
+	})
+
 	pm.AddCommand(&cobra.Command{
 		Use:    "daemon",
 		Short:  "runs the pm daemon in the foreground",
@@ -106,14 +143,28 @@ func PMTerminate(cmd *cobra.Command, _ []string) error {
 
 func pmAdd() *cobra.Command {
 	jsonFile := ""
+	main := ""
+	inits := []string{}
 	c := &cobra.Command{
-		Use:   "add",
+		Use:   "add [name]",
 		Short: "add a service to the pm daemon",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var child api.Child
 			if len(args) > 0 {
 				child.Name = args[0]
+			}
+			if len(main) > 0 {
+				mainArgs := strings.Fields(main)
+				child.Main.Cmd = mainArgs[0]
+				child.Main.Args = mainArgs[1:]
+			}
+			for _, init := range inits {
+				var ex api.Exec
+				initArgs := strings.Fields(init)
+				ex.Cmd = initArgs[0]
+				ex.Args = initArgs[1:]
+				child.Init = append(child.Init, ex)
 			}
 			if jsonFile != "" {
 				if content, err := os.ReadFile(jsonFile); err != nil {
@@ -137,6 +188,10 @@ func pmAdd() *cobra.Command {
 	f := c.Flags()
 	f.StringVarP(&jsonFile, "json", "j", jsonFile,
 		"load child definition from JSON file")
+	f.StringVar(&main, "main", main,
+		"main command to run (split on whitespace)")
+	f.StringArrayVar(&inits, "init", inits,
+		"init commands to run (split on whitespace)")
 	return c
 }
 

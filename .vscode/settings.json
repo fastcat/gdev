@@ -4,6 +4,7 @@
 		"gdev",
 		"golangci",
 		"govulncheck",
+		"jedib0t",
 		"nolint",
 		"stretchr"
 	]

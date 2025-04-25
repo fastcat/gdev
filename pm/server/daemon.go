@@ -13,9 +13,9 @@ import (
 )
 
 type daemon struct {
-	mu       sync.Mutex
-	children map[string]*child
-	shutdown context.CancelFunc
+	mu          sync.Mutex
+	children    map[string]*child
+	onTerminate context.CancelFunc
 }
 
 func NewDaemon() *daemon {
@@ -119,6 +119,7 @@ func (d *daemon) StartChild(ctx context.Context, name string) (*api.ChildWithSta
 		)
 	}
 	c.cmds <- childStart
+	c.cmds <- childPing // sync so we get the started status
 	return &api.ChildWithStatus{Child: c.def, Status: c.Status()}, nil
 }
 
@@ -190,14 +191,20 @@ func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 }
 
 func (d *daemon) Terminate(context.Context) error {
-	// stop the HTTP server
-	d.shutdown()
-	log.Print("terminating pm children")
+	if d.onTerminate != nil {
+		d.onTerminate()
+	}
 	d.mu.Lock()
+	if len(d.children) == 0 {
+		d.mu.Unlock()
+		return nil
+	}
+	log.Print("terminating pm children")
 	children := make([]*child, 0, len(d.children))
 	for _, v := range d.children {
 		children = append(children, v)
 	}
+	clear(d.children)
 	d.mu.Unlock()
 	var wg sync.WaitGroup
 	for _, child := range children {
