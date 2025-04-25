@@ -1,9 +1,5 @@
 package internal
 
-type StatusCodeErr interface {
-	StatusCode() int
-}
-
 type statusCodeErr struct {
 	err        error
 	statusCode int

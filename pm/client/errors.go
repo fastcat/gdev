@@ -26,6 +26,11 @@ func (e *HTTPError) Error() string {
 	return fmt.Sprintf("%v: http response status %d", e.Err, e.Resp.StatusCode)
 }
 
+// StatusCode implements [internal.StatusCodeErr]
+func (e *HTTPError) StatusCode() int {
+	return e.Resp.StatusCode
+}
+
 func heFromResp(
 	r *http.Response,
 	msg string,
