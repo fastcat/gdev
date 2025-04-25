@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"slices"
 	"strings"
@@ -10,6 +12,7 @@ import (
 	"fastcat.org/go/gdev/pm/api"
 	"fastcat.org/go/gdev/pm/client"
 	"fastcat.org/go/gdev/pm/server"
+	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 )
@@ -22,10 +25,11 @@ func pm() *cobra.Command {
 		RunE:  PMAutoStart,
 	}
 	pm.AddCommand(&cobra.Command{
-		Use:   "status",
+		Use:   "status [service...]",
 		Short: "show pm services",
-		Args:  cobra.NoArgs,
-		RunE:  PMStatus,
+		Long: "With no args, shows a summary table for all services. " +
+			"With one or more args, shows details of those services",
+		RunE: PMStatus,
 	})
 	pm.AddCommand(&cobra.Command{
 		Use:   "terminate",
@@ -45,8 +49,7 @@ func pm() *cobra.Command {
 				if stat, err := c.StartChild(cmd.Context(), name); err != nil {
 					return fmt.Errorf("failed to start %s: %w", name, err)
 				} else {
-					// TODO: pretty
-					fmt.Printf("%s: %v\n", name, stat)
+					PrettyChildStatus(stat, os.Stdout)
 				}
 			}
 			return nil
@@ -62,8 +65,7 @@ func pm() *cobra.Command {
 				if stat, err := c.StopChild(cmd.Context(), name); err != nil {
 					return fmt.Errorf("failed to stop %s: %w", name, err)
 				} else {
-					// TODO: pretty
-					fmt.Printf("%s: %v\n", name, stat)
+					PrettyChildStatus(stat, os.Stdout)
 				}
 			}
 			return nil
@@ -80,12 +82,20 @@ func pm() *cobra.Command {
 	return pm
 }
 
-func PMStatus(cmd *cobra.Command, _ []string) error {
+func PMStatus(cmd *cobra.Command, args []string) error {
 	c := client.NewHTTP()
 	if err := c.Ping(cmd.Context()); err != nil {
 		return fmt.Errorf("pm is not running: %w", err)
 	}
-	summary, err := c.Summary(cmd.Context())
+
+	if len(args) == 0 {
+		return PMStatusTable(cmd.Context(), c)
+	}
+	return PMStatusDetail(cmd.Context(), c, args...)
+}
+
+func PMStatusTable(ctx context.Context, client api.API) error {
+	summary, err := client.Summary(ctx)
 	if err != nil {
 		return err
 	}
@@ -97,15 +107,22 @@ func PMStatus(cmd *cobra.Command, _ []string) error {
 	for _, c := range summary {
 		h := "❔"
 		if c.Healthy != nil {
-			if *c.Healthy {
-				h = "👍"
-			} else {
-				h = "❌"
-			}
+			h = healthEmoji(*c.Healthy)
 		}
 		tw.AppendRow(table.Row{c.Name, c.State, c.Pid, h})
 	}
 	tw.Render()
+	return nil
+}
+
+func PMStatusDetail(ctx context.Context, client api.API, names ...string) error {
+	for _, name := range names {
+		stat, err := client.Child(ctx, name)
+		if err != nil {
+			return fmt.Errorf("failed to get child %s status: %w", name, err)
+		}
+		PrettyChildStatus(stat, os.Stdout)
+	}
 	return nil
 }
 
@@ -139,6 +156,62 @@ func PMTerminate(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("failed to terminate pm daemon: %w", err)
 	}
 	return nil
+}
+
+func PrettyChildStatus(s *api.ChildWithStatus, out io.Writer) {
+	l := list.NewWriter()
+	l.SetOutputMirror(out)
+	l.SetStyle(list.StyleConnectedLight)
+	l.AppendItem("Name: " + s.Name)
+	l.AppendItem("State: " + s.Status.State)
+	if s.HealthCheck != nil {
+		l.AppendItem("Healthy: " + healthEmoji(s.Status.Health.Healthy))
+		// TODO: do somethin with LastHealthy/LastUnhealthy
+	}
+	renderExec := func(e api.Exec, s api.ExecStatus) {
+		l.AppendItem(strings.Join(append([]string{e.Cmd}, e.Args...), " "))
+		// TODO: Cwd, Env
+		l.Indent()
+		switch s.State {
+		case api.ExecNotStarted:
+			if s.StartErr != "" {
+				l.AppendItem(fmt.Sprintf("Failed to start: %s", s.StartErr))
+			}
+		case api.ExecRunning:
+			l.AppendItem(fmt.Sprintf("Running, pid: %d", s.Pid))
+		case api.ExecEnded:
+			if s.ExitCode == 0 {
+				l.AppendItem("Done")
+			} else {
+				l.AppendItem(fmt.Sprintf("Failed, exit code: %d", s.ExitCode))
+			}
+		case api.ExecStopping:
+			l.AppendItem(fmt.Sprintf("Stopping, pid: %d", s.Pid))
+		}
+		l.UnIndent()
+
+	}
+	if len(s.Init) != 0 {
+		l.AppendItem("Init")
+		l.Indent()
+		for i, init := range s.Init {
+			renderExec(init, s.Status.Init[i])
+		}
+		l.UnIndent()
+		l.AppendItem("Main")
+		l.Indent()
+		renderExec(s.Main, s.Status.Main)
+		l.UnIndent()
+	}
+	l.Render()
+}
+
+func healthEmoji(value bool) string {
+	if value {
+		return "👍"
+	} else {
+		return "❌"
+	}
 }
 
 func pmAdd() *cobra.Command {
@@ -180,8 +253,7 @@ func pmAdd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			// TODO: pretty
-			fmt.Println(stat)
+			PrettyChildStatus(stat, os.Stdout)
 			return nil
 		},
 	}
