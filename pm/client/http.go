@@ -97,7 +97,13 @@ func (h *HTTP) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 	if err != nil {
 		return nil, err
 	}
-	return internal.JSONBody[[]api.ChildSummary](ctx, r.Body, `required`, true)
+	return internal.JSONBody[[]api.ChildSummary](ctx, r.Body, "dive", true)
+}
+
+// Terminate implements api.API.
+func (h *HTTP) Terminate(ctx context.Context) error {
+	_, err := h.do(ctx, http.MethodPost, api.PathTerminate, nil)
+	return err
 }
 
 func (h *HTTP) do(

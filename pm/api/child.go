@@ -62,9 +62,10 @@ type ChildWithStatus struct {
 }
 
 type ChildSummary struct {
-	Name  string     `json:"name"`
-	State ChildState `json:"state"`
-	Pid   int        `json:"pid,omitzero"`
+	Name    string     `json:"name"`
+	State   ChildState `json:"state"`
+	Pid     int        `json:"pid,omitzero"`
+	Healthy *bool      `json:"healthy,omitzero"`
 }
 
 type HealthCheck struct {

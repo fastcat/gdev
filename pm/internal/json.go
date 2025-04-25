@@ -50,7 +50,7 @@ func JSONBody[T any](
 		return value, ErrTrailingGarbage
 	}
 	var err error
-	if validation != "" {
+	if validation == "" {
 		err = v.StructCtx(ctx, value)
 	} else {
 		err = v.VarCtx(ctx, value, validation)

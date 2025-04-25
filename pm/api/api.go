@@ -10,5 +10,6 @@ type API interface {
 	StartChild(ctx context.Context, name string) (*ChildWithStatus, error)
 	StopChild(ctx context.Context, name string) (*ChildWithStatus, error)
 	DeleteChild(ctx context.Context, name string) (*ChildWithStatus, error)
+	Terminate(ctx context.Context) error
 	// TODO: ChildLogs
 }

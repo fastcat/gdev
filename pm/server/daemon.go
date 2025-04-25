@@ -186,7 +186,7 @@ func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 	return ret, nil
 }
 
-func (d *daemon) terminate() error {
+func (d *daemon) Terminate(context.Context) error {
 	log.Print("terminating pm children")
 	d.mu.Lock()
 	children := make([]*child, 0, len(d.children))
@@ -214,5 +214,6 @@ func (d *daemon) terminate() error {
 		}()
 	}
 	wg.Wait()
+	log.Print("daemon done")
 	return nil
 }

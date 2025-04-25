@@ -8,4 +8,5 @@ const (
 	PathOneChild       = PathChild + "/{" + PathChildParamName + "}"
 	PathStartChild     = PathOneChild + "/start"
 	PathStopChild      = PathOneChild + "/stop"
+	PathTerminate      = "/terminate"
 )

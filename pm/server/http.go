@@ -67,7 +67,7 @@ func (h *HTTP) Run(ctx context.Context) error {
 	if errors.Is(err, http.ErrServerClosed) {
 		err = nil
 	}
-	err2 := h.daemon.terminate()
+	err2 := h.daemon.Terminate(ctx)
 	return errors.Join(err, err2)
 }
 
@@ -88,6 +88,7 @@ func NewHTTPMux(impl api.API) *http.ServeMux {
 	reg(http.MethodPost, api.PathStartChild, w.StartChild)
 	reg(http.MethodPost, api.PathStopChild, w.StopChild)
 	reg(http.MethodDelete, api.PathOneChild, w.DeleteChild)
+	reg(http.MethodPost, api.PathTerminate, w.Terminate)
 	return m
 }
 
@@ -165,6 +166,15 @@ func (h *httpWrapper) DeleteChild(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.json(r, w, resp)
+}
+
+func (h *httpWrapper) Terminate(w http.ResponseWriter, r *http.Request) {
+	err := h.impl.Terminate(r.Context())
+	if err != nil {
+		h.error(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *httpWrapper) error(w http.ResponseWriter, err error) {
