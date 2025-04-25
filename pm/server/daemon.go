@@ -15,10 +15,13 @@ import (
 type daemon struct {
 	mu       sync.Mutex
 	children map[string]*child
+	shutdown context.CancelFunc
 }
 
 func NewDaemon() *daemon {
-	return &daemon{children: make(map[string]*child)}
+	return &daemon{
+		children: make(map[string]*child),
+	}
 }
 
 var _ api.API = (*daemon)(nil)
@@ -187,6 +190,8 @@ func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 }
 
 func (d *daemon) Terminate(context.Context) error {
+	// stop the HTTP server
+	d.shutdown()
 	log.Print("terminating pm children")
 	d.mu.Lock()
 	children := make([]*child, 0, len(d.children))

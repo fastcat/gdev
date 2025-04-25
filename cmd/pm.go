@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"slices"
 
+	"fastcat.org/go/gdev/pm/api"
 	"fastcat.org/go/gdev/pm/client"
 	"fastcat.org/go/gdev/pm/server"
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -30,6 +32,7 @@ func pm() *cobra.Command {
 		Args:  cobra.NoArgs,
 		RunE:  PMTerminate,
 	})
+	pm.AddCommand(pmAdd())
 	pm.AddCommand(&cobra.Command{
 		Use:    "daemon",
 		Short:  "runs the pm daemon in the foreground",
@@ -92,13 +95,49 @@ func PMTerminate(cmd *cobra.Command, _ []string) error {
 	c := client.NewHTTP()
 	if err := c.Ping(cmd.Context()); err != nil {
 		// TODO: check the specific error better
-		fmt.Println("pm no running")
+		fmt.Println("pm not running")
 		return nil
 	}
 	if err := c.Terminate(cmd.Context()); err != nil {
 		return fmt.Errorf("failed to terminate pm daemon: %w", err)
 	}
 	return nil
+}
+
+func pmAdd() *cobra.Command {
+	jsonFile := ""
+	c := &cobra.Command{
+		Use:   "add",
+		Short: "add a service to the pm daemon",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			var child api.Child
+			if len(args) > 0 {
+				child.Name = args[0]
+			}
+			if jsonFile != "" {
+				if content, err := os.ReadFile(jsonFile); err != nil {
+					return err
+				} else if err := json.Unmarshal(content, &child); err != nil {
+					return err
+				}
+			}
+			// TODO: validate
+			c := client.NewHTTP()
+			// ping first?
+			stat, err := c.PutChild(cmd.Context(), child)
+			if err != nil {
+				return err
+			}
+			// TODO: pretty
+			fmt.Println(stat)
+			return nil
+		},
+	}
+	f := c.Flags()
+	f.StringVarP(&jsonFile, "json", "j", jsonFile,
+		"load child definition from JSON file")
+	return c
 }
 
 func pmDaemon(cmd *cobra.Command, _ []string) error {
