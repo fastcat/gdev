@@ -30,6 +30,7 @@ func StartDaemon(
 	if err != nil {
 		return err
 	}
+	defer conn.Close() // nolint:errcheck
 	ch := make(chan string, 1)
 	props := []dbus.Property{
 		dbus.PropDescription(fmt.Sprintf("%s - %s", instance.AppName(), name)),

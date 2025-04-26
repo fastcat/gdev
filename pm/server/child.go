@@ -25,12 +25,24 @@ type child struct {
 	status atomic.Pointer[api.ChildStatus]
 	cmds   chan childCmd
 	wg     sync.WaitGroup
+
+	restartDelay               time.Duration
+	killDelay                  time.Duration
+	healthCheckInitialInterval time.Duration
+	healthCheckInterval        time.Duration
 }
 
 func newChild(def api.Child) *child {
 	c := &child{
 		def:  def,
 		cmds: make(chan childCmd), // important that this be un-buffered
+
+		// tests may override these
+		restartDelay: time.Second, // TODO: scale
+		killDelay:    5 * time.Second,
+		// long initial delay, will be reset to a proper interval when active
+		healthCheckInitialInterval: time.Second,
+		healthCheckInterval:        10 * time.Second,
 	}
 	s := initialStatus(c)
 	c.status.Store(&s)
@@ -69,11 +81,6 @@ func (c *child) run() {
 
 	var kill <-chan time.Time
 	var restart <-chan time.Time
-	const restartDelay = time.Second // TODO: scale
-	const killDelay = 5 * time.Second
-	// long initial delay, will be reset to a proper interval when active
-	const healthCheckInitialInterval = time.Second
-	const healthCheckInterval = 10 * time.Second
 	healthCheck := time.NewTicker(time.Hour)
 	healthCheck.Stop()
 	defer healthCheck.Stop()
@@ -111,7 +118,7 @@ MANAGER:
 					break
 				}
 				c.terminate(curProc, curStatus())
-				kill = time.After(killDelay)
+				kill = time.After(c.killDelay)
 				status.State = api.ChildStopping
 			case childDelete:
 				if status.State != api.ChildStopped {
@@ -159,14 +166,14 @@ MANAGER:
 				} else {
 					log.Printf("child %s init %d failed with code %d, will restart", c.def.Name, curExec, s.ExitCode)
 					status.State = api.ChildInitError
-					restart = time.After(restartDelay)
+					restart = time.After(c.restartDelay)
 				}
 			case api.ChildRunning:
 				// TODO: one-shot support
 				log.Printf("child %s service exited with code %d, will restart", c.def.Name, s.ExitCode)
 				// treat this as an error
 				status.State = api.ChildError
-				restart = time.After(restartDelay)
+				restart = time.After(c.restartDelay)
 			default:
 				log.Printf("wtf? child %s got exit notification in state %s", c.def.Name, status.State)
 			}
@@ -190,7 +197,7 @@ MANAGER:
 			healthChecks++
 			// switch to the slower interval after N attempts
 			if healthChecks == 5 {
-				healthCheck.Reset(healthCheckInterval)
+				healthCheck.Reset(c.healthCheckInterval)
 			}
 		case healthy := <-healthResults:
 			if status.Health.Healthy != healthy {
@@ -212,7 +219,7 @@ MANAGER:
 		// if the child main just started, activate the health-check timer
 		if status.State == api.ChildRunning && c.def.HealthCheck != nil {
 			if healthChecks < 0 {
-				healthCheck.Reset(healthCheckInitialInterval)
+				healthCheck.Reset(c.healthCheckInitialInterval)
 				healthChecks = 0
 			}
 		} else {

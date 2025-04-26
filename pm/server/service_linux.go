@@ -19,6 +19,7 @@ func isolateProcess(
 	if err != nil {
 		return err
 	}
+	defer conn.Close() // nolint:errcheck
 	ch := make(chan string, 1)
 	_, err = conn.StartTransientUnitContext(
 		ctx,

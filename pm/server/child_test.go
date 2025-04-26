@@ -21,11 +21,11 @@ func TestChildSleeps(t *testing.T) {
 		Init: []api.Exec{
 			{
 				Cmd:  "sleep",
-				Args: []string{"0.1s"},
+				Args: []string{"0.05s"},
 			},
 			{
 				Cmd:  "sleep",
-				Args: []string{"0.2s"},
+				Args: []string{"0.1s"},
 			},
 		},
 		Main: api.Exec{
@@ -51,7 +51,7 @@ func TestChildSleeps(t *testing.T) {
 			c.cmds <- childDelete
 			t.FailNow()
 		}
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(25 * time.Millisecond)
 	}
 	t.Logf("child is %s", c.Status().State)
 	c.cmds <- childStop
@@ -61,7 +61,7 @@ func TestChildSleeps(t *testing.T) {
 		// we'd like to do ... something ... if this assert fails, but not clear
 		// what we _can_ do
 		assert.Equal(t, api.ChildStopping, s.State)
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(25 * time.Millisecond)
 	}
 	t.Logf("child is %s", c.Status().State)
 	c.cmds <- childDelete
@@ -97,6 +97,9 @@ func TestChildFails(t *testing.T) {
 		},
 	}
 	c := newChild(def)
+	// speed up the restart timers to make this test not so slow
+	c.restartDelay = 20 * time.Millisecond
+
 	// TODO: this will hang if something goes wrong
 	t.Cleanup(c.Wait)
 
@@ -138,7 +141,7 @@ func TestChildFails(t *testing.T) {
 	waitState(api.ChildRunning, api.ChildError)
 	// TODO: make sure it stays there
 	c.cmds <- childStop
-	waitState(api.ChildStopped, api.ChildRunning)
+	waitState(api.ChildStopped, api.ChildStopping, api.ChildRunning)
 	c.cmds <- childDelete
 	c.Wait()
 	s := c.Status()
