@@ -24,3 +24,8 @@ func (Lint) Govulncheck(ctx context.Context) error {
 	fmt.Println("Lint: govulncheck")
 	return shx.Run(ctx, "go", "tool", "govulncheck", "./...")
 }
+
+func Format(ctx context.Context) error {
+	fmt.Println("Format: golangci-lint")
+	return shx.Run(ctx, "golangci-lint", "fmt")
+}

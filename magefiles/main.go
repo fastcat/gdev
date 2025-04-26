@@ -10,6 +10,7 @@ var (
 	Default = All
 	Aliases = map[string]any{
 		"lint": LintDefault,
+		"fmt":  Format,
 	}
 )
 
