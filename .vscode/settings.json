@@ -6,7 +6,9 @@
 		"govulncheck",
 		"jedib0t",
 		"nolint",
+		"pgid",
 		"pids",
-		"stretchr"
+		"stretchr",
+		"svcs"
 	]
 }

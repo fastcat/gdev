@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"slices"
 	"strings"
 
+	"fastcat.org/go/gdev/instance"
+	"fastcat.org/go/gdev/pm"
 	"fastcat.org/go/gdev/pm/api"
 	"fastcat.org/go/gdev/pm/client"
 	"fastcat.org/go/gdev/pm/server"
@@ -17,12 +18,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func pm() *cobra.Command {
+func pmCmd() *cobra.Command {
 	pm := &cobra.Command{
 		Use:   "pm",
 		Short: "starts the pm daemon if it isn't already running",
 		Args:  cobra.NoArgs,
-		RunE:  PMAutoStart,
+		RunE:  pmAutoStart,
 	}
 	pm.AddCommand(&cobra.Command{
 		Use:   "status [service...]",
@@ -143,23 +144,8 @@ func PMStatusDetail(ctx context.Context, client api.API, names ...string) error 
 	return nil
 }
 
-func PMAutoStart(cmd *cobra.Command, _ []string) error {
-	c := client.NewHTTP()
-	if err := c.Ping(cmd.Context()); err == nil {
-		fmt.Println("pm is already running")
-		return nil
-	}
-
-	path := os.Args[0]
-	// find the pm arg and append daemon after it
-	args := os.Args[1:]
-	pmIdx := slices.Index(args, "pm")
-	if pmIdx < 0 {
-		panic("pm autostart invoked from bad cli args")
-	}
-	args = append(slices.Clip(args[:pmIdx+1]), "daemon")
-
-	return StartDaemon(cmd.Context(), "pm", path, args, map[string]string{"FOO": "BAR"})
+func pmAutoStart(cmd *cobra.Command, _ []string) error {
+	return pm.AutoStart(cmd.Context(), client.NewHTTP())
 }
 
 func PMTerminate(cmd *cobra.Command, _ []string) error {
@@ -293,5 +279,5 @@ func pmDaemon(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	internalCommands = append(internalCommands, pm)
+	instance.AddCommands(pmCmd)
 }

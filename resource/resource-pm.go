@@ -28,7 +28,7 @@ func (p *PM) ID() string {
 }
 
 // Start implements Resource.
-func (p *PM) Start(ctx context.Context) error {
+func (p *PM) Start(ctx *Context) error {
 	client := ContextValue[api.API](ctx)
 	child, err := p.Config(ctx)
 	if err != nil {
@@ -62,11 +62,11 @@ func (p *PM) Start(ctx context.Context) error {
 }
 
 // Stop implements Resource.
-func (p *PM) Stop(ctx context.Context) error {
+func (p *PM) Stop(ctx *Context) error {
 	panic("unimplemented")
 }
 
 // Ready implements Resource
-func (p *PM) Ready(ctx context.Context) (bool, error) {
+func (p *PM) Ready(ctx *Context) (bool, error) {
 	panic("unimplemented")
 }

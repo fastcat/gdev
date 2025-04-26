@@ -35,6 +35,16 @@
 				"pm",
 				"daemon"
 			]
+		},
+		{
+			"name": "ex: stack start",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"program": "${workspaceFolder}/_example/stack",
+			"args": [
+				"start"
+			]
 		}
 	]
 }
