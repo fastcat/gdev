@@ -6,6 +6,7 @@
 		"govulncheck",
 		"jedib0t",
 		"nolint",
+		"pids",
 		"stretchr"
 	]
 }

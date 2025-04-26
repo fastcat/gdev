@@ -9,7 +9,8 @@ import (
 )
 
 func main() {
-	instance.AppName = "edev"
+	// cspell:ignore edev
+	instance.SetAppName("edev")
 	cmd.Main()
 }
 
@@ -23,5 +24,5 @@ func newCustomCmd() *cobra.Command {
 }
 
 func init() {
-	instance.Commands = append(instance.Commands, newCustomCmd)
+	instance.AddCommands(newCustomCmd)
 }

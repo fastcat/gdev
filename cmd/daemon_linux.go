@@ -32,7 +32,7 @@ func StartDaemon(
 	}
 	ch := make(chan string, 1)
 	props := []dbus.Property{
-		dbus.PropDescription(fmt.Sprintf("%s - %s", instance.AppName, name)),
+		dbus.PropDescription(fmt.Sprintf("%s - %s", instance.AppName(), name)),
 		{Name: "CollectMode", Value: godbus.MakeVariant("inactive-or-failed")},
 		dbus.PropType("exec"),
 		dbus.PropExecStart(append([]string{path}, args...), true),
@@ -49,7 +49,7 @@ func StartDaemon(
 	}
 	_, err = conn.StartTransientUnitContext(
 		ctx,
-		fmt.Sprintf("%s-%s.service", instance.AppName, name),
+		fmt.Sprintf("%s-%s.service", instance.AppName(), name),
 		"fail", // error if already exists
 		props,
 		ch,

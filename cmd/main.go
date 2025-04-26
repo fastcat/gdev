@@ -7,9 +7,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"fastcat.org/go/gdev/internal"
 )
 
 func Main() {
+	internal.LockCustomizations()
 	ctx := context.Background()
 	// hook ctrl-c to context cancel
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)

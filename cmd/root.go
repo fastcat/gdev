@@ -7,7 +7,7 @@ import (
 
 func Root() *cobra.Command {
 	root := &cobra.Command{
-		Use:           instance.AppName,
+		Use:           instance.AppName(),
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -16,7 +16,7 @@ func Root() *cobra.Command {
 	for _, c := range internalCommands {
 		root.AddCommand(c())
 	}
-	for _, c := range instance.Commands {
+	for _, c := range instance.Commands() {
 		root.AddCommand(c())
 	}
 	return root

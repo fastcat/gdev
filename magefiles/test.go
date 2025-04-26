@@ -9,5 +9,5 @@ import (
 
 func Test(ctx context.Context) error {
 	fmt.Println("Test: go test -race")
-	return shx.Run(ctx, "go", "test", "-race", "./...")
+	return shx.Run(ctx, "go", "test", "-race", "-timeout", "30s", "./...")
 }
