@@ -29,10 +29,7 @@ func (p *PM) ID() string {
 
 // Start implements Resource.
 func (p *PM) Start(ctx context.Context) error {
-	client := PMClient(ctx)
-	if client == nil {
-		return ErrNoPMClient
-	}
+	client := ContextValue[api.API](ctx)
 	child, err := p.Config(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get child config: %w", err)
