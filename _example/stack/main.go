@@ -15,8 +15,19 @@ func main() {
 	// TODO: lots of stuttering here
 	stack.AddService(service.NewService("svc1",
 		service.WithResources(
-			resource.PMStatic("svc1", api.Child{
+			resource.PMStatic(api.Child{
 				Name: "svc1",
+				Main: api.Exec{
+					Cmd:  "sleep",
+					Args: []string{"1h"},
+				},
+			}),
+		),
+	))
+	stack.AddService(service.NewService("svc2",
+		service.WithResources(
+			resource.PMStatic(api.Child{
+				Name: "svc2",
 				Main: api.Exec{
 					Cmd:  "sleep",
 					Args: []string{"1h"},

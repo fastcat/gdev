@@ -22,7 +22,14 @@ func StartDaemon(
 	if !filepath.IsAbs(path) {
 		var pathErr error
 		if path, pathErr = exec.LookPath(path); pathErr != nil {
-			return pathErr
+			return fmt.Errorf("cannot resolve daemon path %q: %w", path, pathErr)
+		}
+		// LookPath won't deal with things like "./foo", so we need a second pass to
+		// fix those up
+		if !filepath.IsAbs(path) {
+			if path, pathErr = filepath.Abs(path); pathErr != nil {
+				return fmt.Errorf("cannot daemon path %q absolute: %w", path, pathErr)
+			}
 		}
 	}
 	// run as a transient systemd service

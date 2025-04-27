@@ -13,8 +13,8 @@ type PM struct {
 	Config func(context.Context) (*api.Child, error)
 }
 
-func PMStatic(name string, config api.Child) *PM {
-	return &PM{name, func(context.Context) (*api.Child, error) { return &config, nil }}
+func PMStatic(config api.Child) *PM {
+	return &PM{config.Name, func(context.Context) (*api.Child, error) { return &config, nil }}
 }
 
 func PMDynamic(name string, config func(context.Context) (*api.Child, error)) *PM {
