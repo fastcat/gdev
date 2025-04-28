@@ -42,6 +42,8 @@ func StackStart(cmd *cobra.Command, _ []string) error {
 	fmt.Printf("Waiting for ready ...\n")
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
+	// TODO: wait for all to be ready in a single pass, instead of all being ready
+	// sequentially, catches crash loops better
 	for _, r := range resources {
 		fmt.Printf("Waiting on %s ", r.ID())
 		for {
