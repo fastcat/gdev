@@ -16,3 +16,9 @@ func CheckCanCustomize() {
 		panic(errors.New("cannot add customizations after app start"))
 	}
 }
+
+func CheckLockedDown() {
+	if locked := customizationsLocked.Load(); !locked {
+		panic(errors.New("cannot instantiate customizations until app start and lockdown"))
+	}
+}

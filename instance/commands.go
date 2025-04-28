@@ -1,24 +1,49 @@
 package instance
 
 import (
-	"slices"
-
 	"fastcat.org/go/gdev/internal"
 	"github.com/spf13/cobra"
 )
 
-var commands []func() *cobra.Command
+type builder interface {
+	Cmd() *cobra.Command
+}
 
-// Commands is a list of functions to run during app init to add additional
-// commands to the Root command. They will be called from
-// [fastcat.org/go/gdev/cmd/Root] during app startup.
+var builders []builder
+
+// Commands gets a list of additional commands to add to the
+// [fastcat.org/go/gdev/cmd/Root] command during app startup.
 //
-// To add custom commands, use [AddCommands]
-func Commands() []func() *cobra.Command {
-	return slices.Clone(commands)
+// This will panic if called during the customization phase before the main app
+// startup.
+//
+// To add custom commands, use [AddCommandBuilders] or [AddCommands]
+func Commands() []*cobra.Command {
+	internal.CheckLockedDown()
+	ret := make([]*cobra.Command, 0, len(builders))
+	for _, b := range builders {
+		ret = append(ret, b.Cmd())
+	}
+	return ret
 }
 
-func AddCommands(cmds ...func() *cobra.Command) {
+func AddCommandBuilders(fns ...func() *cobra.Command) {
 	internal.CheckCanCustomize()
-	commands = append(commands, cmds...)
+	for _, b := range fns {
+		builders = append(builders, cmdFunc(b))
+	}
 }
+func AddCommands(cmds ...*cobra.Command) {
+	internal.CheckCanCustomize()
+	for _, c := range cmds {
+		builders = append(builders, (*staticCmd)(c))
+	}
+}
+
+type staticCmd cobra.Command
+
+func (c *staticCmd) Cmd() *cobra.Command { return (*cobra.Command)(c) }
+
+type cmdFunc func() *cobra.Command
+
+func (c cmdFunc) Cmd() *cobra.Command { return c() }

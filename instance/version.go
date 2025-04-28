@@ -6,36 +6,67 @@ import (
 	"sync"
 )
 
-var version = sync.OnceValue(loadVersion)
+var info = sync.OnceValue(loadVersionInfo)
 
 func Version() string {
-	return version()
+	return info().MainVersion
 }
 
-func loadVersion() string {
+func VersionInfo() versionInfo {
+	return info()
+}
+
+type versionInfo struct {
+	MainVersion string
+	MainModule  string
+	MainRev     string
+
+	GDevVersion string
+}
+
+func loadVersionInfo() versionInfo {
 	bi, ok := debug.ReadBuildInfo()
 	if !ok {
-		return "0.0.0-development+unknown"
+		return versionInfo{
+			MainVersion: "0.0.0-development+unknown",
+			MainModule:  "unknown",
+			GDevVersion: "0.0.0-development+unknown",
+		}
 	}
+	var ret versionInfo
 
-	var rev string
 	for _, s := range bi.Settings {
 		switch s.Key {
 		case "vcs.revision":
-			rev = s.Value
+			ret.MainRev = s.Value
 			// vcs.modified not needed, go will include the +dirty for us
 		}
 	}
 
-	v := bi.Main.Version
-	if rev != "" {
+	main := bi.Main
+	ret.MainModule = main.Path
+	ret.MainVersion = main.Version
+	if rev := ret.MainRev; rev != "" {
 		if len(rev) > 8 {
 			rev = rev[:8]
 		}
 		// go revisions often contain the git hash already
-		if !strings.Contains(v, rev) {
-			v += "+" + rev
+		if !strings.Contains(ret.MainVersion, rev) {
+			ret.MainVersion += "+" + rev
 		}
 	}
-	return v
+
+	const gdevPath = "fastcat.org/go/gdev"
+	if main.Path == gdevPath {
+		ret.GDevVersion = ret.MainVersion
+	} else {
+		for _, m := range bi.Deps {
+			if m.Path == gdevPath {
+				ret.GDevVersion = m.Version
+				break
+			}
+		}
+	}
+
+	return ret
 }

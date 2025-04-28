@@ -9,15 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func stop() *cobra.Command {
-	return &cobra.Command{
-		Use:   "stop",
-		Short: "stop the stack",
-		Args:  cobra.NoArgs,
-		RunE:  StackStop,
-	}
-}
-
 func StackStop(cmd *cobra.Command, _ []string) error {
 	svcs := stack.AllServices()
 	ctx, err := resource.NewContext(cmd.Context())
@@ -42,5 +33,10 @@ func StackStop(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	instance.AddCommands(stop)
+	instance.AddCommands(&cobra.Command{
+		Use:   "stop",
+		Short: "stop the stack",
+		Args:  cobra.NoArgs,
+		RunE:  StackStop,
+	})
 }

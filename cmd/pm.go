@@ -279,5 +279,5 @@ func pmDaemon(cmd *cobra.Command, _ []string) error {
 }
 
 func init() {
-	instance.AddCommands(pmCmd)
+	instance.AddCommandBuilders(pmCmd)
 }
