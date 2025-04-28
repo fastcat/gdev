@@ -14,15 +14,11 @@ func main() {
 	cmd.Main()
 }
 
-func newCustomCmd() *cobra.Command {
-	return &cobra.Command{
+func init() {
+	instance.AddCommands(&cobra.Command{
 		Use: "custom",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("this is the custom command")
 		},
-	}
-}
-
-func init() {
-	instance.AddCommands(newCustomCmd)
+	})
 }
