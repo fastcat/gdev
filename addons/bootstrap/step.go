@@ -13,7 +13,12 @@ func Step(
 	run func(*Context) error,
 	opts ...stepOpt,
 ) *step {
-	s := &step{name: name, run: run}
+	s := &step{
+		name:   name,
+		run:    run,
+		before: map[string]struct{}{},
+		after:  map[string]struct{}{},
+	}
 	for _, o := range opts {
 		o(s)
 	}

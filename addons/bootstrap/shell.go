@@ -47,7 +47,7 @@ func Shell(
 
 type shOpt struct {
 	cli func(cmdAndArgs *[]string)
-	cmd func(*exec.Cmd)
+	cmd func(cmd *exec.Cmd)
 }
 
 func WithSudo(purpose string) shOpt {
@@ -70,6 +70,14 @@ func WithSudo(purpose string) shOpt {
 				instance.AppName(),
 				purpose,
 			))
+		},
+	}
+}
+
+func WithPassStdio() shOpt {
+	return shOpt{
+		cmd: func(cmd *exec.Cmd) {
+			cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 		},
 	}
 }

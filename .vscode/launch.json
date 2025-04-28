@@ -47,6 +47,16 @@
 			]
 		},
 		{
+			"name": "bootstrap",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"program": "${workspaceFolder}",
+			"args": [
+				"bootstrap"
+			]
+		},
+		{
 			"name": "ex: stack start",
 			"type": "go",
 			"request": "launch",

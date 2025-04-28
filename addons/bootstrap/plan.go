@@ -142,23 +142,38 @@ func (p *plan) Sim(ctx context.Context) error {
 // Add any of the known "Default" steps that are referenced in existing step
 // dependencies but not already added to the plan.
 func (p *plan) AddDefaultSteps() {
-	fill := func(names map[string]struct{}) {
+	fill := func(names map[string]struct{}) bool {
+		changed := false
 		for name := range names {
 			if p.byName[name] != nil {
 				continue
 			} else if f := defaultStepFactories[name]; f != nil {
 				p.AddSteps(f())
+				changed = true
 			}
 		}
+		return changed
 	}
-	// already ordered dependencies may have "before" links that need to be filled in
-	for _, s := range p.ordered {
-		fill(s.before)
-	}
-	// pending steps may need defaults filled in both positions
-	for _, s := range p.pending {
-		fill(s.before)
-		fill(s.after)
+	// have to loop this until we make no changes, because a step we add may
+	// itself need more steps added
+	todo := true
+	for todo {
+		todo = false
+		// already ordered dependencies may have "before" links that need to be filled in
+		for _, s := range p.ordered {
+			if fill(s.before) {
+				todo = true
+			}
+		}
+		// pending steps may need defaults filled in both positions
+		for _, s := range p.pending {
+			if fill(s.before) {
+				todo = true
+			}
+			if fill(s.after) {
+				todo = true
+			}
+		}
 	}
 }
 
