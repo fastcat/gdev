@@ -8,6 +8,7 @@ import (
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/resource"
+	apiCoreV1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -18,7 +19,10 @@ func Enable(opts ...option) {
 		panic(errors.New("addon already enabled"))
 	}
 	internal.CheckCanCustomize()
-	var cfg addonConfig
+	cfg := addonConfig{
+		// contextName defaults to a late bind to the app name
+		namespace: namespace(apiCoreV1.NamespaceDefault),
+	}
 	for _, o := range opts {
 		o(&cfg)
 	}
@@ -27,6 +31,9 @@ func Enable(opts ...option) {
 	resource.AddContextEntry(func(context.Context) (kubernetes.Interface, error) {
 		return NewClient()
 	})
+	resource.AddContextEntry(func(ctx context.Context) (namespace, error) {
+		return config.namespace, nil
+	})
 	// TODO: more
 
 	config = &cfg
@@ -34,13 +41,17 @@ func Enable(opts ...option) {
 		Name: "k8s",
 		Description: func() string {
 			internal.CheckLockedDown()
-			return "General kubernetes support, using context " + config.ContextName()
+			return "General kubernetes support, using context " +
+				config.ContextName() +
+				" and namespace " +
+				string(config.namespace)
 		},
 	})
 }
 
 type addonConfig struct {
 	contextName string
+	namespace   namespace
 }
 
 type option func(*addonConfig)
@@ -50,10 +61,25 @@ func WithContext(name string) option {
 		ac.contextName = name
 	}
 }
+func WithNamespace(name string) option {
+	return func(ac *addonConfig) {
+		ac.namespace = namespace(name)
+	}
+}
 func (c *addonConfig) ContextName() string {
 	internal.CheckLockedDown()
 	if c.contextName != "" {
 		return c.contextName
 	}
 	return instance.AppName()
+}
+
+// precise type so we can bind it into the resource context
+type namespace string
+
+func requireEnabled() {
+	internal.CheckLockedDown()
+	if config == nil {
+		panic("k8s addon not enabled")
+	}
 }
