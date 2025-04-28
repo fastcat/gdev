@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fastcat.org/go/gdev/addons/containerd"
 	"fastcat.org/go/gdev/addons/docker"
-	"fastcat.org/go/gdev/addons/k8s"
+	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/cmd"
 )
 
@@ -11,9 +10,11 @@ import (
 // custom services and commands.
 func main() {
 	// enable all addons we can in the main build so everything gets compiled, etc.
-	k8s.Enable()
-	// TODO: containerd requires a socket path, this will get turned on with k3s support
-	containerd.Enable()
+
+	// k8s.Enable() // enabled by k3s
+	// containerd.Enable() // enabled by k3s, which will customize its socket path
 	docker.Enable()
+	k3s.Enable()
+
 	cmd.Main()
 }

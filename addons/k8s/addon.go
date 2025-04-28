@@ -20,8 +20,8 @@ func Enable(opts ...option) {
 		panic(errors.New("addon already enabled"))
 	}
 	cfg := addonConfig{
-		// contextName defaults to a late bind to the app name
-		namespace: namespace(apiCoreV1.NamespaceDefault),
+		contextName: instance.AppName,
+		namespace:   namespace(apiCoreV1.NamespaceDefault),
 	}
 	for _, o := range opts {
 		o(&cfg)
@@ -50,7 +50,7 @@ func Enable(opts ...option) {
 }
 
 type addonConfig struct {
-	contextName string
+	contextName func() string
 	namespace   namespace
 }
 
@@ -58,7 +58,12 @@ type option func(*addonConfig)
 
 func WithContext(name string) option {
 	return func(ac *addonConfig) {
-		ac.contextName = name
+		ac.contextName = func() string { return name }
+	}
+}
+func WithContextFunc(namer func() string) option {
+	return func(ac *addonConfig) {
+		ac.contextName = namer
 	}
 }
 func WithNamespace(name string) option {
@@ -68,10 +73,7 @@ func WithNamespace(name string) option {
 }
 func (c *addonConfig) ContextName() string {
 	internal.CheckLockedDown()
-	if c.contextName != "" {
-		return c.contextName
-	}
-	return instance.AppName()
+	return c.contextName()
 }
 
 // precise type so we can bind it into the resource context

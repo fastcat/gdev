@@ -76,6 +76,8 @@ type HealthCheck struct {
 // FUTURE: add more health check types, validate via `required_without_all=<others>,excluded_with=<others>`
 
 type HttpHealthCheck struct {
-	Port int    `json:"port" validate:"required,gt=0,lte=65535"`
-	Path string `json:"path" validate:"required"`
+	Scheme   string `json:"scheme,omitzero" validate:"oneof=http https"`
+	Insecure bool   `json:"insecure,omitzero"`
+	Port     int    `json:"port" validate:"required,gt=0,lte=65535"`
+	Path     string `json:"path" validate:"required"`
 }

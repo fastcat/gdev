@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"io"
 	"log"
@@ -239,12 +240,23 @@ func (c *child) httpCheck(check *api.HttpHealthCheck, timeout time.Duration) boo
 		Host: net.JoinHostPort("localhost", strconv.Itoa(check.Port)),
 		Path: check.Path,
 	}
+	if check.Scheme != "" {
+		u.Scheme = check.Scheme
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
 		log.Printf("failed to construct http req for %s: %v", c.def.Name, err)
 		return false
 	}
-	resp, err := http.DefaultClient.Do(req)
+	client := http.DefaultClient
+	if check.Insecure && check.Scheme == "https" {
+		// TODO: make our own baseline transport if we can't clone the default one,
+		// instead of panicing
+		t := http.DefaultTransport.(*http.Transport).Clone()
+		t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		client = &http.Client{Transport: t}
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("failed to send http req for %s: %v", c.def.Name, err)
 		return false
