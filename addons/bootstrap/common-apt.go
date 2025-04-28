@@ -22,12 +22,29 @@ func aptUpdate() *step {
 	return Step(StepNameAptUpdate, doAptUpdate)
 }
 
+var sourcesDirty = NewKey[bool]("apt sources dirty")
+
 func doAptUpdate(ctx *Context) error {
-	return Shell(
+	dirty, ok := Get(ctx, sourcesDirty)
+	if ok && !dirty {
+		// we ran apt update once before, nothing has changed since, skip it
+		return nil
+	}
+	if err := Shell(
 		ctx,
 		[]string{"apt", "update"},
 		WithSudo("update available packages"),
-	)
+	); err != nil {
+		return err
+	}
+	Save(ctx, sourcesDirty, false)
+	return nil
+}
+
+// ChangedAptSources will mark the apt sources list as dirty, so a secondary
+// `apt update` step will actually run
+func ChangedAptSources(ctx *Context) {
+	Save(ctx, sourcesDirty, true)
 }
 
 // Name of the step registered by [AddAptInstall]. This step will install
