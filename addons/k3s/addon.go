@@ -8,11 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"slices"
 
 	"fastcat.org/go/gdev/addons"
-	"fastcat.org/go/gdev/addons/containerd"
-	"fastcat.org/go/gdev/addons/docker"
 	"fastcat.org/go/gdev/addons/k8s"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
@@ -27,6 +24,11 @@ import (
 
 var config *addonConfig
 
+type provider struct {
+	desc   string
+	enable func()
+}
+
 func Enable(opts ...option) {
 	internal.CheckCanCustomize()
 	if config != nil {
@@ -39,6 +41,9 @@ func Enable(opts ...option) {
 	}
 	for _, o := range opts {
 		o(&cfg)
+	}
+	if cfg.provider == nil {
+		panic(errors.New("must select a k3s container provider (containerd or docker)"))
 	}
 
 	// TODO: this isn't in the right place, as the k3s kube config won't exist to
@@ -62,24 +67,14 @@ func Enable(opts ...option) {
 		k8s.WithNamespace(string(config.namespace)),
 	)
 
-	// TODO: avoid linking both docker & containerd addons given we are only ever
-	// going to use one of them
-	usingDesc := "containerd"
-	if slices.Contains(config.k3sArgs, "--docker") {
-		usingDesc = "docker"
-		docker.Enable()
-	} else {
-		containerd.Enable(
-			containerd.WithAddress("/run/k3s/containerd/containerd.sock"),
-		)
-	}
+	config.provider.enable()
 
 	addons.AddEnabled(addons.Description{
 		Name: "k3s",
 		Description: func() string {
 			internal.CheckLockedDown()
 			return "Support running k3s for local kubernetes, using " +
-				usingDesc +
+				config.provider.desc +
 				", context " + config.ContextName() +
 				", and namespace " + string(config.namespace)
 		},
@@ -91,6 +86,7 @@ func Enable(opts ...option) {
 type addonConfig struct {
 	contextName string
 	namespace   namespace
+	provider    *provider
 	k3sPath     string
 	k3sArgs     []string
 }
@@ -125,11 +121,20 @@ func WithK3SArgs(args ...string) option {
 	}
 }
 
-// WithDocker tells k3s to use docker instead of its embedded containerd to
-// manage containers
-func WithDocker() option {
+func WithProvider(
+	desc string,
+	k3sArgs []string,
+	enable func(),
+) option {
 	return func(ac *addonConfig) {
-		ac.k3sArgs = append(ac.k3sArgs, "--docker")
+		if ac.provider != nil {
+			panic(errors.New("already have a provider"))
+		}
+		ac.provider = &provider{
+			desc:   desc,
+			enable: enable,
+		}
+		ac.k3sArgs = append(ac.k3sArgs, k3sArgs...)
 	}
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/containerd"
 	"fastcat.org/go/gdev/addons/docker"
 	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/cmd"
@@ -32,7 +33,9 @@ func main() {
 	// k8s.Enable() // enabled by k3s
 	// containerd.Enable() // enabled by k3s, which will customize its socket path
 	docker.Enable()
-	k3s.Enable()
+	k3s.Enable(
+		k3s.WithProvider(containerd.K3SProvider()),
+	)
 
 	cmd.Main()
 }
