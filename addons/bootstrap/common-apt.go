@@ -10,6 +10,14 @@ func AddAptUpdate() {
 	AddStep(aptUpdate())
 }
 
+// AddExtraAptUpdate adds a secondary `apt update` step with the given name. It
+// will always run after the main `apt update` step. You may pass additional
+// ordering constraints in the options.
+func AddExtraAptUpdate(name string, opts ...stepOpt) {
+	opts = append([]stepOpt{WithAfter(StepNameAptUpdate)}, opts...)
+	AddStep(Step(name, doAptUpdate, opts...))
+}
+
 func aptUpdate() *step {
 	return Step(StepNameAptUpdate, doAptUpdate)
 }
@@ -36,6 +44,14 @@ func aptInstall() *step {
 		doAptInstall,
 		WithAfter(StepNameAptUpdate),
 	)
+}
+
+// AddExtraAptInstall adds a secondary `apt install` step with the given name.
+// It will always run after the main `apt install` step. You may pass additional
+// ordering constraints in the options.
+func AddExtraAptInstall(name string, opts ...stepOpt) {
+	opts = append([]stepOpt{WithAfter(StepNameAptInstall)}, opts...)
+	AddStep(Step(name, doAptUpdate, opts...))
 }
 
 var pendingPackages = NewKey[map[string]struct{}]("pending-apt-packages")
