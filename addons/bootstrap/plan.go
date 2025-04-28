@@ -9,6 +9,7 @@ import (
 )
 
 type plan struct {
+	byName map[string]*step
 	// steps to run in an order that will satisfy their dependencies.
 	ordered []*step
 	// steps whose dependencies haven't been registered yet and thus can't be
@@ -16,11 +17,26 @@ type plan struct {
 	pending []*step
 }
 
-var defaultPlan plan
+var defaultPlan = NewPlan()
 
-func (p *plan) addSteps(steps ...*step) {
-	p.pending = append(p.pending, steps...)
-	p.tryResolveAll()
+func NewPlan() *plan {
+	return &plan{byName: map[string]*step{}}
+}
+
+func (p *plan) AddSteps(steps ...*step) {
+	for _, s := range steps {
+		if p.byName[s.name] != nil {
+			panic(fmt.Errorf("already have step named %s", s.name))
+		}
+		if len(s.before) != 0 && len(p.ordered) != 0 {
+			panic(fmt.Errorf(
+				"cannot add step %s with non-empty before list once deps already resolved",
+				s.name,
+			))
+		}
+		p.byName[s.name] = s
+		p.pending = append(p.pending, s)
+	}
 }
 
 func (p *plan) tryResolveAll() {
@@ -38,11 +54,21 @@ func (p *plan) tryResolveAll() {
 }
 
 func (p *plan) resolveOne(s *step) bool {
-	unsatisfied := maps.Clone(s.dependencies)
+	unsatisfied := maps.Clone(s.after)
 	for _, s2 := range p.ordered {
 		delete(unsatisfied, s2.name)
 	}
 	if len(unsatisfied) != 0 {
+		// this step has an after constraint on a step that isn't already in the
+		// ordered list
+		return false
+	}
+	if slices.ContainsFunc(p.pending, func(s2 *step) bool {
+		_, ok := s2.before[s.name]
+		return ok
+	}) {
+		// some other step still in the pending list has a before constraint on this
+		// one
 		return false
 	}
 	p.ordered = append(p.ordered, s)
@@ -50,10 +76,10 @@ func (p *plan) resolveOne(s *step) bool {
 }
 
 func AddStep(s *step) {
-	defaultPlan.addSteps(s)
+	defaultPlan.AddSteps(s)
 }
 
-func (p *plan) ready() bool {
+func (p *plan) Ready() bool {
 	p.tryResolveAll()
 	return len(p.pending) == 0
 }
@@ -79,7 +105,7 @@ func (p *plan) prepare(ctx context.Context) (*Context, error) {
 	if !ok {
 		bc = NewContext(ctx)
 	}
-	if !p.ready() {
+	if !p.Ready() {
 		names := make([]string, 0, len(p.pending))
 		for _, s := range p.pending {
 			names = append(names, s.name)
@@ -112,3 +138,28 @@ func (p *plan) Sim(ctx context.Context) error {
 	fmt.Println("Done")
 	return nil
 }
+
+// Add any of the known "Default" steps that are referenced in existing step
+// dependencies but not already added to the plan.
+func (p *plan) AddDefaultSteps() {
+	fill := func(names map[string]struct{}) {
+		for name := range names {
+			if p.byName[name] != nil {
+				continue
+			} else if f := defaultStepFactories[name]; f != nil {
+				p.AddSteps(f())
+			}
+		}
+	}
+	// already ordered dependencies may have "before" links that need to be filled in
+	for _, s := range p.ordered {
+		fill(s.before)
+	}
+	// pending steps may need defaults filled in both positions
+	for _, s := range p.pending {
+		fill(s.before)
+		fill(s.after)
+	}
+}
+
+var defaultStepFactories = map[string]func() *step{}

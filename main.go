@@ -13,6 +13,8 @@ func main() {
 	// enable all addons we can in the main build so everything gets compiled, etc.
 
 	bootstrap.Enable()
+	bootstrap.AddAptUpdate()
+
 	// k8s.Enable() // enabled by k3s
 	// containerd.Enable() // enabled by k3s, which will customize its socket path
 	docker.Enable()
