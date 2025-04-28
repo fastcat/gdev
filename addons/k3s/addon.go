@@ -63,8 +63,10 @@ func Enable(opts ...option) {
 	)
 
 	// TODO: avoid linking both docker & containerd addons given we are only ever
-	// going to use onecfg
+	// going to use one of them
+	usingDesc := "containerd"
 	if slices.Contains(config.k3sArgs, "--docker") {
+		usingDesc = "docker"
 		docker.Enable()
 	} else {
 		containerd.Enable(
@@ -76,10 +78,10 @@ func Enable(opts ...option) {
 		Name: "k3s",
 		Description: func() string {
 			internal.CheckLockedDown()
-			return "Support running k3s for local kubernetes, using context " +
-				config.ContextName() +
-				" and namespace " +
-				string(config.namespace)
+			return "Support running k3s for local kubernetes, using " +
+				usingDesc +
+				", context " + config.ContextName() +
+				", and namespace " + string(config.namespace)
 		},
 	})
 }
