@@ -41,6 +41,8 @@ func Enable(opts ...option) {
 		o(&cfg)
 	}
 
+	// TODO: this isn't in the right place, as the k3s kube config won't exist to
+	// merge from until after k3s is running.
 	resource.AddContextEntry(mergeKubeConfig)
 
 	// TODO: resource context setup
@@ -150,38 +152,48 @@ func requireEnabled() {
 func addStackService(cfg *addonConfig) {
 	stack.AddService(service.NewService(
 		"k3s",
-		service.WithResources(resource.PMStatic(api.Child{
-			Name: "k3s",
-			Main: api.Exec{
-				Cwd: "/", // TODO: $HOME?
-				// TODO: support running k3s not as root
-				Cmd: "sudo",
-				Args: append(
-					[]string{
-						"-n",
-						cfg.k3sPath,
-						"server",
-					},
-					cfg.k3sArgs...,
-				),
-			},
-			Init: []api.Exec{{
-				// try to kill running k3s before trying to start a new one
-				Cwd:  "/",
-				Cmd:  "/bin/sh",
-				Args: []string{"-c", "sudo -n pkill -TERM k3s || true"},
-			}},
-			HealthCheck: &api.HealthCheck{
-				TimeoutSeconds: 1,
-				Http: &api.HttpHealthCheck{
-					Scheme: "https",
-					// TODO: provide the certs to validate this somehow
-					Insecure: true,
-					Port:     6443,
-					Path:     "/ping",
+		service.WithResources(
+			// TODO: add a stop-only resource that stops the systemd user unit it ran
+			// under to get rid of all the pods, and then uses systemd apis(?) to find
+			// the containerd-shim-... processes to kill as well. Goes here because
+			// resources are stopped in reverse order, so it should run after k3s
+			// itself is stopped.
+			resource.PMStatic(api.Child{
+				// TODO: flag this service to not be restarted on stack "apply"
+				Name: "k3s",
+				Main: api.Exec{
+					Cwd: "/", // TODO: $HOME?
+					// TODO: support running k3s not as root
+					Cmd: "sudo",
+					Args: append(
+						[]string{
+							"-n",
+							cfg.k3sPath,
+							"server",
+						},
+						cfg.k3sArgs...,
+					),
 				},
-			},
-		})),
+				Init: []api.Exec{{
+					// try to kill running k3s before trying to start a new one
+					Cwd:  "/",
+					Cmd:  "/bin/sh",
+					Args: []string{"-c", "sudo -n pkill -TERM k3s || true"},
+				}},
+				HealthCheck: &api.HealthCheck{
+					TimeoutSeconds: 1,
+					Http: &api.HttpHealthCheck{
+						Scheme: "https",
+						// TODO: provide the certs to validate this somehow
+						Insecure: true,
+						Port:     6443,
+						Path:     "/ping",
+					},
+				},
+			}),
+		),
+		// TODO: add a "waiter" resource for k3s to be ready: not just pinging, but
+		// the local node healthy too.
 	))
 }
 
