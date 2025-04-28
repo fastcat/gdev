@@ -15,10 +15,10 @@ import (
 var config *addonConfig
 
 func Enable(opts ...option) {
+	internal.CheckCanCustomize()
 	if config != nil {
 		panic(errors.New("addon already enabled"))
 	}
-	internal.CheckCanCustomize()
 	cfg := addonConfig{
 		// contextName defaults to a late bind to the app name
 		namespace: namespace(apiCoreV1.NamespaceDefault),

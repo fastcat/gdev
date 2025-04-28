@@ -6,6 +6,7 @@ import (
 	apiAppsV1 "k8s.io/api/apps/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
+	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
 	applyMetaV1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	clientAppsV1 "k8s.io/client-go/kubernetes/typed/apps/v1"
@@ -30,6 +31,7 @@ type accessor[
 	list         func(ctx context.Context, c Client, opts metaV1.ListOptions) ([]Resource, error)
 	applyMeta    func(a *Apply) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration)
 	resourceMeta func(r *Resource) (*metaV1.TypeMeta, *metaV1.ObjectMeta)
+	podTemplate  func(a *Apply) *applyCoreV1.PodSpecApplyConfiguration
 }
 
 var accStatefulSet = accessor[
@@ -53,6 +55,9 @@ var accStatefulSet = accessor[
 	resourceMeta: func(r *apiAppsV1.StatefulSet) (*metaV1.TypeMeta, *metaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
+	podTemplate: func(a *applyAppsV1.StatefulSetApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
+		return a.Spec.Template.Spec
+	},
 }
 
 var accDeployment = accessor[
@@ -75,5 +80,8 @@ var accDeployment = accessor[
 	},
 	resourceMeta: func(r *apiAppsV1.Deployment) (*metaV1.TypeMeta, *metaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
+	},
+	podTemplate: func(a *applyAppsV1.DeploymentApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
+		return a.Spec.Template.Spec
 	},
 }

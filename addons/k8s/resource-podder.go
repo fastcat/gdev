@@ -34,6 +34,7 @@ func newPodder[
 	if internal.ValueOrZero(o.Name) == "" {
 		panic(fmt.Errorf("require ObjectMeta.Name for %s", *m.Kind))
 	}
+	// TODO: add standard annotations and labels
 	return &podder[Client, Resource, Apply]{acc, apply}
 }
 
@@ -46,6 +47,7 @@ func (p *podder[Client, Resource, Apply]) ID() string {
 // Start implements resource.Resource.
 func (p *podder[Client, Resource, Apply]) Start(ctx *resource.Context) error {
 	sc := p.client(ctx)
+	// TODO: preserve scale settings if the resource already exists
 	if _, err := sc.Apply(ctx, &p.apply, applyOpts(ctx)); err != nil {
 		m, o := p.acc.applyMeta(&p.apply)
 		return fmt.Errorf("failed to apply %s %s: %w", *m.Kind, *o.Name, err)
@@ -68,6 +70,24 @@ func (p *podder[Client, Resource, Apply]) Ready(ctx *resource.Context) (bool, er
 	panic("unimplemented")
 }
 
+// ContainerImages implements resource.ContainerResource.
+func (p *podder[Client, Resource, Apply]) ContainerImages(ctx *resource.Context) ([]string, error) {
+	pt := p.acc.podTemplate(&p.apply)
+	// TODO: de-dupe
+	ret := make([]string, 0, len(pt.InitContainers)+len(pt.Containers))
+	for _, ic := range pt.InitContainers {
+		if ic.Image != nil {
+			ret = append(ret, *ic.Image)
+		}
+	}
+	for _, c := range pt.Containers {
+		if c.Image != nil {
+			ret = append(ret, *c.Image)
+		}
+	}
+	return ret, nil
+}
+
 func (p *podder[Client, Resource, Apply]) client(ctx *resource.Context) Client {
 	return p.acc.getClient(
 		resource.ContextValue[kubernetes.Interface](ctx),
@@ -75,12 +95,12 @@ func (p *podder[Client, Resource, Apply]) client(ctx *resource.Context) Client {
 	)
 }
 
-func StatefulSet(apply applyAppsV1.StatefulSetApplyConfiguration) resource.Resource {
+func StatefulSet(apply applyAppsV1.StatefulSetApplyConfiguration) resource.ContainerResource {
 	requireEnabled()
 	return newPodder(accStatefulSet, apply)
 }
 
-func Deployment(apply applyAppsV1.DeploymentApplyConfiguration) resource.Resource {
+func Deployment(apply applyAppsV1.DeploymentApplyConfiguration) resource.ContainerResource {
 	requireEnabled()
 	return newPodder(accDeployment, apply)
 }

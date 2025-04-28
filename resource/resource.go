@@ -6,3 +6,8 @@ type Resource interface {
 	Stop(ctx *Context) error
 	Ready(ctx *Context) (bool, error) // TODO: provide not-ready details
 }
+
+type ContainerResource interface {
+	Resource
+	ContainerImages(ctx *Context) ([]string, error)
+}
