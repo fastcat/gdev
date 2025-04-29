@@ -2,7 +2,6 @@ package docker
 
 import (
 	"context"
-	"errors"
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/internal"
@@ -10,35 +9,34 @@ import (
 	"github.com/docker/docker/client"
 )
 
-var config *addonConfig
+var addon addons.Addon[config]
 
-func Enable(opts ...option) {
-	internal.CheckCanCustomize()
-	if config != nil {
-		panic(errors.New("addon already enabled"))
-	}
-	cfg := addonConfig{}
+func Configure(opts ...option) {
+	addon.CheckNotInitialized()
 	for _, o := range opts {
-		o(&cfg)
+		o(&addon.Config)
 	}
 
-	resource.AddContextEntry(func(context.Context) (client.APIClient, error) {
-		return NewClient()
-	})
-
-	config = &cfg
-	addons.AddEnabled(addons.Description{
+	addon.RegisterIfNeeded(addons.Definition{
 		Name: "docker",
 		Description: func() string {
 			internal.CheckLockedDown()
 			return "General docker support"
 		},
+		Initialize: initialize,
 	})
 
 }
 
-type addonConfig struct {
+func initialize() error {
+	resource.AddContextEntry(func(context.Context) (client.APIClient, error) {
+		return NewClient()
+	})
+	return nil
+}
+
+type config struct {
 	// TODO: actually support some options
 }
 
-type option func(*addonConfig)
+type option func(*config)

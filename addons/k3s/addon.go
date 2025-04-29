@@ -23,29 +23,55 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-var config *addonConfig
-
-type provider struct {
-	desc   string
-	enable func()
+var addon = addons.Addon[config]{
+	Config: config{
+		// contextName defaults to a late bind based on the app name
+		namespace: k8s.Namespace(apiCoreV1.NamespaceDefault),
+		k3sPath:   DefaultInstallPath,
+	},
 }
 
-func Enable(opts ...option) {
-	internal.CheckCanCustomize()
-	if config != nil {
-		panic(errors.New("addon already enabled"))
-	}
-	cfg := addonConfig{
-		// contextName defaults to a late bind based on the app name
-		namespace: namespace(apiCoreV1.NamespaceDefault),
-		k3sPath:   DefaultInstallPath,
-	}
+type provider struct {
+	desc      string
+	configure func()
+}
+
+func Configure(opts ...option) {
+	addon.CheckNotInitialized()
 	for _, o := range opts {
-		o(&cfg)
+		o(&addon.Config)
 	}
-	if cfg.provider == nil {
+	if addon.Config.provider == nil {
 		panic(errors.New("must select a k3s container provider (containerd or docker)"))
 	}
+
+	k8s.Configure(
+		k8s.WithContextFunc(addon.Config.ContextName),
+		k8s.WithNamespace(string(addon.Config.namespace)),
+	)
+
+	addon.Config.provider.configure()
+
+	addon.RegisterIfNeeded(addons.Definition{
+		Name: "k3s",
+		Description: func() string {
+			internal.CheckLockedDown()
+			return "Support running k3s for local kubernetes, using " +
+				addon.Config.provider.desc +
+				", context " + addon.Config.ContextName() +
+				", and namespace " + string(addon.Config.namespace)
+		},
+		Initialize: initialize,
+	})
+}
+
+func initialize() error {
+	bootstrap.AddStep(bootstrap.Step("Install k3s",
+		func(ctx *bootstrap.Context) error {
+			return InstallStable(ctx, DefaultInstallPath)
+		},
+		// TODO: sim invoker that will still read the release data
+	))
 
 	// TODO: this isn't in the right place, as the k3s kube config won't exist to
 	// merge from until after k3s is running.
@@ -59,56 +85,31 @@ func Enable(opts ...option) {
 	// is easy with docker but harder with containerd once k3s (which _is_
 	// containerd) is gone.
 
-	addStackService(&cfg)
+	addStackService(&addon.Config)
 
-	config = &cfg
-
-	k8s.Enable(
-		k8s.WithContextFunc(config.ContextName),
-		k8s.WithNamespace(string(config.namespace)),
-	)
-
-	config.provider.enable()
-
-	bootstrap.AddStep(bootstrap.Step("Install k3s",
-		func(ctx *bootstrap.Context) error {
-			return InstallStable(ctx, DefaultInstallPath)
-		},
-		// TODO: sim invoker that will still read the release data
-	))
-
-	addons.AddEnabled(addons.Description{
-		Name: "k3s",
-		Description: func() string {
-			internal.CheckLockedDown()
-			return "Support running k3s for local kubernetes, using " +
-				config.provider.desc +
-				", context " + config.ContextName() +
-				", and namespace " + string(config.namespace)
-		},
-	})
+	return nil
 }
 
 // TODO: this addon's config is mostly a copy of the k8s addon config
 
-type addonConfig struct {
+type config struct {
 	contextName string
-	namespace   namespace
+	namespace   k8s.Namespace
 	provider    *provider
 	k3sPath     string
 	k3sArgs     []string
 }
 
-type option func(*addonConfig)
+type option func(*config)
 
 func WithContext(name string) option {
-	return func(ac *addonConfig) {
+	return func(ac *config) {
 		ac.contextName = name
 	}
 }
 func WithNamespace(name string) option {
-	return func(ac *addonConfig) {
-		ac.namespace = namespace(name)
+	return func(ac *config) {
+		ac.namespace = k8s.Namespace(name)
 	}
 }
 
@@ -117,14 +118,14 @@ func WithPath(k3sPath string) option {
 	if !filepath.IsAbs(k3sPath) {
 		panic(fmt.Errorf("k3s path %q is not absolute", k3sPath))
 	}
-	return func(ac *addonConfig) {
+	return func(ac *config) {
 		ac.k3sPath = k3sPath
 	}
 }
 
 // WithK3SArgs adds extra CLI args to the k3s invocation
 func WithK3SArgs(args ...string) option {
-	return func(ac *addonConfig) {
+	return func(ac *config) {
 		ac.k3sArgs = append(ac.k3sArgs, args...)
 	}
 }
@@ -132,21 +133,21 @@ func WithK3SArgs(args ...string) option {
 func WithProvider(
 	desc string,
 	k3sArgs []string,
-	enable func(),
+	configure func(),
 ) option {
-	return func(ac *addonConfig) {
+	return func(ac *config) {
 		if ac.provider != nil {
 			panic(errors.New("already have a provider"))
 		}
 		ac.provider = &provider{
-			desc:   desc,
-			enable: enable,
+			desc:      desc,
+			configure: configure,
 		}
 		ac.k3sArgs = append(ac.k3sArgs, k3sArgs...)
 	}
 }
 
-func (c *addonConfig) ContextName() string {
+func (c *config) ContextName() string {
 	internal.CheckLockedDown()
 	if c.contextName != "" {
 		return c.contextName
@@ -154,17 +155,7 @@ func (c *addonConfig) ContextName() string {
 	return instance.AppName()
 }
 
-// precise type so we can bind it into the resource context
-type namespace string
-
-func requireEnabled() {
-	internal.CheckLockedDown()
-	if config == nil {
-		panic("k3s addon not enabled")
-	}
-}
-
-func addStackService(cfg *addonConfig) {
+func addStackService(cfg *config) {
 	stack.AddService(service.NewService(
 		"k3s",
 		service.WithResources(
@@ -216,7 +207,7 @@ type clientConfigMarker struct{}
 
 // merge k3s config with user config under the configured name
 func mergeKubeConfig(ctx context.Context) (clientConfigMarker, error) {
-	requireEnabled()
+	addon.CheckInitialized()
 	var ret clientConfigMarker
 	const k3sFn = "/etc/rancher/k3s/k3s.yaml"
 	k3sCfg, err := clientcmd.LoadFromFile(k3sFn)
@@ -248,7 +239,7 @@ func mergeKubeConfig(ctx context.Context) (clientConfigMarker, error) {
 
 	// copy the settings into the user's config, with some edits, if needed
 	dirty := false
-	name := config.ContextName()
+	name := addon.Config.ContextName()
 	if !reflect.DeepEqual(userCfg.Clusters[name], k3sCfg.Clusters["default"]) {
 		dirty = true
 		userCfg.Clusters[name] = k3sCfg.Clusters["default"]

@@ -8,10 +8,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/internal"
 )
 
 func Main() {
+	addons.Initialize()
 	internal.LockCustomizations()
 	ctx := context.Background()
 	// hook ctrl-c to context cancel

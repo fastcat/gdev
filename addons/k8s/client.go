@@ -8,8 +8,8 @@ import (
 )
 
 func NewClient() (kubernetes.Interface, error) {
-	requireEnabled()
-	ctxName := config.ContextName()
+	addon.CheckInitialized()
+	ctxName := addon.Config.ContextName()
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
 		&clientcmd.ConfigOverrides{

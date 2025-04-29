@@ -25,7 +25,7 @@ func init() {
 			for _, ao := range addons {
 				fmt.Printf("%s:\n", ao.Name)
 				// TODO: wrap so extra lines stay indented?
-				fmt.Printf("\t%s\n", ao.Description())
+				fmt.Printf("\t%s\n", ao.Description)
 			}
 			return nil
 		},

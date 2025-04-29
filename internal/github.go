@@ -58,7 +58,7 @@ func (c *GitHubClient) DoAndParse(req *http.Request, respData any) error {
 	} else if !IsHTTPOk(resp) {
 		return HTTPResponseErr(resp, req.URL.Path) // TODO: contextual base message
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() // nolint:errcheck
 	d := json.NewDecoder(resp.Body)
 	return d.Decode(respData)
 }

@@ -91,16 +91,16 @@ func (p *podder[Client, Resource, Apply]) ContainerImages(ctx *resource.Context)
 func (p *podder[Client, Resource, Apply]) client(ctx *resource.Context) Client {
 	return p.acc.getClient(
 		resource.ContextValue[kubernetes.Interface](ctx),
-		resource.ContextValue[namespace](ctx),
+		resource.ContextValue[Namespace](ctx),
 	)
 }
 
 func StatefulSet(apply applyAppsV1.StatefulSetApplyConfiguration) resource.ContainerResource {
-	requireEnabled()
+	addon.CheckInitialized()
 	return newPodder(accStatefulSet, apply)
 }
 
 func Deployment(apply applyAppsV1.DeploymentApplyConfiguration) resource.ContainerResource {
-	requireEnabled()
+	addon.CheckInitialized()
 	return newPodder(accDeployment, apply)
 }

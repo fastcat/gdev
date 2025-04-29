@@ -2,31 +2,44 @@ package addons
 
 import (
 	"fmt"
-	"maps"
-	"slices"
+	"sync/atomic"
 
 	"fastcat.org/go/gdev/internal"
 )
 
-type Description struct {
+type Definition struct {
 	Name        string
 	Description func() string
+	Initialize  func() error
 }
 
-var enabled = map[string]Description{}
+type registration struct {
+	Definition
+	initialized atomic.Bool
+}
+type Description struct {
+	Name        string
+	Description string
+}
 
-func AddEnabled(desc Description) {
-	if desc.Name == "" {
+var enabled = map[string]*registration{}
+
+func Register(def Definition) {
+	if def.Name == "" {
 		panic(fmt.Errorf("addon name required"))
 	}
 	internal.CheckCanCustomize()
-	if _, ok := enabled[desc.Name]; ok {
-		panic(fmt.Errorf("addon %q already enabled", desc.Name))
+	if _, ok := enabled[def.Name]; ok {
+		panic(fmt.Errorf("addon %q already enabled", def.Name))
 	}
-	enabled[desc.Name] = desc
+	enabled[def.Name] = &registration{Definition: def}
 }
 
 func Enabled() []Description {
 	internal.CheckLockedDown()
-	return slices.Collect(maps.Values(enabled))
+	ret := make([]Description, 0, len(enabled))
+	for _, v := range enabled {
+		ret = append(ret, Description{Name: v.Name, Description: v.Description()})
+	}
+	return ret
 }

@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"context"
-	"errors"
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/instance"
@@ -12,76 +11,72 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-var config *addonConfig
-
-func Enable(opts ...option) {
-	internal.CheckCanCustomize()
-	if config != nil {
-		panic(errors.New("addon already enabled"))
-	}
-	cfg := addonConfig{
+var addon = addons.Addon[config]{
+	Config: config{
 		contextName: instance.AppName,
-		namespace:   namespace(apiCoreV1.NamespaceDefault),
-	}
+		namespace:   Namespace(apiCoreV1.NamespaceDefault),
+	},
+}
+
+func Configure(opts ...option) {
+	addon.CheckNotInitialized()
 	for _, o := range opts {
-		o(&cfg)
+		o(&addon.Config)
 	}
 
-	// register addon components
-	resource.AddContextEntry(func(context.Context) (kubernetes.Interface, error) {
-		return NewClient()
-	})
-	resource.AddContextEntry(func(ctx context.Context) (namespace, error) {
-		return config.namespace, nil
-	})
-	// TODO: more
-
-	config = &cfg
-	addons.AddEnabled(addons.Description{
+	addon.RegisterIfNeeded(addons.Definition{
 		Name: "k8s",
 		Description: func() string {
 			internal.CheckLockedDown()
 			return "General kubernetes support, using context " +
-				config.ContextName() +
+				addon.Config.ContextName() +
 				" and namespace " +
-				string(config.namespace)
+				string(addon.Config.namespace)
 		},
+		Initialize: initialize,
 	})
 }
 
-type addonConfig struct {
-	contextName func() string
-	namespace   namespace
+func initialize() error {
+	addon.CheckNotInitialized()
+	// register addon components
+	resource.AddContextEntry(func(context.Context) (kubernetes.Interface, error) {
+		return NewClient()
+	})
+	resource.AddContextEntry(func(ctx context.Context) (Namespace, error) {
+		return addon.Config.namespace, nil
+	})
+	// TODO: more
+
+	return nil
 }
 
-type option func(*addonConfig)
+type config struct {
+	contextName func() string
+	namespace   Namespace
+}
+
+type option func(*config)
 
 func WithContext(name string) option {
-	return func(ac *addonConfig) {
+	return func(ac *config) {
 		ac.contextName = func() string { return name }
 	}
 }
 func WithContextFunc(namer func() string) option {
-	return func(ac *addonConfig) {
+	return func(ac *config) {
 		ac.contextName = namer
 	}
 }
 func WithNamespace(name string) option {
-	return func(ac *addonConfig) {
-		ac.namespace = namespace(name)
+	return func(ac *config) {
+		ac.namespace = Namespace(name)
 	}
 }
-func (c *addonConfig) ContextName() string {
+func (c *config) ContextName() string {
 	internal.CheckLockedDown()
 	return c.contextName()
 }
 
 // precise type so we can bind it into the resource context
-type namespace string
-
-func requireEnabled() {
-	internal.CheckLockedDown()
-	if config == nil {
-		panic("k8s addon not enabled")
-	}
-}
+type Namespace string

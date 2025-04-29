@@ -10,53 +10,57 @@ import (
 	"github.com/containerd/containerd/v2/client"
 )
 
-var config *addonConfig
-
-func Enable(opts ...option) {
-	internal.CheckCanCustomize()
-	if config != nil {
-		panic(errors.New("addon already enabled"))
-	}
-	cfg := addonConfig{
+var addon = addons.Addon[config]{
+	Config: config{
 		// TODO: the default socket is a bad choice because it requires root access
 		clientAddr: "/run/containerd/containerd.sock",
-	}
+	},
+}
+
+func Configure(opts ...option) {
+	addon.CheckNotInitialized()
 	for _, o := range opts {
-		o(&cfg)
+		o(&addon.Config)
 	}
-	if cfg.clientAddr == "" {
+	if addon.Config.clientAddr == "" {
 		panic(errors.New("containerd addr required"))
 	}
 
-	resource.AddContextEntry(func(context.Context) (*client.Client, error) {
-		return NewClient()
-	})
-	// TODO: image puller infrastructure
-
-	config = &cfg
-	addons.AddEnabled(addons.Description{
+	addon.RegisterIfNeeded(addons.Definition{
 		Name: "containerd",
 		Description: func() string {
 			internal.CheckLockedDown()
-			return "General containerd support, using socket " + config.clientAddr
+			return "General containerd support, using socket " + addon.Config.clientAddr
 		},
+		Initialize: initialize,
 	})
 }
 
-type addonConfig struct {
+func initialize() error {
+	resource.AddContextEntry(func(context.Context) (*client.Client, error) {
+		return NewClient()
+	})
+
+	// TODO: image puller infrastructure
+
+	addon.Initialized()
+	return nil
+}
+
+type config struct {
 	clientAddr string
 	clientOpts []client.Opt
 }
 
-type option func(*addonConfig)
+type option func(*config)
 
 func WithAddress(addr string) option {
-	return func(ac *addonConfig) {
+	return func(ac *config) {
 		ac.clientAddr = addr
 	}
 }
 func WithOpts(opts ...client.Opt) option {
-	return func(ac *addonConfig) {
+	return func(ac *config) {
 		ac.clientOpts = append(ac.clientOpts, opts...)
 	}
 }

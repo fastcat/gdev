@@ -25,7 +25,7 @@ type accessor[
 	Resource any,
 	Apply any,
 ] struct {
-	getClient func(c kubernetes.Interface, ns namespace) Client
+	getClient func(c kubernetes.Interface, ns Namespace) Client
 	// list wraps the native List method on Client to avoid extra generics on the
 	// <Resource>List type
 	list         func(ctx context.Context, c Client, opts metaV1.ListOptions) ([]Resource, error)
@@ -39,7 +39,7 @@ var accStatefulSet = accessor[
 	apiAppsV1.StatefulSet,
 	applyAppsV1.StatefulSetApplyConfiguration,
 ]{
-	getClient: func(c kubernetes.Interface, ns namespace) clientAppsV1.StatefulSetInterface {
+	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.StatefulSetInterface {
 		return c.AppsV1().StatefulSets(string(ns))
 	},
 	list: func(ctx context.Context, c clientAppsV1.StatefulSetInterface, opts metaV1.ListOptions) ([]apiAppsV1.StatefulSet, error) {
@@ -65,7 +65,7 @@ var accDeployment = accessor[
 	apiAppsV1.Deployment,
 	applyAppsV1.DeploymentApplyConfiguration,
 ]{
-	getClient: func(c kubernetes.Interface, ns namespace) clientAppsV1.DeploymentInterface {
+	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.DeploymentInterface {
 		return c.AppsV1().Deployments(string(ns))
 	},
 	list: func(ctx context.Context, c clientAppsV1.DeploymentInterface, opts metaV1.ListOptions) ([]apiAppsV1.Deployment, error) {
