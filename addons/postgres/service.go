@@ -6,6 +6,7 @@ import (
 
 	apiAppsV1 "k8s.io/api/apps/v1"
 	apiCoreV1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
 	applyMetaV1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -105,9 +106,14 @@ func (c pgSvcConfig) pvc() k8s.Resource {
 			// TODO: this assumes k3s, doesn't allow other providers, nor using longhorn
 			// or whatever
 			WithStorageClassName("local-path").
-			WithAccessModes(apiCoreV1.ReadWriteOnce),
-		// resource requests (size limit) are not honored, so don't bother setting
-		// them here, we'd be hard presseed to decide what it should be anyways.
+			WithAccessModes(apiCoreV1.ReadWriteOnce).
+			// resource limits are not honored, and we couldn't set a good limit if
+			// they were, so skip it. at least a request is required however.
+			WithResources(applyCoreV1.VolumeResourceRequirements().
+				WithRequests(apiCoreV1.ResourceList{
+					apiCoreV1.ResourceStorage: resource.MustParse("1Gi"),
+				}),
+			),
 		)
 	return k8s.PersistentVolumeClaim(pvc)
 }
