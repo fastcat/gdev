@@ -4,12 +4,14 @@ import (
 	"context"
 
 	apiAppsV1 "k8s.io/api/apps/v1"
+	apiCoreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
 	applyMetaV1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	clientAppsV1 "k8s.io/client-go/kubernetes/typed/apps/v1"
+	clientCoreV1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 type client[Resource any, Apply any] interface {
@@ -84,4 +86,12 @@ var accDeployment = accessor[
 	podTemplate: func(a *applyAppsV1.DeploymentApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
 		return a.Spec.Template.Spec
 	},
+}
+
+var accService = accessor[
+	clientCoreV1.ServiceInterface,
+	apiCoreV1.Service,
+	applyCoreV1.ServiceApplyConfiguration,
+]{
+	// TODO
 }
