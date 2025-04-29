@@ -32,6 +32,7 @@ func initialize() error {
 	resource.AddContextEntry(func(context.Context) (client.APIClient, error) {
 		return NewClient()
 	})
+	addon.Initialized()
 	return nil
 }
 

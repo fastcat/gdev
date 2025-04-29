@@ -113,6 +113,8 @@ func initialize() error {
 
 	addStackService(&addon.Config)
 
+	addon.Initialized()
+
 	return nil
 }
 

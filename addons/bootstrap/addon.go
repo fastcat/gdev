@@ -46,6 +46,8 @@ func initialize() error {
 		cmd.AddCommand(f.Build())
 	}
 
+	addon.Initialized()
+
 	return nil
 }
 

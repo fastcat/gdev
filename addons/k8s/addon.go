@@ -48,6 +48,8 @@ func initialize() error {
 	})
 	// TODO: more
 
+	addon.Initialized()
+
 	return nil
 }
 
