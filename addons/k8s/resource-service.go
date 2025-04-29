@@ -15,6 +15,5 @@ type service struct {
 }
 
 func Service(apply *applyCoreV1.ServiceApplyConfiguration) Resource {
-	addon.CheckInitialized()
 	return &service{newApply(accService, apply)}
 }

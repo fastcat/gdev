@@ -46,11 +46,9 @@ func (p *podder[Client, Resource, Apply]) ContainerImages(ctx *resource.Context)
 }
 
 func StatefulSet(apply *applyAppsV1.StatefulSetApplyConfiguration) ContainerResource {
-	addon.CheckInitialized()
 	return newPodder(accStatefulSet, apply)
 }
 
 func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) ContainerResource {
-	addon.CheckInitialized()
 	return newPodder(accDeployment, apply)
 }

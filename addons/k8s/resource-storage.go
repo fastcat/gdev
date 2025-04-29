@@ -23,6 +23,5 @@ func (r *pvc) Stop(ctx *resource.Context) error {
 }
 
 func PersistentVolumeClaim(apply *applyCoreV1.PersistentVolumeClaimApplyConfiguration) Resource {
-	addon.CheckInitialized()
 	return &pvc{newApply(accPVC, apply)}
 }
