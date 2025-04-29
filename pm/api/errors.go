@@ -1,20 +1,9 @@
 package api
 
-import (
-	"errors"
-	"net/http"
-)
+import "fastcat.org/go/gdev/internal"
 
-type StatusCodeErr interface {
-	StatusCode() int
-}
+type StatusCodeErr = internal.StatusCodeErr
 
 func IsNotFound(err error) bool {
-	var sce StatusCodeErr
-	if errors.As(err, &sce) {
-		if sce.StatusCode() == http.StatusNotFound {
-			return true
-		}
-	}
-	return false
+	return internal.IsNotFound(err)
 }

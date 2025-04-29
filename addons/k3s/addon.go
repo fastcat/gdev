@@ -10,6 +10,7 @@ import (
 	"reflect"
 
 	"fastcat.org/go/gdev/addons"
+	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/k8s"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
@@ -37,7 +38,7 @@ func Enable(opts ...option) {
 	cfg := addonConfig{
 		// contextName defaults to a late bind based on the app name
 		namespace: namespace(apiCoreV1.NamespaceDefault),
-		k3sPath:   "/usr/local/bin/k3s",
+		k3sPath:   DefaultInstallPath,
 	}
 	for _, o := range opts {
 		o(&cfg)
@@ -68,6 +69,13 @@ func Enable(opts ...option) {
 	)
 
 	config.provider.enable()
+
+	bootstrap.AddStep(bootstrap.Step("Install k3s",
+		func(ctx *bootstrap.Context) error {
+			return InstallStable(ctx, DefaultInstallPath)
+		},
+		// TODO: sim invoker that will still read the release data
+	))
 
 	addons.AddEnabled(addons.Description{
 		Name: "k3s",
