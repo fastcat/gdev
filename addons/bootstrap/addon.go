@@ -13,7 +13,7 @@ var addon = addons.Addon[config]{
 }
 
 type config struct {
-	cmdFactories []func() *cobra.Command
+	cmdFactories []cmdBuilder
 	plan         *plan
 }
 
@@ -43,7 +43,7 @@ func initialize() error {
 	}
 	instance.AddCommands(cmd)
 	for _, f := range addon.Config.cmdFactories {
-		cmd.AddCommand(f())
+		cmd.AddCommand(f.Build())
 	}
 
 	return nil
@@ -51,9 +51,29 @@ func initialize() error {
 
 type option func(*config)
 
-func WithChildCmds(fns ...func() *cobra.Command) option {
+type cmdBuilder interface {
+	Build() *cobra.Command
+}
+type cmdFunc func() *cobra.Command
+
+func (f cmdFunc) Build() *cobra.Command { return f() }
+
+type staticCmd cobra.Command
+
+func (c *staticCmd) Build() *cobra.Command { return (*cobra.Command)(c) }
+func WithChildCmdBuilders(fns ...func() *cobra.Command) option {
 	return func(c *config) {
-		c.cmdFactories = append(addon.Config.cmdFactories, fns...)
+		for _, fn := range fns {
+			c.cmdFactories = append(c.cmdFactories, cmdFunc(fn))
+		}
+	}
+}
+
+func WithChildCmds(cmds ...*cobra.Command) option {
+	return func(c *config) {
+		for _, cmd := range cmds {
+			c.cmdFactories = append(c.cmdFactories, (*staticCmd)(cmd))
+		}
 	}
 }
 

@@ -19,6 +19,7 @@ import (
 	"fastcat.org/go/gdev/service"
 	"fastcat.org/go/gdev/stack"
 	"fastcat.org/go/gdev/sys"
+	"github.com/spf13/cobra"
 	apiCoreV1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -66,12 +67,37 @@ func Configure(opts ...option) {
 }
 
 func initialize() error {
-	bootstrap.Configure(bootstrap.WithSteps(bootstrap.Step("Install k3s",
-		func(ctx *bootstrap.Context) error {
-			return InstallStable(ctx, DefaultInstallPath)
+	k3sCmd := &cobra.Command{
+		Use: "k3s",
+	}
+	k3sCmd.AddCommand(
+		&cobra.Command{
+			Use:   "install",
+			Short: "install / update k3s",
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				return InstallStable(cmd.Context(), DefaultInstallPath)
+			},
 		},
-		// TODO: sim invoker that will still read the release data
-	)))
+		&cobra.Command{
+			Use:   "uninstall",
+			Short: "uninstall k3s",
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				return Uninstall(cmd.Context(), DefaultInstallPath)
+			},
+		},
+	)
+
+	bootstrap.Configure(
+		bootstrap.WithSteps(bootstrap.Step("Install k3s",
+			func(ctx *bootstrap.Context) error {
+				return InstallStable(ctx, DefaultInstallPath)
+			},
+			// TODO: sim invoker that will still read the release data
+		)),
+		bootstrap.WithChildCmds(k3sCmd),
+	)
 
 	// TODO: this isn't in the right place, as the k3s kube config won't exist to
 	// merge from until after k3s is running.
