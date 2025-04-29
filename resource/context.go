@@ -50,10 +50,25 @@ func NewContext(ctx context.Context) (*Context, error) {
 	return rc, nil
 }
 
+func NewEmptyContext(ctx context.Context) *Context {
+	return &Context{ctx, make(map[ctxKey]any, len(ctxEntries))}
+
+}
+
 func (ctx *Context) Value(key any) any {
 	if ck, ok := key.(ctxKey); ok {
 		if val, ok := ctx.entries[ck]; ok {
 			return val
+		}
+		// delayed instantiation
+		if e, ok := ctxEntries[ck]; ok {
+			if v, err := e.initializer(ctx); err != nil {
+				// oops, too late to exit gracefully!
+				panic(err)
+			} else {
+				ctx.entries[ck] = v
+				return v
+			}
 		}
 	}
 	return ctx.Context.Value(key)
@@ -67,6 +82,16 @@ func ContextValue[T any](ctx context.Context) T {
 	if rc, ok := ctx.(*Context); ok {
 		val, ok := rc.entries[key]
 		if !ok {
+			// delayed instantiation
+			if e, ok := ctxEntries[key]; ok {
+				if val, err := e.initializer(ctx); err != nil {
+					// oops, too late to exit gracefully!
+					panic(err)
+				} else {
+					rc.entries[key] = val
+					return val.(T)
+				}
+			}
 			panic(fmt.Errorf("type %v not initialized", key.typ()))
 		}
 		return val.(T)

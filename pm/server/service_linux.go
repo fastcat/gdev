@@ -32,7 +32,8 @@ func isolateProcess(
 			{Name: "CollectMode", Value: godbus.MakeVariant("inactive-or-failed")},
 			// put the given PID into it now
 			dbus.PropPids(uint32(process.Pid)),
-			dbus.PropSlice(instance.AppName() + "-pm.service"),
+			// doesn't work: `Unit name 'xxx-pm.service' is not a slice`
+			// dbus.PropSlice(instance.AppName() + "-pm.service"),
 		},
 		ch,
 	)

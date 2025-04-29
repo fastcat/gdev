@@ -83,6 +83,21 @@ var configureBootstrap = sync.OnceFunc(func() {
 			},
 		},
 		&cobra.Command{
+			Use:   "setup",
+			Short: "do first time start to setup baseline k3s configuration",
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				ctx := resource.NewEmptyContext(cmd.Context())
+				rs := stackService(&addon.Config).Resources(ctx)
+				for _, r := range rs {
+					if err := r.Start(ctx); err != nil {
+						return err
+					}
+				}
+				return nil
+			},
+		},
+		&cobra.Command{
 			Use:   "uninstall",
 			Short: "uninstall k3s",
 			Args:  cobra.NoArgs,
@@ -116,7 +131,7 @@ func initialize() error {
 	// is easy with docker but harder with containerd once k3s (which _is_
 	// containerd) is gone.
 
-	addStackService(&addon.Config)
+	stack.AddService(stackService(&addon.Config))
 
 	addon.Initialized()
 
@@ -188,8 +203,8 @@ func (c *config) ContextName() string {
 	return instance.AppName()
 }
 
-func addStackService(cfg *config) {
-	stack.AddService(service.NewService(
+func stackService(cfg *config) service.Service {
+	return service.NewService(
 		"k3s",
 		service.WithResources(
 			// TODO: add a stop-only resource that stops the systemd user unit it ran
@@ -233,7 +248,7 @@ func addStackService(cfg *config) {
 		),
 		// TODO: add a "waiter" resource for k3s to be ready: not just pinging, but
 		// the local node healthy too.
-	))
+	)
 }
 
 type clientConfigMarker struct{}
