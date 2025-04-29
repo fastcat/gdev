@@ -10,7 +10,7 @@ import (
 type podder[
 	Client client[Resource, Apply],
 	Resource any,
-	Apply any,
+	Apply apply[Apply],
 ] struct {
 	applyResource[Client, Resource, Apply]
 }
@@ -18,7 +18,7 @@ type podder[
 func newPodder[
 	Client client[Resource, Apply],
 	Resource any,
-	Apply any,
+	Apply apply[Apply],
 ](
 	acc accessor[Client, Resource, Apply],
 	apply Apply,
@@ -34,7 +34,7 @@ func (p *podder[Client, Resource, Apply]) Ready(ctx *resource.Context) (bool, er
 
 // ContainerImages implements resource.ContainerResource.
 func (p *podder[Client, Resource, Apply]) ContainerImages(ctx *resource.Context) ([]string, error) {
-	pt := p.acc.podTemplate(&p.apply)
+	pt := p.acc.podTemplate(p.apply)
 	// TODO: de-dupe
 	ret := make([]string, 0, len(pt.InitContainers)+len(pt.Containers))
 	for _, ic := range pt.InitContainers {
@@ -50,12 +50,12 @@ func (p *podder[Client, Resource, Apply]) ContainerImages(ctx *resource.Context)
 	return ret, nil
 }
 
-func StatefulSet(apply applyAppsV1.StatefulSetApplyConfiguration) resource.ContainerResource {
+func StatefulSet(apply *applyAppsV1.StatefulSetApplyConfiguration) resource.ContainerResource {
 	addon.CheckInitialized()
 	return newPodder(accStatefulSet, apply)
 }
 
-func Deployment(apply applyAppsV1.DeploymentApplyConfiguration) resource.ContainerResource {
+func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) resource.ContainerResource {
 	addon.CheckInitialized()
 	return newPodder(accDeployment, apply)
 }

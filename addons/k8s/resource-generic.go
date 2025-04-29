@@ -16,7 +16,7 @@ import (
 type applyResource[
 	Client client[Resource, Apply],
 	Resource any,
-	Apply any,
+	Apply apply[Apply],
 ] struct {
 	acc   accessor[Client, Resource, Apply]
 	apply Apply
@@ -25,12 +25,12 @@ type applyResource[
 func newApply[
 	Client client[Resource, Apply],
 	Resource any,
-	Apply any,
+	Apply apply[Apply],
 ](
 	acc accessor[Client, Resource, Apply],
 	apply Apply,
 ) applyResource[Client, Resource, Apply] {
-	m, o := acc.applyMeta(&apply)
+	m, o := acc.applyMeta(apply)
 	if internal.ValueOrZero(m.Kind) == "" {
 		panic(fmt.Errorf("require TypeMeta.Name for %T", apply))
 	}
@@ -43,7 +43,7 @@ func newApply[
 
 // ID implements resource.Resource.
 func (r *applyResource[Client, Resource, Apply]) ID() string {
-	m, o := r.acc.applyMeta(&r.apply)
+	m, o := r.acc.applyMeta(r.apply)
 	return "k8s/" + *m.Kind + "/" + *o.Name
 }
 
@@ -51,8 +51,8 @@ func (r *applyResource[Client, Resource, Apply]) ID() string {
 func (r *applyResource[Client, Resource, Apply]) Start(ctx *resource.Context) error {
 	sc := r.client(ctx)
 	// TODO: preserve scale settings if the resource already exists
-	if _, err := sc.Apply(ctx, &r.apply, applyOpts(ctx)); err != nil {
-		m, o := r.acc.applyMeta(&r.apply)
+	if _, err := sc.Apply(ctx, r.apply, applyOpts(ctx)); err != nil {
+		m, o := r.acc.applyMeta(r.apply)
 		return fmt.Errorf("failed to apply %s %s: %w", *m.Kind, *o.Name, err)
 	}
 	return nil
@@ -61,7 +61,7 @@ func (r *applyResource[Client, Resource, Apply]) Start(ctx *resource.Context) er
 // Stop implements resource.Resource.
 func (r *applyResource[Client, Resource, Apply]) Stop(ctx *resource.Context) error {
 	sc := r.client(ctx)
-	m, o := r.acc.applyMeta(&r.apply)
+	m, o := r.acc.applyMeta(r.apply)
 	if err := sc.Delete(ctx, *o.Name, deleteOpts(ctx)); err != nil && !apiErrors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete %s %s: %w", *m.Kind, *o.Name, err)
 	}
