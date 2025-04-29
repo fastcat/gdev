@@ -27,11 +27,6 @@ func newPodder[
 	return &podder[Client, Resource, Apply]{newApply(acc, apply)}
 }
 
-// Ready implements resource.Resource.
-func (p *podder[Client, Resource, Apply]) Ready(ctx *resource.Context) (bool, error) {
-	panic("unimplemented")
-}
-
 // ContainerImages implements resource.ContainerResource.
 func (p *podder[Client, Resource, Apply]) ContainerImages(ctx *resource.Context) ([]string, error) {
 	pt := p.acc.podTemplate(p.apply)

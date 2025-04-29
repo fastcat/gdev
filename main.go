@@ -6,7 +6,9 @@ import (
 	"fastcat.org/go/gdev/addons/docker"
 	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/addons/k8s"
+	"fastcat.org/go/gdev/addons/postgres"
 	"fastcat.org/go/gdev/cmd"
+	"fastcat.org/go/gdev/stack"
 )
 
 // Normally you want to build your own wrapper around gdev to register your
@@ -36,6 +38,8 @@ func main() {
 	k3s.Configure(
 		k3s.WithProvider(containerd.K3SProvider()),
 	)
+
+	stack.AddService(postgres.Service())
 
 	cmd.Main()
 }

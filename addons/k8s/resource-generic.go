@@ -68,6 +68,15 @@ func (r *appliable[Client, Resource, Apply]) Stop(ctx *resource.Context) error {
 	return nil
 }
 
+// Ready implements resource.Resource.
+func (r *appliable[Client, Resource, Apply]) Ready(ctx *resource.Context) (bool, error) {
+	obj, err := r.client(ctx).Get(ctx, r.K8SName(), getOpts(ctx))
+	if err != nil {
+		return false, err
+	}
+	return r.acc.ready(ctx, obj)
+}
+
 // K8SKind implements ContainerResource.
 func (r *appliable[Client, Resource, Apply]) K8SKind() string {
 	m, _ := r.acc.applyMeta(r.apply)
