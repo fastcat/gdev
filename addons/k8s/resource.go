@@ -1,23 +1,21 @@
 package k8s
 
 import (
-	apiMetaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/resource"
 )
 
-func applyOpts(*resource.Context) apiMetaV1.ApplyOptions {
-	return apiMetaV1.ApplyOptions{
-		Force:        true,
-		FieldManager: instance.AppName(),
-		// TODO: dry run
-	}
+type k8sResource interface {
+	K8SKind() string
+	K8SNamespace() string
+	K8SName() string
 }
 
-func deleteOpts(*resource.Context) apiMetaV1.DeleteOptions {
-	return apiMetaV1.DeleteOptions{
-		PropagationPolicy: internal.Ptr(apiMetaV1.DeletePropagationBackground),
-	}
+type Resource interface {
+	resource.Resource
+	k8sResource
+}
+
+type ContainerResource interface {
+	resource.ContainerResource
+	k8sResource
 }

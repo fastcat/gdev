@@ -12,7 +12,7 @@ type podder[
 	Resource any,
 	Apply apply[Apply],
 ] struct {
-	applyResource[Client, Resource, Apply]
+	appliable[Client, Resource, Apply]
 }
 
 func newPodder[
@@ -50,12 +50,12 @@ func (p *podder[Client, Resource, Apply]) ContainerImages(ctx *resource.Context)
 	return ret, nil
 }
 
-func StatefulSet(apply *applyAppsV1.StatefulSetApplyConfiguration) resource.ContainerResource {
+func StatefulSet(apply *applyAppsV1.StatefulSetApplyConfiguration) ContainerResource {
 	addon.CheckInitialized()
 	return newPodder(accStatefulSet, apply)
 }
 
-func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) resource.ContainerResource {
+func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) ContainerResource {
 	addon.CheckInitialized()
 	return newPodder(accDeployment, apply)
 }

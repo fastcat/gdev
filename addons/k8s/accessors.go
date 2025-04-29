@@ -5,6 +5,7 @@ import (
 
 	apiAppsV1 "k8s.io/api/apps/v1"
 	apiCoreV1 "k8s.io/api/core/v1"
+	apiMetaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
@@ -12,6 +13,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	clientAppsV1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 	clientCoreV1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
+	"fastcat.org/go/gdev/instance"
+	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/resource"
 )
 
 type client[Resource any, Apply apply[Apply]] interface {
@@ -125,4 +130,18 @@ var accService = accessor[
 	resourceMeta: func(r *apiCoreV1.Service) (*metaV1.TypeMeta, *metaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
+}
+
+func applyOpts(*resource.Context) apiMetaV1.ApplyOptions {
+	return apiMetaV1.ApplyOptions{
+		Force:        true,
+		FieldManager: instance.AppName(),
+		// TODO: dry run
+	}
+}
+
+func deleteOpts(*resource.Context) apiMetaV1.DeleteOptions {
+	return apiMetaV1.DeleteOptions{
+		PropagationPolicy: internal.Ptr(apiMetaV1.DeletePropagationBackground),
+	}
 }

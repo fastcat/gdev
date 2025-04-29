@@ -9,7 +9,7 @@ import (
 )
 
 type service struct {
-	applyResource[
+	appliable[
 		clientCoreV1.ServiceInterface,
 		apiCoreV1.Service,
 		*applyCoreV1.ServiceApplyConfiguration,
@@ -22,7 +22,7 @@ func (s *service) Ready(ctx *resource.Context) (bool, error) {
 	return true, nil
 }
 
-func Service(apply *applyCoreV1.ServiceApplyConfiguration) resource.Resource {
+func Service(apply *applyCoreV1.ServiceApplyConfiguration) Resource {
 	addon.CheckInitialized()
 	return &service{newApply(accService, apply)}
 }
