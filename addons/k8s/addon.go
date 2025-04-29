@@ -3,12 +3,13 @@ package k8s
 import (
 	"context"
 
+	apiCoreV1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
+
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/resource"
-	apiCoreV1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
 var addon = addons.Addon[config]{

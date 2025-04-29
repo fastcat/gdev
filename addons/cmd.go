@@ -5,8 +5,9 @@ import (
 	"slices"
 	"strings"
 
-	"fastcat.org/go/gdev/instance"
 	"github.com/spf13/cobra"
+
+	"fastcat.org/go/gdev/instance"
 )
 
 func init() {

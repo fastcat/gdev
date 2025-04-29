@@ -3,10 +3,11 @@ package docker
 import (
 	"context"
 
+	"github.com/docker/docker/client"
+
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/resource"
-	"github.com/docker/docker/client"
 )
 
 var addon addons.Addon[config]

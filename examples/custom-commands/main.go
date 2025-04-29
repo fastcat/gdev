@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"fastcat.org/go/gdev/cmd"
 	"fastcat.org/go/gdev/instance"
-	"github.com/spf13/cobra"
 )
 
 func main() {

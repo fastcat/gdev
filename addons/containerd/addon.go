@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 
+	"github.com/containerd/containerd/v2/client"
+
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/resource"
-	"github.com/containerd/containerd/v2/client"
 )
 
 var addon = addons.Addon[config]{

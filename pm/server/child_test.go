@@ -6,8 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"fastcat.org/go/gdev/pm/api"
 	"github.com/stretchr/testify/assert"
+
+	"fastcat.org/go/gdev/pm/api"
 )
 
 func TestChildSleeps(t *testing.T) {

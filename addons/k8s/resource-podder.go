@@ -1,8 +1,9 @@
 package k8s
 
 import (
-	"fastcat.org/go/gdev/resource"
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
+
+	"fastcat.org/go/gdev/resource"
 )
 
 // podder generalizes the pattern of a k8s resource that schedules pods

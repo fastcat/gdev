@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spf13/cobra"
+
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/stack"
-	"github.com/spf13/cobra"
 )
 
 func StackStart(cmd *cobra.Command, _ []string) error {

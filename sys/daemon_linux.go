@@ -6,9 +6,10 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"fastcat.org/go/gdev/instance"
 	"github.com/coreos/go-systemd/v22/dbus"
 	godbus "github.com/godbus/dbus/v5"
+
+	"fastcat.org/go/gdev/instance"
 )
 
 func StartDaemon(

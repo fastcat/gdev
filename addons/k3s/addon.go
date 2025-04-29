@@ -10,6 +10,10 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/spf13/cobra"
+	apiCoreV1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/clientcmd"
+
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/k8s"
@@ -20,9 +24,6 @@ import (
 	"fastcat.org/go/gdev/service"
 	"fastcat.org/go/gdev/stack"
 	"fastcat.org/go/gdev/sys"
-	"github.com/spf13/cobra"
-	apiCoreV1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 var addon = addons.Addon[config]{

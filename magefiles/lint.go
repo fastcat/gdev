@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"fastcat.org/go/gdev/magefiles/shx"
 	"github.com/magefile/mage/mg"
+
+	"fastcat.org/go/gdev/magefiles/shx"
 )
 
 func LintDefault(ctx context.Context) error {

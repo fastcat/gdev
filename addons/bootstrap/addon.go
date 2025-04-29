@@ -1,9 +1,10 @@
 package bootstrap
 
 import (
+	"github.com/spf13/cobra"
+
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/instance"
-	"github.com/spf13/cobra"
 )
 
 var addon = addons.Addon[config]{

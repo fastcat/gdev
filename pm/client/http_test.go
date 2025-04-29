@@ -7,9 +7,10 @@ import (
 	"os"
 	"testing"
 
-	"fastcat.org/go/gdev/pm/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"fastcat.org/go/gdev/pm/api"
 )
 
 func TestHttp_Ping(t *testing.T) {

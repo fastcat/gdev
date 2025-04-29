@@ -1,10 +1,11 @@
 package k8s
 
 import (
+	apiMetaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/resource"
-	apiMetaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func applyOpts(*resource.Context) apiMetaV1.ApplyOptions {

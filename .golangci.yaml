@@ -2,6 +2,7 @@ version: "2"
 formatters:
   enable:
     - golines
+    - goimports
   settings:
     golines:
       max-len: 110
@@ -10,3 +11,6 @@ formatters:
       # https://github.com/segmentio/golines/pull/143
       reformat-tags: false
       chain-split-dots: true
+    goimports:
+      local-prefixes:
+        - fastcat.org

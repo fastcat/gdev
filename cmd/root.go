@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/instance"
-	"github.com/spf13/cobra"
 )
 
 func Root() *cobra.Command {

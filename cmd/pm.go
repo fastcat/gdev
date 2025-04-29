@@ -8,14 +8,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jedib0t/go-pretty/v6/list"
+	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/spf13/cobra"
+
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/pm"
 	"fastcat.org/go/gdev/pm/api"
 	"fastcat.org/go/gdev/pm/client"
 	"fastcat.org/go/gdev/pm/server"
-	"github.com/jedib0t/go-pretty/v6/list"
-	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/spf13/cobra"
 )
 
 func pmCmd() *cobra.Command {

@@ -1,8 +1,9 @@
 package instance
 
 import (
-	"fastcat.org/go/gdev/internal"
 	"github.com/spf13/cobra"
+
+	"fastcat.org/go/gdev/internal"
 )
 
 type builder interface {

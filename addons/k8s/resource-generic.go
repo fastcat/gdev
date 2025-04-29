@@ -3,10 +3,11 @@ package k8s
 import (
 	"fmt"
 
-	"fastcat.org/go/gdev/internal"
-	"fastcat.org/go/gdev/resource"
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
+
+	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/resource"
 )
 
 // applyResource provides a generic partial implementation of
