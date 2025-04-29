@@ -6,10 +6,14 @@ import (
 	"fastcat.org/go/gdev/internal"
 )
 
+// ordered list of addon names pending initialization
+var pending []string
+
 func Initialize() {
 	// we guarantee initializers are allowed to do customizations, fail early if not
 	internal.CheckCanCustomize()
-	for _, d := range enabled {
+	for _, name := range pending {
+		d := enabled[name]
 		if d.initialized.CompareAndSwap(false, true) {
 			if err := d.Initialize(); err != nil {
 				panic(fmt.Errorf("failed to initialize addon %s: %w", d.Name, err))
@@ -18,4 +22,6 @@ func Initialize() {
 			}
 		}
 	}
+	// clear the list in case we get called again
+	pending = nil
 }

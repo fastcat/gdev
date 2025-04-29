@@ -33,6 +33,7 @@ func Register(def Definition) {
 		panic(fmt.Errorf("addon %q already enabled", def.Name))
 	}
 	enabled[def.Name] = &registration{Definition: def}
+	pending = append(pending, def.Name)
 }
 
 func Enabled() []Description {

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sync"
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
@@ -46,11 +47,12 @@ func Configure(opts ...option) {
 		panic(errors.New("must select a k3s container provider (containerd or docker)"))
 	}
 
+	// don't once this, overwrite the settings if they change
 	k8s.Configure(
 		k8s.WithContextFunc(addon.Config.ContextName),
 		k8s.WithNamespace(string(addon.Config.namespace)),
 	)
-
+	configureBootstrap() // once
 	addon.Config.provider.configure()
 
 	addon.RegisterIfNeeded(addons.Definition{
@@ -66,7 +68,7 @@ func Configure(opts ...option) {
 	})
 }
 
-func initialize() error {
+var configureBootstrap = sync.OnceFunc(func() {
 	k3sCmd := &cobra.Command{
 		Use: "k3s",
 	}
@@ -98,7 +100,9 @@ func initialize() error {
 		)),
 		bootstrap.WithChildCmds(k3sCmd),
 	)
+})
 
+func initialize() error {
 	// TODO: this isn't in the right place, as the k3s kube config won't exist to
 	// merge from until after k3s is running.
 	resource.AddContextEntry(mergeKubeConfig)
