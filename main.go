@@ -14,10 +14,9 @@ import (
 func main() {
 	// enable all addons we can in the main build so everything gets compiled, etc.
 
-	bootstrap.Enable()
 	// the steps for apt update and apt install should be added automatically due
 	// to having packages to install
-	bootstrap.AddStep(bootstrap.Step(
+	bootstrap.Configure(bootstrap.WithSteps(bootstrap.Step(
 		"Select Docker packages",
 		func(ctx *bootstrap.Context) error {
 			bootstrap.AddAptPackages(ctx, "docker.io")
@@ -29,7 +28,7 @@ func main() {
 		// updating the available list.
 		bootstrap.WithAfter(bootstrap.StepNameAptUpdate),
 		bootstrap.WithBefore(bootstrap.StepNameAptInstall),
-	))
+	)))
 
 	k8s.Configure()        // k3s will tweak it
 	containerd.Configure() // k3s will tweak it

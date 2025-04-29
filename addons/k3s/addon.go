@@ -66,12 +66,12 @@ func Configure(opts ...option) {
 }
 
 func initialize() error {
-	bootstrap.AddStep(bootstrap.Step("Install k3s",
+	bootstrap.Configure(bootstrap.WithSteps(bootstrap.Step("Install k3s",
 		func(ctx *bootstrap.Context) error {
 			return InstallStable(ctx, DefaultInstallPath)
 		},
 		// TODO: sim invoker that will still read the release data
-	))
+	)))
 
 	// TODO: this isn't in the right place, as the k3s kube config won't exist to
 	// merge from until after k3s is running.

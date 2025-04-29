@@ -17,8 +17,6 @@ type plan struct {
 	pending []*step
 }
 
-var defaultPlan = NewPlan()
-
 func NewPlan() *plan {
 	return &plan{byName: map[string]*step{}}
 }
@@ -73,10 +71,6 @@ func (p *plan) resolveOne(s *step) bool {
 	}
 	p.ordered = append(p.ordered, s)
 	return true
-}
-
-func AddStep(s *step) {
-	defaultPlan.AddSteps(s)
 }
 
 func (p *plan) Ready() bool {

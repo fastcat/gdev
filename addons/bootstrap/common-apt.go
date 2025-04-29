@@ -6,16 +6,12 @@ import "fmt"
 // should reference this as a `before` constraint.
 const StepNameAptUpdate = "apt-update"
 
-func AddAptUpdate() {
-	AddStep(aptUpdate())
-}
-
-// AddExtraAptUpdate adds a secondary `apt update` step with the given name. It
+// WithExtraAptUpdate adds a secondary `apt update` step with the given name. It
 // will always run after the main `apt update` step. You may pass additional
 // ordering constraints in the options.
-func AddExtraAptUpdate(name string, opts ...stepOpt) {
+func WithExtraAptUpdate(name string, opts ...stepOpt) option {
 	opts = append([]stepOpt{WithAfter(StepNameAptUpdate)}, opts...)
-	AddStep(Step(name, doAptUpdate, opts...))
+	return WithSteps(Step(name, doAptUpdate, opts...))
 }
 
 func aptUpdate() *step {
@@ -52,9 +48,6 @@ func ChangedAptSources(ctx *Context) {
 // to be before this step.
 const StepNameAptInstall = "apt-install"
 
-func AddAptInstall() {
-	AddStep(aptInstall())
-}
 func aptInstall() *step {
 	return Step(
 		StepNameAptInstall,
@@ -63,12 +56,12 @@ func aptInstall() *step {
 	)
 }
 
-// AddExtraAptInstall adds a secondary `apt install` step with the given name.
+// WithExtraAptInstall adds a secondary `apt install` step with the given name.
 // It will always run after the main `apt install` step. You may pass additional
 // ordering constraints in the options.
-func AddExtraAptInstall(name string, opts ...stepOpt) {
+func WithExtraAptInstall(name string, opts ...stepOpt) option {
 	opts = append([]stepOpt{WithAfter(StepNameAptInstall)}, opts...)
-	AddStep(Step(name, doAptUpdate, opts...))
+	return WithSteps(Step(name, doAptUpdate, opts...))
 }
 
 var pendingPackages = NewKey[map[string]struct{}]("pending-apt-packages")

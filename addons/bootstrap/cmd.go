@@ -3,6 +3,6 @@ package bootstrap
 import "context"
 
 func Run(ctx context.Context) error {
-	defaultPlan.AddDefaultSteps()
-	return defaultPlan.Run(ctx)
+	addon.Config.plan.AddDefaultSteps()
+	return addon.Config.plan.Run(ctx)
 }
