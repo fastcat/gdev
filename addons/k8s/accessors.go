@@ -6,7 +6,6 @@ import (
 	apiAppsV1 "k8s.io/api/apps/v1"
 	apiCoreV1 "k8s.io/api/core/v1"
 	apiMetaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
 	applyMetaV1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -20,9 +19,9 @@ import (
 )
 
 type client[Resource any, Apply apply[Apply]] interface {
-	Apply(context.Context, Apply, metaV1.ApplyOptions) (*Resource, error)
-	Delete(context.Context, string, metaV1.DeleteOptions) error
-	Get(context.Context, string, metaV1.GetOptions) (*Resource, error)
+	Apply(context.Context, Apply, apiMetaV1.ApplyOptions) (*Resource, error)
+	Delete(context.Context, string, apiMetaV1.DeleteOptions) error
+	Get(context.Context, string, apiMetaV1.GetOptions) (*Resource, error)
 
 	// could also add Create, Update, DeleteCollection, Watch, Patch as needed
 }
@@ -45,9 +44,9 @@ type accessor[
 	getClient func(c kubernetes.Interface, ns Namespace) Client
 	// list wraps the native List method on Client to avoid extra generics on the
 	// <Resource>List type
-	list         func(ctx context.Context, c Client, opts metaV1.ListOptions) ([]Resource, error)
+	list         func(ctx context.Context, c Client, opts apiMetaV1.ListOptions) ([]Resource, error)
 	applyMeta    func(a Apply) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration)
-	resourceMeta func(r *Resource) (*metaV1.TypeMeta, *metaV1.ObjectMeta)
+	resourceMeta func(r *Resource) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta)
 	podTemplate  func(a Apply) *applyCoreV1.PodSpecApplyConfiguration
 }
 
@@ -59,7 +58,7 @@ var accStatefulSet = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.StatefulSetInterface {
 		return c.AppsV1().StatefulSets(string(ns))
 	},
-	list: func(ctx context.Context, c clientAppsV1.StatefulSetInterface, opts metaV1.ListOptions) ([]apiAppsV1.StatefulSet, error) {
+	list: func(ctx context.Context, c clientAppsV1.StatefulSetInterface, opts apiMetaV1.ListOptions) ([]apiAppsV1.StatefulSet, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
@@ -71,7 +70,7 @@ var accStatefulSet = accessor[
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
 	},
-	resourceMeta: func(r *apiAppsV1.StatefulSet) (*metaV1.TypeMeta, *metaV1.ObjectMeta) {
+	resourceMeta: func(r *apiAppsV1.StatefulSet) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
 	podTemplate: func(a *applyAppsV1.StatefulSetApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
@@ -87,7 +86,7 @@ var accDeployment = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.DeploymentInterface {
 		return c.AppsV1().Deployments(string(ns))
 	},
-	list: func(ctx context.Context, c clientAppsV1.DeploymentInterface, opts metaV1.ListOptions) ([]apiAppsV1.Deployment, error) {
+	list: func(ctx context.Context, c clientAppsV1.DeploymentInterface, opts apiMetaV1.ListOptions) ([]apiAppsV1.Deployment, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
@@ -99,7 +98,7 @@ var accDeployment = accessor[
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
 	},
-	resourceMeta: func(r *apiAppsV1.Deployment) (*metaV1.TypeMeta, *metaV1.ObjectMeta) {
+	resourceMeta: func(r *apiAppsV1.Deployment) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
 	podTemplate: func(a *applyAppsV1.DeploymentApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
@@ -115,7 +114,7 @@ var accService = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.ServiceInterface {
 		return c.CoreV1().Services(string(ns))
 	},
-	list: func(ctx context.Context, c clientCoreV1.ServiceInterface, opts metaV1.ListOptions) ([]apiCoreV1.Service, error) {
+	list: func(ctx context.Context, c clientCoreV1.ServiceInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.Service, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
@@ -127,7 +126,7 @@ var accService = accessor[
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
 	},
-	resourceMeta: func(r *apiCoreV1.Service) (*metaV1.TypeMeta, *metaV1.ObjectMeta) {
+	resourceMeta: func(r *apiCoreV1.Service) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
 }
