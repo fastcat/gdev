@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"os/exec"
+	"sync"
 
 	"github.com/magefile/mage/mg"
 
@@ -16,9 +18,16 @@ func LintDefault(ctx context.Context) error {
 
 type Lint struct{}
 
+var findGCI = sync.OnceValue(func() string {
+	if p, err := exec.LookPath("golangci-lint-v2"); err == nil {
+		return p
+	}
+	return "golangci-lint"
+})
+
 func (Lint) Golangci(ctx context.Context) error {
 	fmt.Println("Lint: golangci-lint")
-	return shx.Run(ctx, "golangci-lint", "run")
+	return shx.Run(ctx, findGCI(), "run")
 }
 
 func (Lint) Govulncheck(ctx context.Context) error {
@@ -28,5 +37,5 @@ func (Lint) Govulncheck(ctx context.Context) error {
 
 func Format(ctx context.Context) error {
 	fmt.Println("Format: golangci-lint")
-	return shx.Run(ctx, "golangci-lint", "fmt")
+	return shx.Run(ctx, findGCI(), "fmt")
 }
