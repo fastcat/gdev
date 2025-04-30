@@ -68,6 +68,18 @@
 			]
 		},
 		{
+			"name": "bootstrap k3s cleanp-containerd",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"program": "${workspaceFolder}",
+			"args": [
+				"bootstrap",
+				"k3s",
+				"cleanup-containerd"
+			]
+		},
+		{
 			"name": "stack start",
 			"type": "go",
 			"request": "launch",

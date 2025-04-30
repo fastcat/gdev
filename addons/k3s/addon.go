@@ -98,7 +98,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			},
 		},
 		&cobra.Command{
-			Use:   "kill-pods",
+			Use:   "cleanup-containerd",
 			Short: "kill any containerd pods left running",
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, _ []string) error {
@@ -223,7 +223,7 @@ func stackService(cfg *config) service.Service {
 			// the containerd-shim-... processes to kill as well. Goes here because
 			// resources are stopped in reverse order, so it should run after k3s
 			// itself is stopped.
-			resource.PMStatic(api.Child{
+			resource.PMStaticInfra(api.Child{
 				// TODO: flag this service to not be restarted on stack "apply"
 				Name: "k3s",
 				Init: []api.Exec{{

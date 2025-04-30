@@ -52,32 +52,37 @@ func (p *PM) Start(ctx *Context) error {
 		return fmt.Errorf("failed to get child config: %w", err)
 	}
 	cur, err := client.Child(ctx, child.Name)
-	if err != nil {
-		if !api.IsNotFound(err) {
-			return fmt.Errorf("failed checking child %s status: %w", child.Name, err)
-		}
-	} else {
-		// decide if we should stop & delete the child before recreating it
-		restart := true
-		if p.LimitRestarts && reflect.DeepEqual(child, &cur.Child) {
-			restart = false
-		}
-		if restart {
-			if cur.Status.State != api.ChildStopped {
-				if _, err = client.StopChild(ctx, child.Name); err != nil {
-					return fmt.Errorf("failed stopping child %s: %w", child.Name, err)
-				}
-			}
-			if _, err = client.DeleteChild(ctx, child.Name); err != nil {
-				return fmt.Errorf("failed deleting child %s: %w", child.Name, err)
+	if err != nil && !api.IsNotFound(err) {
+		return fmt.Errorf("failed checking child %s status: %w", child.Name, err)
+	}
+	// decide if we should stop & delete the child before recreating it
+	update, start := true, true
+	clear := cur != nil
+	if p.LimitRestarts &&
+		cur != nil &&
+		cur.Status.State == api.ChildRunning &&
+		reflect.DeepEqual(child, &cur.Child) {
+		clear, update, start = false, false, false
+	}
+	if clear {
+		if cur.Status.State != api.ChildStopped {
+			if _, err = client.StopChild(ctx, child.Name); err != nil {
+				return fmt.Errorf("failed stopping child %s: %w", child.Name, err)
 			}
 		}
+		if _, err = client.DeleteChild(ctx, child.Name); err != nil {
+			return fmt.Errorf("failed deleting child %s: %w", child.Name, err)
+		}
 	}
-	if _, err = client.PutChild(ctx, *child); err != nil {
-		return fmt.Errorf("failed adding child %s: %w", child.Name, err)
+	if update {
+		if _, err = client.PutChild(ctx, *child); err != nil {
+			return fmt.Errorf("failed adding child %s: %w", child.Name, err)
+		}
 	}
-	if cur, err = client.StartChild(ctx, child.Name); err != nil {
-		return fmt.Errorf("failed starting child %s: %w", child.Name, err)
+	if start {
+		if cur, err = client.StartChild(ctx, child.Name); err != nil {
+			return fmt.Errorf("failed starting child %s: %w", child.Name, err)
+		}
 	}
 	// TODO: logging or something
 	_ = cur
