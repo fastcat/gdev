@@ -5,6 +5,7 @@
 		"golangci",
 		"govulncheck",
 		"jedib0t",
+		"journalctl",
 		"libc",
 		"nolint",
 		"pg_isready",
@@ -12,6 +13,6 @@
 		"pids",
 		"pkill",
 		"stretchr",
-		"svcs",
+		"svcs"
 	]
 }

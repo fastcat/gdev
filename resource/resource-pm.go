@@ -3,22 +3,38 @@ package resource
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"fastcat.org/go/gdev/pm/api"
 )
 
 type PM struct {
-	Name   string
-	Config func(context.Context) (*api.Child, error)
+	Name          string
+	Config        func(context.Context) (*api.Child, error)
+	LimitRestarts bool
 }
 
 func PMStatic(config api.Child) *PM {
-	return &PM{config.Name, func(context.Context) (*api.Child, error) { return &config, nil }}
+	return &PM{
+		Name:   config.Name,
+		Config: func(context.Context) (*api.Child, error) { return &config, nil },
+	}
+}
+
+func PMStaticInfra(config api.Child) *PM {
+	return &PM{
+		Name:          config.Name,
+		Config:        func(context.Context) (*api.Child, error) { return &config, nil },
+		LimitRestarts: true,
+	}
 }
 
 func PMDynamic(name string, config func(context.Context) (*api.Child, error)) *PM {
-	return &PM{name, config}
+	return &PM{
+		Name:   name,
+		Config: config,
+	}
 }
 
 var _ Resource = (*PM)(nil)
@@ -41,14 +57,20 @@ func (p *PM) Start(ctx *Context) error {
 			return fmt.Errorf("failed checking child %s status: %w", child.Name, err)
 		}
 	} else {
-		// stop & delete the child before recreating it
-		if cur.Status.State != api.ChildStopped {
-			if _, err = client.StopChild(ctx, child.Name); err != nil {
-				return fmt.Errorf("failed stopping child %s: %w", child.Name, err)
-			}
+		// decide if we should stop & delete the child before recreating it
+		restart := true
+		if p.LimitRestarts && reflect.DeepEqual(child, &cur.Child) {
+			restart = false
 		}
-		if _, err = client.DeleteChild(ctx, child.Name); err != nil {
-			return fmt.Errorf("failed deleting child %s: %w", child.Name, err)
+		if restart {
+			if cur.Status.State != api.ChildStopped {
+				if _, err = client.StopChild(ctx, child.Name); err != nil {
+					return fmt.Errorf("failed stopping child %s: %w", child.Name, err)
+				}
+			}
+			if _, err = client.DeleteChild(ctx, child.Name); err != nil {
+				return fmt.Errorf("failed deleting child %s: %w", child.Name, err)
+			}
 		}
 	}
 	if _, err = client.PutChild(ctx, *child); err != nil {

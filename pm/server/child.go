@@ -308,6 +308,9 @@ func (c *child) start(
 	// set pgid so we can kill process groups
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	// TODO: logfiles
+	// for now let journalctl capture everything
+	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+
 	if err := cmd.Start(); err != nil {
 		return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState
 	}

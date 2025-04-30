@@ -78,7 +78,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			Use:   "install",
 			Short: "install / update k3s",
 			Args:  cobra.NoArgs,
-			RunE: func(cmd *cobra.Command, args []string) error {
+			RunE: func(cmd *cobra.Command, _ []string) error {
 				return InstallStable(cmd.Context(), DefaultInstallPath)
 			},
 		},
@@ -86,7 +86,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			Use:   "setup",
 			Short: "do first time start to setup baseline k3s configuration",
 			Args:  cobra.NoArgs,
-			RunE: func(cmd *cobra.Command, args []string) error {
+			RunE: func(cmd *cobra.Command, _ []string) error {
 				ctx := resource.NewEmptyContext(cmd.Context())
 				rs := stackService(&addon.Config).Resources(ctx)
 				for _, r := range rs {
@@ -98,10 +98,18 @@ var configureBootstrap = sync.OnceFunc(func() {
 			},
 		},
 		&cobra.Command{
+			Use:   "kill-pods",
+			Short: "kill any containerd pods left running",
+			Args:  cobra.NoArgs,
+			RunE: func(cmd *cobra.Command, _ []string) error {
+				return killPods(cmd.Context())
+			},
+		},
+		&cobra.Command{
 			Use:   "uninstall",
 			Short: "uninstall k3s",
 			Args:  cobra.NoArgs,
-			RunE: func(cmd *cobra.Command, args []string) error {
+			RunE: func(cmd *cobra.Command, _ []string) error {
 				return Uninstall(cmd.Context(), DefaultInstallPath)
 			},
 		},
@@ -131,7 +139,10 @@ func initialize() error {
 	// is easy with docker but harder with containerd once k3s (which _is_
 	// containerd) is gone.
 
-	stack.AddService(stackService(&addon.Config))
+	stack.AddInfrastructure(stackService(&addon.Config))
+	// TODO: add infra service to wait for kube to be ready to run pods in the
+	// selected namespace: it exists, and at least one node is ready. except this
+	// really belongs in the k8s addon, but that produces an ordering issue.
 
 	addon.Initialized()
 
@@ -215,6 +226,12 @@ func stackService(cfg *config) service.Service {
 			resource.PMStatic(api.Child{
 				// TODO: flag this service to not be restarted on stack "apply"
 				Name: "k3s",
+				Init: []api.Exec{{
+					// try to kill running k3s before trying to start a new one
+					Cwd:  "/",
+					Cmd:  "/bin/sh",
+					Args: []string{"-c", "sudo -n pkill -TERM k3s || true"},
+				}},
 				Main: api.Exec{
 					Cwd: "/", // TODO: $HOME?
 					// TODO: support running k3s not as root
@@ -228,12 +245,6 @@ func stackService(cfg *config) service.Service {
 						cfg.k3sArgs...,
 					),
 				},
-				Init: []api.Exec{{
-					// try to kill running k3s before trying to start a new one
-					Cwd:  "/",
-					Cmd:  "/bin/sh",
-					Args: []string{"-c", "sudo -n pkill -TERM k3s || true"},
-				}},
 				HealthCheck: &api.HealthCheck{
 					TimeoutSeconds: 1,
 					Http: &api.HttpHealthCheck{
@@ -262,7 +273,7 @@ func mergeKubeConfig(ctx context.Context) (clientConfigMarker, error) {
 	if err != nil {
 		// often not readable to us, try again with sudo if so
 		if !errors.Is(err, os.ErrPermission) {
-			return ret, err
+			return ret, fmt.Errorf("failed to read k3s config: %w", err)
 		}
 		if r, err2 := sys.SudoReader(ctx, k3sFn, false); err2 != nil {
 			return ret, fmt.Errorf("failed to read k3s config %s: %w", k3sFn, errors.Join(err, err2))
@@ -274,7 +285,7 @@ func mergeKubeConfig(ctx context.Context) (clientConfigMarker, error) {
 		} else if err := r.Close(); err != nil {
 			return ret, err
 		} else if k3sCfg, err = clientcmd.Load(content); err != nil {
-			return ret, err
+			return ret, fmt.Errorf("failed to parse k3s config: %w", err)
 		}
 	}
 

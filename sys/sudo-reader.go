@@ -50,6 +50,9 @@ func (s *sudoReader) Close() error {
 	err1 := s.r.Close()
 	s.cancel() // will kill the child process
 	err2 := s.cmd.Wait()
+	if errors.Is(err2, context.Canceled) {
+		err2 = nil
+	}
 	return errors.Join(err1, err2) // will be nil if no errors
 }
 
