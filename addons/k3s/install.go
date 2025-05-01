@@ -6,19 +6,21 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/user"
 	"runtime"
 	"slices"
 	"strings"
 
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/sys"
 )
 
 const DefaultInstallPath = "/usr/local/bin/k3s"
 
-func InstallStable(ctx context.Context, dest string) error {
-	if dest == "" {
-		dest = DefaultInstallPath
+func InstallStable(ctx context.Context, path string) error {
+	if path == "" {
+		path = DefaultInstallPath
 	}
 	relData, err := getK3SChannels(ctx, nil)
 	if err != nil {
@@ -29,6 +31,12 @@ func InstallStable(ctx context.Context, dest string) error {
 		return fmt.Errorf("cannot find release information for k3s stable channel")
 	}
 	ver := stableData.Latest
+
+	if installed, _ := InstalledVersion(ctx, path); ver == installed {
+		// TODO: verify checksum
+		return nil
+	}
+
 	ghc := internal.NewGitHubClient()
 	rel, err := ghc.Release(ctx, "k3s-io", "k3s", ver)
 	if err != nil {
@@ -67,7 +75,7 @@ func InstallStable(ctx context.Context, dest string) error {
 	// install the downloaded file to the destination location
 	if err := internal.Shell(
 		ctx,
-		[]string{"install", tfn, dest},
+		[]string{"install", tfn, path},
 		internal.WithSudo("install k3s"),
 	); err != nil {
 		return err
@@ -83,7 +91,7 @@ func InstalledVersion(ctx context.Context, path string) (string, error) {
 	cmd := exec.CommandContext(ctx, path, "--version")
 	cmd.Dir = "/"
 	data, err := cmd.Output()
-	if err == nil {
+	if err != nil {
 		return "", err
 	}
 	// expected output format:
@@ -93,8 +101,38 @@ func InstalledVersion(ctx context.Context, path string) (string, error) {
 		if !strings.HasPrefix(l, "k3s version ") {
 			continue
 		} else if f := strings.Fields(l); len(f) >= 3 {
-			return f[3], nil
+			return f[2], nil
 		}
 	}
 	return "", nil
+}
+
+func InstallSudoers(ctx context.Context, path string) error {
+	u, err := user.Current()
+	if err != nil {
+		return err
+	}
+	content := fmt.Sprintf(
+		"# THIS FILE IS GENERATED, DO NOT EDIT\n"+
+			"%[2]s ALL=(ALL:ALL) NOPASSWD: %[1]s\n"+
+			"%[2]s ALL=(ALL:ALL) NOPASSWD: /usr/bin/pkill -TERM k3s, /bin/pkill -TERM k3s\n",
+		path,
+		u.Username,
+	)
+	// don't overwrite unnecessarily
+	existing, err := sys.ReadFileAsRoot(ctx, path, true)
+	if err == nil && content == string(existing) {
+		// nothing to do
+		return nil
+	}
+	if err := sys.WriteFileAsRoot(
+		ctx,
+		fmt.Sprintf("/etc/sudoers.d/%s-k3s", instance.AppName()),
+		strings.NewReader(content),
+		0o444,
+	); err != nil {
+		return err
+	}
+
+	return nil
 }

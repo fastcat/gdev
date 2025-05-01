@@ -80,3 +80,11 @@ func WithPassStdio() ShellOpt {
 		},
 	}
 }
+
+func WithStdin(in io.Reader) ShellOpt {
+	return ShellOpt{
+		cmd: func(cmd *exec.Cmd) {
+			cmd.Stdin = in
+		},
+	}
+}

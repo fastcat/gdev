@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
-	"os"
 	"path/filepath"
 	"reflect"
 	"sync"
@@ -79,7 +77,13 @@ var configureBootstrap = sync.OnceFunc(func() {
 			Short: "install / update k3s",
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, _ []string) error {
-				return InstallStable(cmd.Context(), DefaultInstallPath)
+				if err := InstallStable(cmd.Context(), DefaultInstallPath); err != nil {
+					return err
+				}
+				if err := InstallSudoers(cmd.Context(), DefaultInstallPath); err != nil {
+					return err
+				}
+				return nil
 			},
 		},
 		&cobra.Command{
@@ -119,6 +123,12 @@ var configureBootstrap = sync.OnceFunc(func() {
 		bootstrap.WithSteps(bootstrap.Step("Install k3s",
 			func(ctx *bootstrap.Context) error {
 				return InstallStable(ctx, DefaultInstallPath)
+			},
+			// TODO: sim invoker that will still read the release data
+		)),
+		bootstrap.WithSteps(bootstrap.Step("Install sudoers to run k3s",
+			func(ctx *bootstrap.Context) error {
+				return InstallSudoers(ctx, DefaultInstallPath)
 			},
 			// TODO: sim invoker that will still read the release data
 		)),
@@ -166,6 +176,7 @@ func WithContext(name string) option {
 		ac.contextName = name
 	}
 }
+
 func WithNamespace(name string) option {
 	return func(ac *config) {
 		ac.namespace = k8s.Namespace(name)
@@ -269,24 +280,13 @@ func mergeKubeConfig(ctx context.Context) (clientConfigMarker, error) {
 	addon.CheckInitialized()
 	var ret clientConfigMarker
 	const k3sFn = "/etc/rancher/k3s/k3s.yaml"
-	k3sCfg, err := clientcmd.LoadFromFile(k3sFn)
+	content, err := sys.ReadFileAsRoot(ctx, k3sFn, false)
 	if err != nil {
-		// often not readable to us, try again with sudo if so
-		if !errors.Is(err, os.ErrPermission) {
-			return ret, fmt.Errorf("failed to read k3s config: %w", err)
-		}
-		if r, err2 := sys.SudoReader(ctx, k3sFn, false); err2 != nil {
-			return ret, fmt.Errorf("failed to read k3s config %s: %w", k3sFn, errors.Join(err, err2))
-		} else if content, err := io.ReadAll(r); err != nil {
-			if err2 := r.Close(); err2 != nil {
-				err = errors.Join(err, err2)
-			}
-			return ret, fmt.Errorf("failed to read k3s config %s: %w", k3sFn, err)
-		} else if err := r.Close(); err != nil {
-			return ret, err
-		} else if k3sCfg, err = clientcmd.Load(content); err != nil {
-			return ret, fmt.Errorf("failed to parse k3s config: %w", err)
-		}
+		return ret, fmt.Errorf("failed to read k3s kube config: %w", err)
+	}
+	k3sCfg, err := clientcmd.Load(content)
+	if err != nil {
+		return ret, fmt.Errorf("failed to parse k3s config: %w", err)
 	}
 
 	rules := clientcmd.NewDefaultClientConfigLoadingRules()
