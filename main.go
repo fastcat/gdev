@@ -7,6 +7,7 @@ import (
 	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/addons/k8s"
 	"fastcat.org/go/gdev/addons/postgres"
+	"fastcat.org/go/gdev/addons/valkey"
 	"fastcat.org/go/gdev/cmd"
 	"fastcat.org/go/gdev/stack"
 )
@@ -40,6 +41,7 @@ func main() {
 	)
 
 	stack.AddService(postgres.Service())
+	stack.AddService(valkey.Service())
 
 	cmd.Main()
 }
