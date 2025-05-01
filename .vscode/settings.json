@@ -14,5 +14,9 @@
 		"pkill",
 		"stretchr",
 		"svcs"
-	]
+	],
+	"gopls": {
+		"formatting.gofumpt": true,
+		"formatting.local": "fastcat.org"
+	}
 }

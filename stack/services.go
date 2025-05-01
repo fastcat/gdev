@@ -3,13 +3,17 @@ package stack
 import (
 	"fmt"
 
+	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/service"
 )
 
-var allServices = map[string]service.Service{}
-var infraOrder, serviceOrder []string
+var (
+	allServices              = map[string]service.Service{}
+	infraOrder, serviceOrder []string
+)
 
 func AddService(svc service.Service) {
+	internal.CheckCanCustomize()
 	name := svc.Name()
 	if _, ok := allServices[name]; ok {
 		panic(fmt.Errorf("already registered service %s", name))
@@ -17,7 +21,9 @@ func AddService(svc service.Service) {
 	allServices[name] = svc
 	serviceOrder = append(serviceOrder, name)
 }
+
 func AddInfrastructure(svc service.Service) {
+	internal.CheckCanCustomize()
 	name := svc.Name()
 	if _, ok := allServices[name]; ok {
 		panic(fmt.Errorf("already registered service %s", name))
@@ -27,6 +33,7 @@ func AddInfrastructure(svc service.Service) {
 }
 
 func AllInfrastructure() []service.Service {
+	internal.CheckLockedDown()
 	ret := make([]service.Service, 0, len(infraOrder))
 	for _, n := range infraOrder {
 		ret = append(ret, allServices[n])
@@ -35,6 +42,7 @@ func AllInfrastructure() []service.Service {
 }
 
 func AllServices() []service.Service {
+	internal.CheckLockedDown()
 	ret := make([]service.Service, 0, len(allServices))
 	for _, n := range serviceOrder {
 		ret = append(ret, allServices[n])

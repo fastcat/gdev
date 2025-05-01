@@ -3,6 +3,7 @@ formatters:
   enable:
     - golines
     - goimports
+    - gofumpt
   settings:
     golines:
       max-len: 110
@@ -14,3 +15,5 @@ formatters:
     goimports:
       local-prefixes:
         - fastcat.org
+    gofumpt:
+      extra-rules: true

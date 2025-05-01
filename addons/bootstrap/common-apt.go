@@ -4,7 +4,7 @@ import "fmt"
 
 // Name of the step registered by [AddAptUpdate]. Steps that modify apt sources
 // should reference this as a `before` constraint.
-const StepNameAptUpdate = "apt-update"
+const StepNameAptUpdate = "apt update"
 
 // WithExtraAptUpdate adds a secondary `apt update` step with the given name. It
 // will always run after the main `apt update` step. You may pass additional
@@ -46,7 +46,7 @@ func ChangedAptSources(ctx *Context) {
 // Name of the step registered by [AddAptInstall]. This step will install
 // pending packages enqueued with [AddAptPackages]. Set any step that uses that
 // to be before this step.
-const StepNameAptInstall = "apt-install"
+const StepNameAptInstall = "apt install"
 
 func aptInstall() *step {
 	return Step(
@@ -100,6 +100,21 @@ func AddAptPackages(ctx *Context, names ...string) {
 	for _, name := range names {
 		pkgSet[name] = struct{}{}
 	}
+}
+
+func WithAptPackages(
+	stepName string,
+	packages ...string,
+) option {
+	return WithSteps(Step(
+		stepName,
+		func(ctx *Context) error {
+			AddAptPackages(ctx, packages...)
+			return nil
+		},
+		// apt update will get added automatically
+		WithBefore(StepNameAptInstall),
+	))
 }
 
 func init() {

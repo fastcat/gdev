@@ -11,8 +11,9 @@ import (
 	"strconv"
 	"strings"
 
-	"fastcat.org/go/gdev/internal"
 	"golang.org/x/sync/errgroup"
+
+	"fastcat.org/go/gdev/internal"
 )
 
 func killPods(ctx context.Context) error {
