@@ -34,15 +34,21 @@ func Configure(opts ...option) {
 }
 
 func initialize() error {
+	dryRun := false
 	cmd := &cobra.Command{
 		Use:   "bootstrap",
 		Args:  cobra.NoArgs,
 		Short: "install & configure system dependencies",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if dryRun {
+				return Sim(cmd.Context())
+			}
 			return Run(cmd.Context())
 		},
 	}
+	cmd.Flags().BoolVarP(&dryRun, "dry-run", "n", dryRun, "don't actually change anything")
 	instance.AddCommands(cmd)
+
 	for _, f := range addon.Config.cmdFactories {
 		cmd.AddCommand(f.Build())
 	}

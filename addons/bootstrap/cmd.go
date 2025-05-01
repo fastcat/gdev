@@ -6,3 +6,8 @@ func Run(ctx context.Context) error {
 	addon.Config.plan.AddDefaultSteps()
 	return addon.Config.plan.Run(ctx)
 }
+
+func Sim(ctx context.Context) error {
+	addon.Config.plan.AddDefaultSteps()
+	return addon.Config.plan.Sim(ctx)
+}
