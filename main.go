@@ -27,7 +27,14 @@ func main() {
 		postgres.WithService(),
 	)
 	valkey.Configure(
-		valkey.WithService(),
+		valkey.WithService(
+			valkey.WithConfig(
+				// don't use too much memory in a dev demo setup
+				"maxmemory 100mb",
+				// evict anything to stay below the limit, on an LRU basis
+				"maxmemory-policy allkeys-lru",
+			),
+		),
 	)
 
 	cmd.Main()

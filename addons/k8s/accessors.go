@@ -159,6 +159,35 @@ var accService = accessor[
 	},
 }
 
+var accConfigMap = accessor[
+	clientCoreV1.ConfigMapInterface,
+	apiCoreV1.ConfigMap,
+	*applyCoreV1.ConfigMapApplyConfiguration,
+]{
+	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.ConfigMapInterface {
+		return c.CoreV1().ConfigMaps(string(ns))
+	},
+	list: func(ctx context.Context, c clientCoreV1.ConfigMapInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.ConfigMap, error) {
+		l, err := c.List(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+		return l.Items, nil
+	},
+	applyMeta: func(a *applyCoreV1.ConfigMapApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+		// this will ensure the ObjectMeta... is populated
+		a.GetName()
+		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
+	},
+	resourceMeta: func(r *apiCoreV1.ConfigMap) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
+		return &r.TypeMeta, &r.ObjectMeta
+	},
+	ready: func(*resource.Context, *apiCoreV1.ConfigMap) (bool, error) {
+		// config maps have no readiness gates
+		return true, nil
+	},
+}
+
 var accPVC = accessor[
 	clientCoreV1.PersistentVolumeClaimInterface,
 	apiCoreV1.PersistentVolumeClaim,
@@ -205,7 +234,6 @@ var accPVC = accessor[
 			status == apiCoreV1.VolumeBound ||
 			status == apiCoreV1.VolumeReleased
 		return ready, nil
-
 	},
 }
 

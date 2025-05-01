@@ -1,8 +1,11 @@
 package valkey
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"strconv"
+	"strings"
 
 	apiAppsV1 "k8s.io/api/apps/v1"
 	apiCoreV1 "k8s.io/api/core/v1"
@@ -40,6 +43,7 @@ func Service(
 	return service.NewService(
 		cfg.name,
 		service.WithResources(
+			cfg.configmap(),
 			cfg.deployment(),
 			cfg.service(),
 		),
@@ -51,9 +55,10 @@ func Service(
 const DefaultVariant = "alpine"
 
 type valkeySvcConfig struct {
-	name    string
-	major   int
-	variant *string
+	name     string
+	major    int
+	variant  *string
+	cfgLines []string
 }
 
 type valkeySvcOpt func(c *valkeySvcConfig)
@@ -92,6 +97,13 @@ func WithVariant(variant string) valkeySvcOpt {
 	}
 }
 
+// WithConfig adds additional lines to the valkey.conf file.
+func WithConfig(lines ...string) valkeySvcOpt {
+	return func(c *valkeySvcConfig) {
+		c.cfgLines = append(c.cfgLines, lines...)
+	}
+}
+
 // TODO: persistence support with a PVC
 
 func (c valkeySvcConfig) tag() string {
@@ -109,6 +121,27 @@ func (c valkeySvcConfig) tag() string {
 	} else {
 		return strconv.Itoa(c.major) + "-" + *c.variant
 	}
+}
+
+func (c valkeySvcConfig) configHash() string {
+	// this is just a change detection mechanism, don't need a super secure hash
+	h := sha1.New()
+	for _, l := range c.cfgLines {
+		if _, err := h.Write([]byte(l)); err != nil {
+			// this should never happen
+			panic(err)
+		}
+	}
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func (c valkeySvcConfig) configmap() k8s.Resource {
+	confLines := strings.Join(c.cfgLines, "\n")
+	cm := applyCoreV1.ConfigMap(c.name, "").
+		WithData(map[string]string{
+			"valkey.conf": confLines,
+		})
+	return k8s.ConfigMap(cm)
 }
 
 const DefaultPort = 6379 // same as redis
@@ -133,6 +166,7 @@ func (c valkeySvcConfig) deployment() k8s.ContainerResource {
 		WithImage(img).
 		// these are floating images, move forward automatically to get bug fixes
 		WithImagePullPolicy(apiCoreV1.PullAlways).
+		WithArgs("/conf/valkey.conf").
 		// TODO: allow setting config options, pass as args
 		WithPorts(
 			applyCoreV1.ContainerPort().
@@ -144,12 +178,29 @@ func (c valkeySvcConfig) deployment() k8s.ContainerResource {
 			// TODO: allow customization?
 		})...).
 		WithStartupProbe(startupProbe).
-		WithReadinessProbe(readyProbe)
+		WithReadinessProbe(readyProbe).
+		WithVolumeMounts(
+			applyCoreV1.VolumeMount().
+				WithName("config").
+				WithMountPath("/conf"),
+		)
 	ps := applyCoreV1.PodSpec().
-		WithContainers(pc)
+		WithContainers(pc).
+		WithVolumes(
+			applyCoreV1.Volume().
+				WithName("config").
+				WithConfigMap(
+					applyCoreV1.ConfigMapVolumeSource().
+						WithName("valkey").
+						WithDefaultMode(0o444),
+				),
+		)
 	pt := applyCoreV1.PodTemplateSpec().
 		WithSpec(ps).
-		// TODO: add annotations
+		WithAnnotations(map[string]string{
+			"config-hash": c.configHash(),
+		}).
+		// TODO: add standard annotations
 		// TODO: add standard labels
 		WithLabels(c.selector())
 	d := applyAppsV1.Deployment(c.name, "").WithSpec(
@@ -182,6 +233,7 @@ func (c valkeySvcConfig) service() k8s.Resource {
 	)
 	return k8s.Service(s)
 }
+
 func (c valkeySvcConfig) selector() map[string]string {
 	return map[string]string{
 		"app": c.name,
