@@ -3,11 +3,19 @@ package api
 import "time"
 
 type Child struct {
-	Name        string       `json:"name" validate:"required"`
-	Init        []Exec       `json:"init"`
-	Main        Exec         `json:"main" validate:"required"`
-	HealthCheck *HealthCheck `json:"healthCheck,omitempty"`
+	Name        string            `json:"name" validate:"required"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+	Init        []Exec            `json:"init"`
+	Main        Exec              `json:"main" validate:"required"`
+	HealthCheck *HealthCheck      `json:"healthCheck,omitempty"`
 }
+
+const (
+	// AnnotationGroup is a key to use in [Child.Annotations] to mark children in
+	// logical groups. For example, infrastructure that shouldn't be stopped by
+	// default can be put in a separate group.
+	AnnotationGroup = "group"
+)
 
 type Exec struct {
 	Cmd  string            `json:"cmd" validate:"required"`
@@ -62,10 +70,11 @@ type ChildWithStatus struct {
 }
 
 type ChildSummary struct {
-	Name    string     `json:"name"`
-	State   ChildState `json:"state"`
-	Pid     int        `json:"pid,omitzero"`
-	Healthy *bool      `json:"healthy,omitzero"`
+	Name        string            `json:"name"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+	State       ChildState        `json:"state"`
+	Pid         int               `json:"pid,omitzero"`
+	Healthy     *bool             `json:"healthy,omitzero"`
 }
 
 type HealthCheck struct {

@@ -237,6 +237,11 @@ func stackService(cfg *config) service.Service {
 			resource.PMStaticInfra(api.Child{
 				// TODO: flag this service to not be restarted on stack "apply"
 				Name: "k3s",
+				Annotations: map[string]string{
+					// TODO: we want this annotation to be automatic due to it being part
+					// of the infrastructure service list.
+					api.AnnotationGroup: "infrastructure",
+				},
 				Init: []api.Exec{{
 					// try to kill running k3s before trying to start a new one
 					Cwd:  "/",

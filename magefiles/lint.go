@@ -27,7 +27,12 @@ var findGCI = sync.OnceValue(func() string {
 
 func (Lint) Golangci(ctx context.Context) error {
 	fmt.Println("Lint: golangci-lint")
-	return shx.Run(ctx, findGCI(), "run")
+	return shx.Cmd(ctx, findGCI(), "run").
+		With(
+			// getting told the linter failed without seeing why is useless
+			shx.WithOutput(),
+		).
+		Run()
 }
 
 func (Lint) Govulncheck(ctx context.Context) error {

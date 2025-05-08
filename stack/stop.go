@@ -10,12 +10,17 @@ import (
 )
 
 // TODO: make progress printing pluggable
-func Stop(ctx context.Context) error {
+func Stop(ctx context.Context, includeInfrastructure bool) error {
 	rc, err := resource.NewContext(ctx)
 	if err != nil {
 		return err
 	}
-	if err := StopServices(rc, AllServices()...); err != nil {
+	svcs := AllServices()
+	if includeInfrastructure {
+		// infra starts before services, StopServices will reverse this order
+		svcs = append(AllInfrastructure(), svcs...)
+	}
+	if err := StopServices(rc, svcs...); err != nil {
 		return err
 	}
 	// don't stop infrastructure services

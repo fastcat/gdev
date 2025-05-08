@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"maps"
 	"net/http"
 	"sync"
 	"time"
@@ -190,9 +191,10 @@ func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 			}
 		}
 		cs := api.ChildSummary{
-			Name:  child.def.Name,
-			State: status.State,
-			Pid:   pid,
+			Name:        child.def.Name,
+			Annotations: maps.Clone(child.def.Annotations),
+			State:       status.State,
+			Pid:         pid,
 		}
 		ret = append(ret, cs)
 	}

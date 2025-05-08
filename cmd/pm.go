@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/list"
@@ -41,6 +42,7 @@ func pmCmd() *cobra.Command {
 	})
 
 	pm.AddCommand(pmAdd())
+
 	pm.AddCommand(&cobra.Command{
 		Use:   "start <name...>>",
 		Short: "starts one or more pm service(s)",
@@ -57,7 +59,8 @@ func pmCmd() *cobra.Command {
 			return nil
 		},
 	})
-	pm.AddCommand(&cobra.Command{
+
+	stop := &cobra.Command{
 		Use:   "stop <name...>",
 		Short: "stops one or more pm service(s)",
 		Args:  cobra.MinimumNArgs(1),
@@ -66,6 +69,32 @@ func pmCmd() *cobra.Command {
 			for _, name := range args {
 				if stat, err := c.StopChild(cmd.Context(), name); err != nil {
 					return fmt.Errorf("failed to stop %s: %w", name, err)
+				} else {
+					PrettyChildStatus(stat, os.Stdout)
+				}
+			}
+			return nil
+		},
+	}
+	pm.AddCommand(stop)
+	stop.AddCommand(&cobra.Command{
+		Use:   "group <name...>",
+		Short: "stops all pm services in the given group(s)",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			c := client.NewHTTP()
+			children, err := c.Summary(cmd.Context())
+			if err != nil {
+				return err
+			}
+			for _, child := range children {
+				// treat no group as the empty group
+				g := child.Annotations[api.AnnotationGroup]
+				if !slices.Contains(args, g) {
+					continue
+				}
+				if stat, err := c.StopChild(cmd.Context(), child.Name); err != nil {
+					return fmt.Errorf("failed to stop %s: %w", child.Name, err)
 				} else {
 					PrettyChildStatus(stat, os.Stdout)
 				}
