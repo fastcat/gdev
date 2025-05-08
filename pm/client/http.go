@@ -124,7 +124,6 @@ func (h *HTTP) do(
 		return nil, heFromResp(res, path)
 	}
 	return res, nil
-
 }
 
 func (h *HTTP) c() *http.Client {

@@ -41,6 +41,7 @@ func Save[T any](ctx *Context, k InfoKey[T], v T) {
 	}
 	ctx.info[k] = v
 }
+
 func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
 	v, ok := ctx.info[k]
 	if !ok {
@@ -49,6 +50,7 @@ func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
 	}
 	return v.(T), ok
 }
+
 func (ctx *Context) Value(key any) any {
 	if k, ok := key.(infoKey); ok {
 		return ctx.info[k]

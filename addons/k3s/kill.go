@@ -57,8 +57,7 @@ func shimPids(ctx context.Context) ([]int, error) {
 		commB, _, _ := bytes.Cut(content, []byte{0})
 		comm := string(commB)
 		if strings.HasPrefix(comm, base) && strings.HasPrefix(filepath.Base(comm), "containerd-shim") {
-			pidStr := strings.TrimPrefix(fn, "/proc/")
-			pidStr = strings.TrimSuffix(pidStr, "/cmdline")
+			// fn will be like /proc/<pid>/cmdline
 			return strconv.Atoi(strings.Split(fn, "/")[2])
 		}
 		return 0, nil

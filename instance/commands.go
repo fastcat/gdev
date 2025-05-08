@@ -34,6 +34,7 @@ func AddCommandBuilders(fns ...func() *cobra.Command) {
 		builders = append(builders, cmdFunc(b))
 	}
 }
+
 func AddCommands(cmds ...*cobra.Command) {
 	internal.CheckCanCustomize()
 	for _, c := range cmds {

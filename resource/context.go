@@ -52,7 +52,6 @@ func NewContext(ctx context.Context) (*Context, error) {
 
 func NewEmptyContext(ctx context.Context) *Context {
 	return &Context{ctx, make(map[ctxKey]any, len(ctxEntries))}
-
 }
 
 func (ctx *Context) Value(key any) any {

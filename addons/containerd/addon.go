@@ -60,6 +60,7 @@ func WithAddress(addr string) option {
 		ac.clientAddr = addr
 	}
 }
+
 func WithOpts(opts ...client.Opt) option {
 	return func(ac *config) {
 		ac.clientOpts = append(ac.clientOpts, opts...)

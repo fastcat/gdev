@@ -86,7 +86,7 @@ func ReadFileAsRoot(ctx context.Context, fn string, allowPrompt bool) ([]byte, e
 		// TODO: may double-mention the filename
 		return nil, fmt.Errorf("failed to open %s: %w", fn, err)
 	}
-	defer r.Close()
+	defer r.Close() // nolint:errcheck
 	content, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %w", fn, err)

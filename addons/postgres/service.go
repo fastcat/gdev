@@ -204,11 +204,13 @@ func (c pgSvcConfig) service() k8s.Resource {
 	)
 	return k8s.Service(s)
 }
+
 func (c pgSvcConfig) selector() map[string]string {
 	return map[string]string{
 		"app": c.name,
 	}
 }
+
 func (c pgSvcConfig) pvcName() string {
 	return c.name + "-data"
 }

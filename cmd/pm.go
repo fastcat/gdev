@@ -193,7 +193,6 @@ func PrettyChildStatus(s *api.ChildWithStatus, out io.Writer) {
 			l.AppendItem(fmt.Sprintf("Stopping, pid: %d", s.Pid))
 		}
 		l.UnIndent()
-
 	}
 	if len(s.Init) != 0 {
 		l.AppendItem("Init")

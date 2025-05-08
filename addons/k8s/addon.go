@@ -66,16 +66,19 @@ func WithContext(name string) option {
 		ac.contextName = func() string { return name }
 	}
 }
+
 func WithContextFunc(namer func() string) option {
 	return func(ac *config) {
 		ac.contextName = namer
 	}
 }
+
 func WithNamespace(name string) option {
 	return func(ac *config) {
 		ac.namespace = Namespace(name)
 	}
 }
+
 func (c *config) ContextName() string {
 	internal.CheckLockedDown()
 	return c.contextName()
