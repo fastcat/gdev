@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fastcat.org/go/gdev/addons/pm"
+	"fastcat.org/go/gdev/addons/pm/api"
+	"fastcat.org/go/gdev/addons/pm/resource"
 	"fastcat.org/go/gdev/cmd"
 	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/pm/api"
-	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/service"
 	"fastcat.org/go/gdev/stack"
 )
@@ -12,6 +13,8 @@ import (
 func main() {
 	// cspell:ignore sdev
 	instance.SetAppName("sdev")
+	pm.Configure()
+
 	// TODO: lots of stuttering here
 	stack.AddService(service.NewService("svc1",
 		service.WithResources(

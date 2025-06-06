@@ -6,7 +6,8 @@ import (
 	"reflect"
 	"time"
 
-	"fastcat.org/go/gdev/pm/api"
+	"fastcat.org/go/gdev/addons/pm/api"
+	"fastcat.org/go/gdev/resource"
 )
 
 type PM struct {
@@ -37,7 +38,7 @@ func PMDynamic(name string, config func(context.Context) (*api.Child, error)) *P
 	}
 }
 
-var _ Resource = (*PM)(nil)
+var _ resource.Resource = (*PM)(nil)
 
 // ID implements Resource.
 func (p *PM) ID() string {
@@ -45,8 +46,8 @@ func (p *PM) ID() string {
 }
 
 // Start implements Resource.
-func (p *PM) Start(ctx *Context) error {
-	client := ContextValue[api.API](ctx)
+func (p *PM) Start(ctx *resource.Context) error {
+	client := resource.ContextValue[api.API](ctx)
 	child, err := p.Config(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get child config: %w", err)
@@ -90,8 +91,8 @@ func (p *PM) Start(ctx *Context) error {
 }
 
 // Stop implements Resource.
-func (p *PM) Stop(ctx *Context) error {
-	client := ContextValue[api.API](ctx)
+func (p *PM) Stop(ctx *resource.Context) error {
+	client := resource.ContextValue[api.API](ctx)
 	child, err := p.Config(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get child config: %w", err)
@@ -130,8 +131,8 @@ func (p *PM) Stop(ctx *Context) error {
 }
 
 // Ready implements Resource
-func (p *PM) Ready(ctx *Context) (bool, error) {
-	client := ContextValue[api.API](ctx)
+func (p *PM) Ready(ctx *resource.Context) (bool, error) {
+	client := resource.ContextValue[api.API](ctx)
 	child, err := p.Config(ctx)
 	if err != nil {
 		return false, fmt.Errorf("failed to get child config: %w", err)

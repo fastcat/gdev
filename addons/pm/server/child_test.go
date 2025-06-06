@@ -8,7 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"fastcat.org/go/gdev/pm/api"
+	"fastcat.org/go/gdev/addons/pm/api"
 )
 
 func TestChildSleeps(t *testing.T) {

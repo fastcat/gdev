@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	"fastcat.org/go/gdev/pm/api"
+	"fastcat.org/go/gdev/addons/pm/api"
 )
 
 func defaultDialer(ctx context.Context, network, addr string) (net.Conn, error) {

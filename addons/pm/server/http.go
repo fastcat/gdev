@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"fastcat.org/go/gdev/pm/api"
-	"fastcat.org/go/gdev/pm/internal"
+	"fastcat.org/go/gdev/addons/pm/api"
+	"fastcat.org/go/gdev/addons/pm/internal"
 )
 
 type HTTP struct {

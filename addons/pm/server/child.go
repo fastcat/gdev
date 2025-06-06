@@ -18,7 +18,7 @@ import (
 	"syscall"
 	"time"
 
-	"fastcat.org/go/gdev/pm/api"
+	"fastcat.org/go/gdev/addons/pm/api"
 )
 
 type child struct {

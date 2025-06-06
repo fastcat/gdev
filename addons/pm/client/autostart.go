@@ -1,11 +1,11 @@
-package pm
+package client
 
 import (
 	"context"
 	"fmt"
 	"os"
 
-	"fastcat.org/go/gdev/pm/api"
+	"fastcat.org/go/gdev/addons/pm/api"
 	"fastcat.org/go/gdev/sys"
 )
 

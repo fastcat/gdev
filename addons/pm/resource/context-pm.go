@@ -5,14 +5,18 @@ import (
 	"fmt"
 	"time"
 
-	"fastcat.org/go/gdev/pm"
-	"fastcat.org/go/gdev/pm/api"
-	"fastcat.org/go/gdev/pm/client"
+	"fastcat.org/go/gdev/addons/pm/api"
+	"fastcat.org/go/gdev/addons/pm/client"
 )
 
-func newPMClient(ctx context.Context) (api.API, error) {
+// Create a new PM client, auto-starting the PM daemon if necessary.
+//
+// Do not use this function directly, with the PM addon registered, this will be
+// registered as a resource context value provider, fetch the existing client
+// from the resource context.
+func NewPMClient(ctx context.Context) (api.API, error) {
 	c := client.NewHTTP()
-	if err := pm.AutoStart(ctx, c); err != nil {
+	if err := client.AutoStart(ctx, c); err != nil {
 		return nil, err
 	}
 	// it may take a moment to start up
@@ -33,8 +37,4 @@ func newPMClient(ctx context.Context) (api.API, error) {
 			return nil, fmt.Errorf("pm daemon never became ready")
 		}
 	}
-}
-
-func init() {
-	AddContextEntry(newPMClient)
 }

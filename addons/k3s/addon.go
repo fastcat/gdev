@@ -15,9 +15,11 @@ import (
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/k8s"
+	"fastcat.org/go/gdev/addons/pm"
+	"fastcat.org/go/gdev/addons/pm/api"
+	pmResource "fastcat.org/go/gdev/addons/pm/resource"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
-	"fastcat.org/go/gdev/pm/api"
 	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/service"
 	"fastcat.org/go/gdev/stack"
@@ -46,6 +48,7 @@ func Configure(opts ...option) {
 		panic(errors.New("must select a k3s container provider (containerd or docker)"))
 	}
 
+	configurePM()
 	// don't once this, overwrite the settings if they change
 	k8s.Configure(
 		k8s.WithContextFunc(addon.Config.ContextName),
@@ -66,6 +69,10 @@ func Configure(opts ...option) {
 		Initialize: initialize,
 	})
 }
+
+var configurePM = sync.OnceFunc(func() {
+	pm.Configure()
+})
 
 var configureBootstrap = sync.OnceFunc(func() {
 	k3sCmd := &cobra.Command{
@@ -234,7 +241,7 @@ func stackService(cfg *config) service.Service {
 			// the containerd-shim-... processes to kill as well. Goes here because
 			// resources are stopped in reverse order, so it should run after k3s
 			// itself is stopped.
-			resource.PMStaticInfra(api.Child{
+			pmResource.PMStaticInfra(api.Child{
 				// TODO: flag this service to not be restarted on stack "apply"
 				Name: "k3s",
 				Annotations: map[string]string{

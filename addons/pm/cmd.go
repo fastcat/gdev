@@ -1,4 +1,4 @@
-package cmd
+package pm
 
 import (
 	"context"
@@ -13,11 +13,9 @@ import (
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 
-	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/pm"
-	"fastcat.org/go/gdev/pm/api"
-	"fastcat.org/go/gdev/pm/client"
-	"fastcat.org/go/gdev/pm/server"
+	"fastcat.org/go/gdev/addons/pm/api"
+	"fastcat.org/go/gdev/addons/pm/client"
+	"fastcat.org/go/gdev/addons/pm/server"
 )
 
 func pmCmd() *cobra.Command {
@@ -175,7 +173,7 @@ func PMStatusDetail(ctx context.Context, client api.API, names ...string) error 
 }
 
 func pmAutoStart(cmd *cobra.Command, _ []string) error {
-	return pm.AutoStart(cmd.Context(), client.NewHTTP())
+	return client.AutoStart(cmd.Context(), client.NewHTTP())
 }
 
 func PMTerminate(cmd *cobra.Command, _ []string) error {
@@ -305,8 +303,4 @@ func pmDaemon(cmd *cobra.Command, _ []string) error {
 		return err
 	}
 	return d.Run(cmd.Context())
-}
-
-func init() {
-	instance.AddCommandBuilders(pmCmd)
 }
