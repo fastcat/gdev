@@ -9,4 +9,6 @@ import (
 type Service interface {
 	Name() string
 	Resources(context.Context) []resource.Resource
+	LocalSource(context.Context) (root, subDir string, err error)
+	RemoteSource(context.Context) (vcs, repo string, err error)
 }
