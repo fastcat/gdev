@@ -9,6 +9,10 @@ import (
 type Service interface {
 	Name() string
 	Resources(context.Context) []resource.Resource
+}
+
+type ServiceWithSource interface {
+	Service
 	// LocalSource returns where the source code for this service is located on
 	// the local system, or if not present where it _should_ be located (so
 	// RemoteSource can be used to clone it).
