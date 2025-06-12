@@ -15,6 +15,7 @@ func Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// TODO: add build hook without depending on build addon
 	if err := StartServices(rc, AllInfrastructure()...); err != nil {
 		return err
 	}
