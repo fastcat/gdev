@@ -13,6 +13,7 @@ import (
 
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/shx"
 	"fastcat.org/go/gdev/sys"
 )
 
@@ -73,10 +74,10 @@ func InstallStable(ctx context.Context, path string) error {
 	// checksum doesn't match?
 
 	// install the downloaded file to the destination location
-	if err := internal.Shell(
+	if _, err := shx.Run(
 		ctx,
 		[]string{"install", tfn, path},
-		internal.WithSudo("install k3s"),
+		shx.WithSudo("install k3s"),
 	); err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"fastcat.org/go/gdev/addons"
+	"fastcat.org/go/gdev/instance"
 )
 
 var addon = addons.Addon[config]{
@@ -45,6 +46,11 @@ func WithStrategy(
 		if _, ok := c.strategies[name]; ok {
 			panic(fmt.Errorf("strategy %q already exists", name))
 		}
+		c.strategies[name] = strategy{
+			name:       name,
+			detector:   detector,
+			supersedes: supersedes,
+		}
 	}
 }
 
@@ -53,6 +59,8 @@ func initialize() error {
 	if err := addon.Config.resolveStrategyOrder(); err != nil {
 		return err
 	}
+
+	instance.AddCommandBuilders(makeCmd)
 
 	addon.Initialized()
 	return nil
@@ -81,13 +89,10 @@ func (c *config) resolveStrategyOrder() error {
 		}
 		seen[name] = true
 
-		s, ok := c.strategies[name]
-		if !ok {
-			return fmt.Errorf("strategy %q not found", name)
-		}
-
 		subPath := append(path, name)
-		for _, s := range s.supersedes {
+		// ensure deterministic order
+		slices.Sort(supersededBy[name])
+		for _, s := range supersededBy[name] {
 			if err := visit(s, subPath); err != nil {
 				return fmt.Errorf("%s.supersedes: %w", name, err)
 			}

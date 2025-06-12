@@ -2,10 +2,13 @@ package main
 
 import (
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/build"
 	"fastcat.org/go/gdev/addons/containerd"
 	"fastcat.org/go/gdev/addons/docker"
+	"fastcat.org/go/gdev/addons/golang"
 	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/addons/k8s"
+	"fastcat.org/go/gdev/addons/nodejs"
 	"fastcat.org/go/gdev/addons/postgres"
 	"fastcat.org/go/gdev/addons/valkey"
 	"fastcat.org/go/gdev/cmd"
@@ -36,6 +39,9 @@ func main() {
 			),
 		),
 	)
+	build.Configure() // strategies will be registered by other addons
+	nodejs.Configure()
+	golang.Configure()
 
 	cmd.Main()
 }

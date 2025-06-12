@@ -1,6 +1,10 @@
 package bootstrap
 
-import "fmt"
+import (
+	"fmt"
+
+	"fastcat.org/go/gdev/shx"
+)
 
 // Name of the step registered by [AddAptUpdate]. Steps that modify apt sources
 // should reference this as a `before` constraint.
@@ -26,10 +30,11 @@ func doAptUpdate(ctx *Context) error {
 		// we ran apt update once before, nothing has changed since, skip it
 		return nil
 	}
-	if err := Shell(
+	if _, err := shx.Run(
 		ctx,
 		[]string{"apt", "update"},
-		WithSudo("update available packages"),
+		shx.WithSudo("update available packages"),
+		shx.PassStdio(),
 	); err != nil {
 		return err
 	}
@@ -75,12 +80,12 @@ func doAptInstall(ctx *Context) error {
 	for pkg := range pkgSet {
 		cna = append(cna, pkg)
 	}
-	if err := Shell(
+	if _, err := shx.Run(
 		ctx,
 		cna,
-		WithSudo(fmt.Sprintf("install %d packages", len(pkgSet))),
+		shx.WithSudo(fmt.Sprintf("install %d packages", len(pkgSet))),
 		// installation may prompt for things
-		WithPassStdio(),
+		shx.PassStdio(),
 	); err != nil {
 		return err
 	}

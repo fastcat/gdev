@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/shx"
 )
 
 type sudoReader struct {
@@ -104,10 +104,10 @@ func WriteFileAsRoot(ctx context.Context, fn string, content io.Reader, mode os.
 	if _, err := os.Stat(dir); err != nil {
 		// give dirs we create sane permissions
 		dm := (mode & 0o775) | 0o700
-		if err := internal.Shell(
+		if _, err := shx.Run(
 			ctx,
 			[]string{"mkdir", "-p", dir, "-m", fmt.Sprintf("%04o", dm)},
-			internal.WithSudo(fmt.Sprintf("mkdir %s", dir)),
+			shx.WithSudo(fmt.Sprintf("mkdir %s", dir)),
 		); err != nil {
 			return err
 		}
@@ -115,11 +115,11 @@ func WriteFileAsRoot(ctx context.Context, fn string, content io.Reader, mode os.
 
 	// TODO: make sure there aren't nasty symlinks involved here and such
 
-	if err := internal.Shell(
+	if _, err := shx.Run(
 		ctx,
 		[]string{"tee", fn},
-		internal.WithSudo(fmt.Sprintf("write %s", fn)),
-		internal.WithStdin(content),
+		shx.WithSudo(fmt.Sprintf("write %s", fn)),
+		shx.FeedStdin(content),
 	); err != nil {
 		return err
 	}
@@ -127,10 +127,11 @@ func WriteFileAsRoot(ctx context.Context, fn string, content io.Reader, mode os.
 	// TODO: we'd like to set the file mode atomically with creating it, but
 	// that's tricky without extra dependencies
 
-	if err := internal.Shell(
+	if _, err := shx.Run(
 		ctx,
 		[]string{"chmod", fmt.Sprintf("%04o", mode), fn},
-		internal.WithSudo(fmt.Sprintf("set permissions on %s", fn)),
+		shx.WithSudo(fmt.Sprintf("set permissions on %s", fn)),
+		shx.PassStderr(),
 	); err != nil {
 		return err
 	}

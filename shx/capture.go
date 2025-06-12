@@ -20,6 +20,9 @@ type outCapture struct {
 }
 
 func (c *outCapture) Close() error {
+	if c == nil {
+		return nil
+	}
 	var errs []error
 	if c.writer != nil {
 		errs = append(errs, c.writer.Close())
@@ -77,4 +80,46 @@ func (c *outCapture) Write(p []byte) (n int, err error) {
 		c.buffer = &bytes.Buffer{}
 	}
 	return c.buffer.Write(p)
+}
+
+func (c *outCapture) doneWriting() error {
+	if c == nil {
+		return nil
+	}
+	if c.writer != nil {
+		if err := c.writer.Close(); err != nil {
+			return err
+		}
+		c.writer = nil
+	}
+	if c.tmpFile != nil {
+		// seek to the start so we can read it back out
+		if _, err := c.tmpFile.Seek(0, io.SeekStart); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// reader returns a reader over the captured output. If the output was written
+// to a custom writer, this returns nil.
+//
+// doneWriting must be called before this can be used.
+//
+// Calling with a nil receiver returns nil.
+func (c *outCapture) reader() io.Reader {
+	if c == nil {
+		return nil
+	}
+	if c.writer != nil {
+		return nil
+	}
+	if c.tmpFile != nil {
+		// need to have called doneWriting before we can read from tmpFile
+		return c.tmpFile
+	}
+	if c.buffer != nil {
+		return c.buffer
+	}
+	return nil // no output captured
 }

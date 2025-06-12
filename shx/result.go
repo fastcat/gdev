@@ -9,7 +9,6 @@ import (
 type Result struct {
 	stdoutCapture *outCapture
 	stderrCapture *outCapture
-	stdinFeed     io.ReadCloser
 
 	exitErr      error
 	processState *os.ProcessState
@@ -21,10 +20,6 @@ func (r *Result) Err() error {
 
 func (r *Result) Close() error {
 	var errs []error
-	if r.stdinFeed != nil {
-		errs = append(errs, r.stdinFeed.Close())
-		r.stdinFeed = nil
-	}
 	if r.stdoutCapture != nil {
 		errs = append(errs, r.stdoutCapture.Close())
 		r.stdoutCapture = nil
@@ -34,4 +29,35 @@ func (r *Result) Close() error {
 		r.stderrCapture = nil
 	}
 	return errors.Join(errs...)
+}
+
+func (r *Result) execDone() error {
+	var errs []error
+	if r.stdoutCapture != nil {
+		if err := r.stdoutCapture.doneWriting(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	if r.stderrCapture != nil {
+		if err := r.stderrCapture.doneWriting(); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	return errors.Join(errs...)
+}
+
+// Stdout returns a reader over the captured stdout output.
+//
+// If stdout was not captured, or was streamed to a custom Writer, this returns
+// nil.
+func (r *Result) Stdout() io.Reader {
+	return r.stdoutCapture.reader()
+}
+
+// Stderr returns a reader over the captured stderr output.
+//
+// If stderr was not captured, or was streamed to a custom Writer, this returns
+// nil.
+func (r *Result) Stderr() io.Reader {
+	return r.stderrCapture.reader()
 }

@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/shx"
 )
 
 func killPods(ctx context.Context) error {
@@ -36,10 +36,10 @@ func killPods(ctx context.Context) error {
 	for _, pid := range pids {
 		c = append(c, strconv.Itoa(pid))
 	}
-	if err := internal.Shell(
+	if _, err := shx.Run(
 		ctx,
 		c,
-		internal.WithSudo("kill containerd-shim and children"),
+		shx.WithSudo("kill containerd-shim and children"),
 	); err != nil {
 		return err
 	}

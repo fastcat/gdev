@@ -90,6 +90,18 @@
 			]
 		},
 		{
+			"name": "build self",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"program": "${workspaceFolder}",
+			"args": [
+				"build",
+				"-v",
+				"."
+			]
+		},
+		{
 			"name": "ex: stack start",
 			"type": "go",
 			"request": "launch",

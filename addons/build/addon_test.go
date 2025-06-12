@@ -36,7 +36,7 @@ func Test_config_resolveStrategyOrder(t *testing.T) {
 				"c": {},
 				"d": {"c"},
 			},
-			wantOrder: []string{"a", "b", "c", "d"},
+			wantOrder: []string{"b", "a", "d", "c"},
 			assertion: assert.NoError,
 		},
 		{
@@ -47,7 +47,7 @@ func Test_config_resolveStrategyOrder(t *testing.T) {
 				"b": {},
 				"a": {"b"},
 			},
-			wantOrder: []string{"b", "a", "d", "c"},
+			wantOrder: []string{"a", "b", "c", "d"},
 			assertion: assert.NoError,
 		},
 		{
@@ -60,7 +60,7 @@ func Test_config_resolveStrategyOrder(t *testing.T) {
 				"e": {"a", "b", "c"},
 				"f": {"a", "b", "c", "d", "e"},
 			},
-			wantOrder: []string{"a", "b", "c", "d", "e", "f"},
+			wantOrder: []string{"f", "d", "e", "c", "b", "a"},
 			assertion: assert.NoError,
 		},
 	}
@@ -201,7 +201,7 @@ func assertSuperseedsOrder(t *testing.T, c *config) {
 	for i, n := range c.strategyOrder {
 		seen[n] = true
 		for _, sup := range c.strategies[n].supersedes {
-			assert.True(t, seen[sup],
+			assert.False(t, seen[sup],
 				"strategy %q should come before its supersedes %q: %v",
 				n,
 				sup,
