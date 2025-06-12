@@ -15,11 +15,14 @@ func Start(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	// TODO: add build hook without depending on build addon
-	if err := StartServices(rc, AllInfrastructure()...); err != nil {
+	infra, svcs := AllInfrastructure(), AllServices()
+	if err := preStart(ctx, infra, svcs); err != nil {
+		return fmt.Errorf("error running pre-start hooks: %w", err)
+	}
+	if err := StartServices(rc, infra...); err != nil {
 		return err
 	}
-	if err := StartServices(rc, AllServices()...); err != nil {
+	if err := StartServices(rc, svcs...); err != nil {
 		return err
 	}
 	return nil

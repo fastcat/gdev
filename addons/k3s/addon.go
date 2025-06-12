@@ -233,7 +233,7 @@ func (c *config) ContextName() string {
 }
 
 func stackService(cfg *config) service.Service {
-	return service.NewService(
+	return service.New(
 		"k3s",
 		service.WithResources(
 			// TODO: add a stop-only resource that stops the systemd user unit it ran

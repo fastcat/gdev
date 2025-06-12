@@ -16,7 +16,7 @@ func main() {
 	pm.Configure()
 
 	// TODO: lots of stuttering here
-	stack.AddService(service.NewService("svc1",
+	stack.AddService(service.New("svc1",
 		service.WithResources(
 			resource.PMStatic(api.Child{
 				Name: "svc1",
@@ -27,7 +27,7 @@ func main() {
 			}),
 		),
 	))
-	stack.AddService(service.NewService("svc2",
+	stack.AddService(service.New("svc2",
 		service.WithResources(
 			resource.PMStatic(api.Child{
 				Name: "svc2",

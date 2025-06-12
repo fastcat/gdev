@@ -32,7 +32,7 @@ func Service(
 	if cfg.name == "" {
 		cfg.name = fmt.Sprintf("postgres-%d", cfg.major)
 	}
-	return service.NewService(
+	return service.New(
 		cfg.name,
 		service.WithResources(
 			cfg.pvc(),

@@ -40,7 +40,7 @@ func Service(
 		}
 	}
 
-	return service.NewService(
+	return service.New(
 		cfg.name,
 		service.WithResources(
 			cfg.configmap(),

@@ -7,6 +7,7 @@ import (
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/instance"
+	"fastcat.org/go/gdev/stack"
 )
 
 var addon = addons.Addon[config]{
@@ -61,6 +62,8 @@ func initialize() error {
 	}
 
 	instance.AddCommandBuilders(makeCmd)
+
+	stack.AddPreStartServiceHook("build", buildBeforeStart)
 
 	addon.Initialized()
 	return nil
