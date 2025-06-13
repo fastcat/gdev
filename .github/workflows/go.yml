@@ -1,0 +1,26 @@
+name: Go
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.24'
+
+    - name: Init
+      run: go tool mage -l
+    - name: Build
+      run: go tool mage -v compile
+    - name: Lint
+      run: go tool mage -v lint
+    - name: Test
+      run: go tool mage -v test
