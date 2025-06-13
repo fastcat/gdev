@@ -16,5 +16,6 @@ require (
 
 tool (
 	github.com/magefile/mage
+	golang.org/x/tools/cmd/stringer
 	golang.org/x/vuln/cmd/govulncheck
 )
