@@ -13,12 +13,12 @@ func Initialize() {
 	// we guarantee initializers are allowed to do customizations, fail early if not
 	internal.CheckCanCustomize()
 	for _, name := range pending {
-		d := enabled[name]
-		if d.initialized.CompareAndSwap(false, true) {
-			if err := d.Initialize(); err != nil {
-				panic(fmt.Errorf("failed to initialize addon %s: %w", d.Name, err))
-			} else if !d.initialized.Load() {
-				panic(fmt.Errorf("addon %s did not mark itself initialized", d.Name))
+		addon := enabled[name]
+		if addon.initialized.CompareAndSwap(false, true) {
+			if err := addon.Initialize(); err != nil {
+				panic(fmt.Errorf("failed to initialize addon %s: %w", addon.Name, err))
+			} else if !addon.initialized.Load() {
+				panic(fmt.Errorf("addon %s did not mark itself initialized", addon.Name))
 			}
 		}
 	}
