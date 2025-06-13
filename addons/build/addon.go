@@ -63,7 +63,7 @@ func initialize() error {
 
 	instance.AddCommandBuilders(makeCmd)
 
-	stack.AddPreStartServiceHook("build", buildBeforeStart)
+	stack.AddPreStartHookType[buildBeforeStart]()
 
 	addon.Initialized()
 	return nil

@@ -8,84 +8,98 @@ import (
 	"fastcat.org/go/gdev/service"
 )
 
-type PreStartServiceHook interface {
-	Name() string
-	Run(context.Context, service.Service) error
-}
-
-type preStartServiceHook struct {
-	name string
-	run  func(context.Context, service.Service) error
-}
-
-func (h *preStartServiceHook) Name() string { return h.name }
-func (h *preStartServiceHook) Run(ctx context.Context, svc service.Service) error {
-	return h.run(ctx, svc)
-}
-
 type PreStartHook interface {
 	Name() string
-	Run(ctx context.Context, infra, svcs []service.Service) error
+	BeforeServices(ctx context.Context, infra, svcs []service.Service) error
+	Service(context.Context, service.Service) error
+	AfterServices(ctx context.Context, infra, svcs []service.Service) error
 }
 
 type preStartHook struct {
-	name string
-	run  func(ctx context.Context, infra, svcs []service.Service) error
+	name           string
+	beforeServices func(ctx context.Context, infra, svcs []service.Service) error
+	service        func(ctx context.Context, svc service.Service) error
+	afterServices  func(ctx context.Context, infra, svcs []service.Service) error
 }
 
 func (h *preStartHook) Name() string { return h.name }
-func (h *preStartHook) Run(ctx context.Context, infra, svcs []service.Service) error {
-	return h.run(ctx, infra, svcs)
+
+func (h *preStartHook) BeforeServices(ctx context.Context, infra, svcs []service.Service) error {
+	if h.beforeServices == nil {
+		return nil // No specific before services hook defined
+	}
+	return h.beforeServices(ctx, infra, svcs)
 }
 
-var (
-	preStartServiceHooks []PreStartServiceHook
-	preStartHooks        []PreStartHook
-)
-
-func AddPreStartServiceHook(name string, run func(context.Context, service.Service) error) {
-	internal.CheckCanCustomize()
-	if name == "" {
-		panic("pre-start service hook name must not be empty")
+func (h *preStartHook) Service(ctx context.Context, svc service.Service) error {
+	if h.service == nil {
+		return nil // No specific service hook defined
 	}
-	if run == nil {
-		panic("pre-start service hook function must not be nil")
-	}
-	for _, h := range preStartServiceHooks {
-		if h.Name() == name {
-			panic("pre-start service hook with name " + name + " already exists")
-		}
-	}
-	preStartServiceHooks = append(preStartServiceHooks, &preStartServiceHook{name: name, run: run})
+	return h.service(ctx, svc)
 }
 
-func AddPreStartHook(name string, run func(ctx context.Context, infra, svcs []service.Service) error) {
+func (h *preStartHook) AfterServices(ctx context.Context, infra, svcs []service.Service) error {
+	if h.afterServices == nil {
+		return nil // No specific after services hook defined
+	}
+	return h.afterServices(ctx, infra, svcs)
+}
+
+var preStartHookFactories []func() PreStartHook
+
+func AddPreStartHook(fn func() PreStartHook) {
 	internal.CheckCanCustomize()
+	preStartHookFactories = append(preStartHookFactories, fn)
+}
+
+func AddPreStartHookType[T any, P interface {
+	*T
+	PreStartHook
+}]() {
+	AddPreStartHook(func() PreStartHook { return P(new(T)) })
+}
+
+func PreStartHookFuncs(
+	name string,
+	beforeServices func(ctx context.Context, infra, svcs []service.Service) error,
+	service func(ctx context.Context, svc service.Service) error,
+	afterServices func(ctx context.Context, infra, svcs []service.Service) error,
+) PreStartHook {
 	if name == "" {
 		panic("pre-start hook name must not be empty")
 	}
-	if run == nil {
-		panic("pre-start hook function must not be nil")
+	if beforeServices == nil && service == nil && afterServices == nil {
+		panic("at least one hook function must be provided")
 	}
-	for _, h := range preStartHooks {
-		if h.Name() == name {
-			panic("pre-start hook with name " + name + " already exists")
-		}
+	return &preStartHook{
+		name:           name,
+		beforeServices: beforeServices,
+		service:        service,
+		afterServices:  afterServices,
 	}
-	preStartHooks = append(preStartHooks, &preStartHook{name: name, run: run})
 }
 
 func preStart(ctx context.Context, infra, svcs []service.Service) error {
 	internal.CheckLockedDown()
+	hooks := make([]PreStartHook, 0, len(preStartHookFactories))
+	for _, factory := range preStartHookFactories {
+		hook := factory()
+		hooks = append(hooks, hook)
+	}
+	for _, hook := range hooks {
+		if err := hook.BeforeServices(ctx, infra, svcs); err != nil {
+			return fmt.Errorf("error running pre-start hook %s: %w", hook.Name(), err)
+		}
+	}
 	for _, svc := range svcs {
-		for _, hook := range preStartServiceHooks {
-			if err := hook.Run(ctx, svc); err != nil {
+		for _, hook := range hooks {
+			if err := hook.Service(ctx, svc); err != nil {
 				return fmt.Errorf("error running pre-start hook %s for service %s: %w", hook.Name(), svc.Name(), err)
 			}
 		}
 	}
-	for _, hook := range preStartHooks {
-		if err := hook.Run(ctx, infra, svcs); err != nil {
+	for _, hook := range hooks {
+		if err := hook.AfterServices(ctx, infra, svcs); err != nil {
 			return fmt.Errorf("error running pre-start hook %s: %w", hook.Name(), err)
 		}
 	}
