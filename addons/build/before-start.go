@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	"fastcat.org/go/gdev/service"
+	"fastcat.org/go/gdev/shx"
 )
 
 type buildBeforeStart struct {
@@ -60,23 +61,25 @@ func (b *buildBeforeStart) AfterServices(ctx context.Context, infra, svcs []serv
 	for root, subDirs := range b.repoDirs {
 		// TODO: deduplicate subDirs
 
+		prettyRoot := shx.PrettyPath(root)
+
 		sn, b, err := DetectStrategy(root)
 		if err != nil {
-			return fmt.Errorf("can't detect build strategy repo %s: %w", root, err)
+			return fmt.Errorf("can't detect build strategy repo %s: %w", prettyRoot, err)
 		} else if b == nil {
-			return fmt.Errorf("no build strategy for repo %s", root)
+			return fmt.Errorf("no build strategy for repo %s", prettyRoot)
 		}
 		opts := Options{ /* TODO */ }
 		// if any service needs the repo root, use BuildAll
 		if slices.Contains(subDirs, "") {
-			fmt.Printf("Building %s using %s\n", root, sn)
+			fmt.Printf("Building %s using %s\n", prettyRoot, sn)
 			err = b.BuildAll(ctx, opts)
 		} else {
-			fmt.Printf("Building %s using %s with subdirs %v\n", root, sn, subDirs)
+			fmt.Printf("Building %s using %s with subdirs %v\n", prettyRoot, sn, subDirs)
 			err = b.BuildDirs(ctx, subDirs, opts)
 		}
 		if err != nil {
-			return fmt.Errorf("error building repo %s with strategy %s: %w", root, sn, err)
+			return fmt.Errorf("error building repo %s with strategy %s: %w", prettyRoot, sn, err)
 		}
 	}
 	return nil

@@ -19,17 +19,20 @@ func Start(ctx context.Context) error {
 	if err := preStart(ctx, infra, svcs); err != nil {
 		return fmt.Errorf("error running pre-start hooks: %w", err)
 	}
-	if err := StartServices(rc, infra...); err != nil {
+	if err := StartServices(rc, "infrastructure", infra...); err != nil {
 		return err
 	}
-	if err := StartServices(rc, svcs...); err != nil {
+	if err := StartServices(rc, "stack", svcs...); err != nil {
 		return err
 	}
 	return nil
 }
 
-func StartServices(ctx *resource.Context, svcs ...service.Service) error {
-	fmt.Printf("Starting %d services...\n", len(svcs))
+func StartServices(ctx *resource.Context, kind string, svcs ...service.Service) error {
+	if len(svcs) == 0 {
+		return nil
+	}
+	fmt.Printf("Starting %d services (%s)...\n", len(svcs), kind)
 	resources := make([]resource.Resource, 0, len(svcs))
 	for _, svc := range svcs {
 		resources = append(resources, svc.Resources(ctx)...)

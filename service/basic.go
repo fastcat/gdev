@@ -37,30 +37,33 @@ func New(
 	if strings.ContainsFunc(name, unicode.IsSpace) {
 		panic(fmt.Errorf("service name %q must not contain whitespace", name))
 	}
-	svc := &basicService{}
-	svc.name = name
+	bs := &basicService{}
+	bs.name = name
+	svc := Service(bs)
 	for _, o := range opts {
-		o(svc)
+		svc = o(svc, bs)
 	}
 	// validate
-	if len(svc.resources) == 0 {
+	if len(bs.resources) == 0 {
 		panic(fmt.Errorf("service %s needs some resources", name))
 	}
 	return svc
 }
 
-type basicOpt func(*basicService)
+type basicOpt func(Service, *basicService) Service
 
 func WithResources(resources ...resource.Resource) basicOpt {
-	return func(bs *basicService) {
+	return func(svc Service, bs *basicService) Service {
 		bs.resources = append(bs.resources, func(context.Context) []resource.Resource {
 			return resources
 		})
+		return svc
 	}
 }
 
 func WithResourceFuncs(funcs ...func(context.Context) []resource.Resource) basicOpt {
-	return func(bs *basicService) {
+	return func(svc Service, bs *basicService) Service {
 		bs.resources = append(bs.resources, funcs...)
+		return svc
 	}
 }

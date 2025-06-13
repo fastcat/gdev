@@ -11,30 +11,29 @@ type serviceWithSource struct {
 var _ ServiceWithSource = (*serviceWithSource)(nil)
 
 func WithSource(
-	svc Service,
 	localRoot, localSubDir string,
 	remoteVCS, remoteRepo string,
-) ServiceWithSource {
-	return &serviceWithSource{
-		Service: svc,
-		localSource: func(context.Context) (string, string, error) {
+) basicOpt {
+	return WithSourceFuncs(
+		func(context.Context) (string, string, error) {
 			return localRoot, localSubDir, nil
 		},
-		remoteSource: func(context.Context) (string, string, error) {
+		func(context.Context) (string, string, error) {
 			return remoteVCS, remoteRepo, nil
 		},
-	}
+	)
 }
 
 func WithSourceFuncs(
-	svc Service,
 	localSourceFunc func(context.Context) (root, subDir string, err error),
 	remoteSourceFunc func(context.Context) (vcs, repo string, err error),
-) ServiceWithSource {
-	return &serviceWithSource{
-		Service:      svc,
-		localSource:  localSourceFunc,
-		remoteSource: remoteSourceFunc,
+) basicOpt {
+	return func(svc Service, bs *basicService) Service {
+		return &serviceWithSource{
+			Service:      svc,
+			localSource:  localSourceFunc,
+			remoteSource: remoteSourceFunc,
+		}
 	}
 }
 
