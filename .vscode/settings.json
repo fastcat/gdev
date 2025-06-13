@@ -14,7 +14,8 @@
 		"pids",
 		"pkill",
 		"stretchr",
-		"svcs"
+		"svcs",
+		"xdev"
 	],
 	"gopls": {
 		"formatting.gofumpt": true,
