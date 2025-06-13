@@ -27,9 +27,21 @@ func main() {
 	// TODO: lots of stuttering here
 	stack.AddService(
 		service.New("svc1",
-			service.WithResources(
+			service.WithModalResources(
+				service.ModeDefault,
+				// this would normally be a container service, but this example doesn't pull in k3s or docker
 				resource.PMStatic(api.Child{
 					Name: "svc1",
+					Main: api.Exec{
+						Cmd:  "sleep",
+						Args: []string{"1h"},
+					},
+				}),
+			),
+			service.WithModalResources(
+				service.ModeLocal,
+				resource.PMStatic(api.Child{
+					Name: "svc1-local",
 					Main: api.Exec{
 						Cmd:  "sleep",
 						Args: []string{"1h"},
