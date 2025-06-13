@@ -12,11 +12,14 @@ import (
 	"fastcat.org/go/gdev/addons/postgres"
 	"fastcat.org/go/gdev/addons/valkey"
 	"fastcat.org/go/gdev/cmd"
+	"fastcat.org/go/gdev/instance"
 )
 
 // Normally you want to build your own wrapper around gdev to register your
 // custom services and commands.
 func main() {
+	instance.SetAppName("gdev")
+
 	// enable all addons we can in the main build so everything gets compiled, etc.
 
 	bootstrap.Configure()  // many will tweak it
