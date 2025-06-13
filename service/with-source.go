@@ -13,7 +13,7 @@ var _ ServiceWithSource = (*serviceWithSource)(nil)
 func WithSource(
 	localRoot, localSubDir string,
 	remoteVCS, remoteRepo string,
-) basicOpt {
+) BasicOpt {
 	return WithSourceFuncs(
 		func(context.Context) (string, string, error) {
 			return localRoot, localSubDir, nil
@@ -27,7 +27,7 @@ func WithSource(
 func WithSourceFuncs(
 	localSourceFunc func(context.Context) (root, subDir string, err error),
 	remoteSourceFunc func(context.Context) (vcs, repo string, err error),
-) basicOpt {
+) BasicOpt {
 	return func(svc Service, bs *basicService) Service {
 		return &serviceWithSource{
 			Service:      svc,

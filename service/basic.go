@@ -32,7 +32,7 @@ func (s *basicService) Resources(ctx context.Context) []resource.Resource {
 
 func New(
 	name string,
-	opts ...basicOpt,
+	opts ...BasicOpt,
 ) Service {
 	if strings.ContainsFunc(name, unicode.IsSpace) {
 		panic(fmt.Errorf("service name %q must not contain whitespace", name))
@@ -50,9 +50,9 @@ func New(
 	return svc
 }
 
-type basicOpt func(Service, *basicService) Service
+type BasicOpt func(Service, *basicService) Service
 
-func WithResources(resources ...resource.Resource) basicOpt {
+func WithResources(resources ...resource.Resource) BasicOpt {
 	return func(svc Service, bs *basicService) Service {
 		bs.resources = append(bs.resources, func(context.Context) []resource.Resource {
 			return resources
@@ -61,7 +61,7 @@ func WithResources(resources ...resource.Resource) basicOpt {
 	}
 }
 
-func WithResourceFuncs(funcs ...func(context.Context) []resource.Resource) basicOpt {
+func WithResourceFuncs(funcs ...func(context.Context) []resource.Resource) BasicOpt {
 	return func(svc Service, bs *basicService) Service {
 		bs.resources = append(bs.resources, funcs...)
 		return svc
@@ -75,14 +75,14 @@ func WithResourceFuncs(funcs ...func(context.Context) []resource.Resource) basic
 func WithModalResources(
 	mode Mode,
 	resources ...resource.Resource,
-) basicOpt {
+) BasicOpt {
 	return WithModalResourceFuncs(mode, func(ctx context.Context) []resource.Resource { return resources })
 }
 
 func WithModalResourceFuncs(
 	mode Mode,
 	funcs ...func(context.Context) []resource.Resource,
-) basicOpt {
+) BasicOpt {
 	if !mode.Valid() || mode == ModeDisabled {
 		panic(fmt.Errorf("invalid mode %s for modal resources", mode))
 	}

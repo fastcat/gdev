@@ -15,6 +15,42 @@ import (
 	"fastcat.org/go/gdev/stack"
 )
 
+// When you have many services using a common pattern, defining a recipe
+// function like this is helpful to avoid stuttering of the service name and
+// repetition of the resource pattern.
+func myStandardService(
+	name string,
+	cmd string,
+	args []string,
+	opts ...service.BasicOpt,
+) service.Service {
+	allOpts := []service.BasicOpt{
+		service.WithModalResources(
+			service.ModeDefault,
+			// this would normally be a container service, but this example doesn't pull in k3s or docker
+			resource.PMStatic(api.Child{
+				Name: name,
+				Main: api.Exec{
+					Cmd:  cmd,
+					Args: []string{"1h"},
+				},
+			}),
+		),
+		service.WithModalResources(
+			service.ModeLocal,
+			resource.PMStatic(api.Child{
+				Name: name + "-local",
+				Main: api.Exec{
+					Cmd:  cmd,
+					Args: args,
+				},
+			}),
+		),
+	}
+	allOpts = append(allOpts, opts...)
+	return service.New(name, allOpts...)
+}
+
 func main() {
 	// cspell:ignore sdev
 	instance.SetAppName("sdev")
@@ -24,30 +60,11 @@ func main() {
 
 	svc1Repo := filepath.Join(shx.HomeDir(), "src", "gdev")
 	svc1Subdir := "examples/stack"
-	// TODO: lots of stuttering here
 	stack.AddService(
-		service.New("svc1",
-			service.WithModalResources(
-				service.ModeDefault,
-				// this would normally be a container service, but this example doesn't pull in k3s or docker
-				resource.PMStatic(api.Child{
-					Name: "svc1",
-					Main: api.Exec{
-						Cmd:  "sleep",
-						Args: []string{"1h"},
-					},
-				}),
-			),
-			service.WithModalResources(
-				service.ModeLocal,
-				resource.PMStatic(api.Child{
-					Name: "svc1-local",
-					Main: api.Exec{
-						Cmd:  "sleep",
-						Args: []string{"1h"},
-					},
-				}),
-			),
+		myStandardService(
+			"svc1",
+			"sleep",
+			[]string{"1h"},
 			service.WithSource(svc1Repo, svc1Subdir, "", ""),
 		),
 	)
