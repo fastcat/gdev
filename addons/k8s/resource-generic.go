@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"context"
 	"fmt"
 
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -48,7 +49,7 @@ func (r *appliable[Client, Resource, Apply]) ID() string {
 }
 
 // Start implements resource.Resource.
-func (r *appliable[Client, Resource, Apply]) Start(ctx *resource.Context) error {
+func (r *appliable[Client, Resource, Apply]) Start(ctx context.Context) error {
 	sc := r.client(ctx)
 	// TODO: preserve scale settings if the resource already exists
 	if _, err := sc.Apply(ctx, r.apply, applyOpts(ctx)); err != nil {
@@ -59,7 +60,7 @@ func (r *appliable[Client, Resource, Apply]) Start(ctx *resource.Context) error 
 }
 
 // Stop implements resource.Resource.
-func (r *appliable[Client, Resource, Apply]) Stop(ctx *resource.Context) error {
+func (r *appliable[Client, Resource, Apply]) Stop(ctx context.Context) error {
 	sc := r.client(ctx)
 	m, o := r.acc.applyMeta(r.apply)
 	if err := sc.Delete(ctx, *o.Name, deleteOpts(ctx)); err != nil && !apiErrors.IsNotFound(err) {
@@ -69,7 +70,7 @@ func (r *appliable[Client, Resource, Apply]) Stop(ctx *resource.Context) error {
 }
 
 // Ready implements resource.Resource.
-func (r *appliable[Client, Resource, Apply]) Ready(ctx *resource.Context) (bool, error) {
+func (r *appliable[Client, Resource, Apply]) Ready(ctx context.Context) (bool, error) {
 	obj, err := r.client(ctx).Get(ctx, r.K8SName(), getOpts(ctx))
 	if err != nil {
 		return false, err
@@ -94,7 +95,7 @@ func (r *appliable[Client, Resource, Apply]) K8SNamespace() string {
 	return *o.Namespace
 }
 
-func (r *appliable[Client, Resource, Apply]) client(ctx *resource.Context) Client {
+func (r *appliable[Client, Resource, Apply]) client(ctx context.Context) Client {
 	return r.acc.getClient(
 		resource.ContextValue[kubernetes.Interface](ctx),
 		resource.ContextValue[Namespace](ctx),

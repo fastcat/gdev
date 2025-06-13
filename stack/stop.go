@@ -11,7 +11,7 @@ import (
 
 // TODO: make progress printing pluggable
 func Stop(ctx context.Context, includeInfrastructure bool) error {
-	rc, err := resource.NewContext(ctx)
+	ctx, err := resource.NewContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -20,14 +20,14 @@ func Stop(ctx context.Context, includeInfrastructure bool) error {
 		// infra starts before services, StopServices will reverse this order
 		svcs = append(AllInfrastructure(), svcs...)
 	}
-	if err := StopServices(rc, svcs...); err != nil {
+	if err := StopServices(ctx, svcs...); err != nil {
 		return err
 	}
 	// don't stop infrastructure services
 	return nil
 }
 
-func StopServices(ctx *resource.Context, svcs ...service.Service) error {
+func StopServices(ctx context.Context, svcs ...service.Service) error {
 	fmt.Printf("Stopping %d services...\n", len(svcs))
 	resources := make([]resource.Resource, 0, len(svcs))
 	for _, svc := range svcs {

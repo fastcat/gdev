@@ -10,8 +10,11 @@ import (
 )
 
 // TODO: make progress printing pluggable
-func Start(ctx context.Context) error {
-	rc, err := resource.NewContext(ctx)
+func Start(ctx context.Context, opts ...service.ContextOption) error {
+	// TODO: don't double-layer if input already has resource/service context layers
+	// TODO: validate we have all the required service options
+	ctx = service.NewContext(ctx, opts...)
+	ctx, err := resource.NewContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -19,23 +22,32 @@ func Start(ctx context.Context) error {
 	if err := preStart(ctx, infra, svcs); err != nil {
 		return fmt.Errorf("error running pre-start hooks: %w", err)
 	}
-	if err := StartServices(rc, "infrastructure", infra...); err != nil {
+	if err := StartServices(ctx, "infrastructure", infra...); err != nil {
 		return err
 	}
-	if err := StartServices(rc, "stack", svcs...); err != nil {
+	if err := StartServices(ctx, "stack", svcs...); err != nil {
 		return err
 	}
 	return nil
 }
 
-func StartServices(ctx *resource.Context, kind string, svcs ...service.Service) error {
+func StartServices(ctx context.Context, kind string, svcs ...service.Service) error {
 	if len(svcs) == 0 {
 		return nil
 	}
 	fmt.Printf("Starting %d services (%s)...\n", len(svcs), kind)
 	resources := make([]resource.Resource, 0, len(svcs))
 	for _, svc := range svcs {
-		resources = append(resources, svc.Resources(ctx)...)
+		rs := svc.Resources(ctx)
+		// if this service is disabled, force all its resources to be stopped
+		if m, _ := service.ServiceMode(ctx, svc.Name()); m == service.ModeDisabled {
+			for i, r := range rs {
+				if !resource.IsAnti(r) {
+					rs[i] = resource.Anti(r)
+				}
+			}
+		}
+		resources = append(resources, rs...)
 	}
 	for _, r := range resources {
 		fmt.Printf("Starting %s...\n", r.ID())

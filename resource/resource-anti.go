@@ -1,31 +1,41 @@
 package resource
 
-// Anti wraps a resource to ensure it is always stopped. It calls the inner
+import "context"
+
+// anti wraps a resource to ensure it is always stopped. It calls the inner
 // resource's Stop method on both Start and Stop.
-type Anti struct {
-	Inner Resource
+
+func Anti(inner Resource) Resource {
+	return &anti{inner}
 }
 
-var _ Resource = (*Anti)(nil)
+func IsAnti(r Resource) bool {
+	_, ok := r.(*anti)
+	return ok
+}
+
+type anti struct {
+	r Resource
+}
 
 // ID implements Resource.
-func (a *Anti) ID() string {
-	return "anti/" + a.Inner.ID()
+func (a *anti) ID() string {
+	return "anti/" + a.r.ID()
 }
 
 // Start implements Resource.
-func (a *Anti) Start(ctx *Context) error {
-	return a.Inner.Stop(ctx)
+func (a *anti) Start(ctx context.Context) error {
+	return a.r.Stop(ctx)
 }
 
 // Stop implements Resource.
-func (a *Anti) Stop(ctx *Context) error {
-	return a.Inner.Stop(ctx)
+func (a *anti) Stop(ctx context.Context) error {
+	return a.r.Stop(ctx)
 }
 
 // Ready implements Resource.
-func (a *Anti) Ready(ctx *Context) (bool, error) {
+func (a *anti) Ready(ctx context.Context) (bool, error) {
 	// we expect errors checking status of services we stopped
-	inner, _ := a.Inner.Ready(ctx)
+	inner, _ := a.r.Ready(ctx)
 	return !inner, nil
 }

@@ -48,7 +48,7 @@ type accessor[
 	applyMeta    func(a Apply) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration)
 	resourceMeta func(r *Resource) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta)
 	podTemplate  func(a Apply) *applyCoreV1.PodSpecApplyConfiguration
-	ready        func(ctx *resource.Context, r *Resource) (bool, error)
+	ready        func(ctx context.Context, r *Resource) (bool, error)
 }
 
 var accStatefulSet = accessor[
@@ -77,7 +77,7 @@ var accStatefulSet = accessor[
 	podTemplate: func(a *applyAppsV1.StatefulSetApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
 		return a.Spec.Template.Spec
 	},
-	ready: func(ctx *resource.Context, r *apiAppsV1.StatefulSet) (bool, error) {
+	ready: func(ctx context.Context, r *apiAppsV1.StatefulSet) (bool, error) {
 		s := r.Status
 		// statefulset knows what up to date means
 		ready := s.ObservedGeneration == r.Generation &&
@@ -117,7 +117,7 @@ var accDeployment = accessor[
 	podTemplate: func(a *applyAppsV1.DeploymentApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
 		return a.Spec.Template.Spec
 	},
-	ready: func(ctx *resource.Context, r *apiAppsV1.Deployment) (bool, error) {
+	ready: func(ctx context.Context, r *apiAppsV1.Deployment) (bool, error) {
 		s := r.Status
 		// deployment knows what up to date means
 		ready := s.ObservedGeneration == r.Generation &&
@@ -153,7 +153,7 @@ var accService = accessor[
 	resourceMeta: func(r *apiCoreV1.Service) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
-	ready: func(*resource.Context, *apiCoreV1.Service) (bool, error) {
+	ready: func(context.Context, *apiCoreV1.Service) (bool, error) {
 		// services have no readiness gates
 		return true, nil
 	},
@@ -182,7 +182,7 @@ var accConfigMap = accessor[
 	resourceMeta: func(r *apiCoreV1.ConfigMap) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
-	ready: func(*resource.Context, *apiCoreV1.ConfigMap) (bool, error) {
+	ready: func(context.Context, *apiCoreV1.ConfigMap) (bool, error) {
 		// config maps have no readiness gates
 		return true, nil
 	},
@@ -211,7 +211,7 @@ var accPVC = accessor[
 	resourceMeta: func(r *apiCoreV1.PersistentVolumeClaim) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
-	ready: func(ctx *resource.Context, r *apiCoreV1.PersistentVolumeClaim) (bool, error) {
+	ready: func(ctx context.Context, r *apiCoreV1.PersistentVolumeClaim) (bool, error) {
 		if r.Status.Phase != apiCoreV1.ClaimBound {
 			// not bound to a PV
 			return false, nil
@@ -262,13 +262,13 @@ var accPV = accessor[
 	},
 }
 
-func getOpts(*resource.Context) apiMetaV1.GetOptions {
+func getOpts(context.Context) apiMetaV1.GetOptions {
 	return apiMetaV1.GetOptions{
 		// nothing here for now
 	}
 }
 
-func applyOpts(*resource.Context) apiMetaV1.ApplyOptions {
+func applyOpts(context.Context) apiMetaV1.ApplyOptions {
 	return apiMetaV1.ApplyOptions{
 		Force:        true,
 		FieldManager: instance.AppName(),
@@ -276,7 +276,7 @@ func applyOpts(*resource.Context) apiMetaV1.ApplyOptions {
 	}
 }
 
-func deleteOpts(*resource.Context) apiMetaV1.DeleteOptions {
+func deleteOpts(context.Context) apiMetaV1.DeleteOptions {
 	return apiMetaV1.DeleteOptions{
 		PropagationPolicy: internal.Ptr(apiMetaV1.DeletePropagationBackground),
 	}

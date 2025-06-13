@@ -1,11 +1,11 @@
 package k8s
 
 import (
+	"context"
+
 	apiCoreV1 "k8s.io/api/core/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
 	clientCoreV1 "k8s.io/client-go/kubernetes/typed/core/v1"
-
-	"fastcat.org/go/gdev/resource"
 )
 
 type pvc struct {
@@ -16,7 +16,7 @@ type pvc struct {
 	]
 }
 
-func (r *pvc) Stop(ctx *resource.Context) error {
+func (r *pvc) Stop(ctx context.Context) error {
 	// deleting PVCs will generally result in deleting storage, which we do not
 	// want (e.g. deleting DB data). This is therefore a no-op.
 	return nil

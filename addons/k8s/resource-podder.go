@@ -1,9 +1,9 @@
 package k8s
 
 import (
-	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
+	"context"
 
-	"fastcat.org/go/gdev/resource"
+	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
 )
 
 // podder generalizes the pattern of a k8s resource that schedules pods
@@ -28,7 +28,7 @@ func newPodder[
 }
 
 // ContainerImages implements resource.ContainerResource.
-func (p *podder[Client, Resource, Apply]) ContainerImages(ctx *resource.Context) ([]string, error) {
+func (p *podder[Client, Resource, Apply]) ContainerImages(ctx context.Context) ([]string, error) {
 	pt := p.acc.podTemplate(p.apply)
 	// TODO: de-dupe
 	ret := make([]string, 0, len(pt.InitContainers)+len(pt.Containers))

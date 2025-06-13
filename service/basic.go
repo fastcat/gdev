@@ -67,3 +67,40 @@ func WithResourceFuncs(funcs ...func(context.Context) []resource.Resource) basic
 		return svc
 	}
 }
+
+// WithModalResources adds resources that are only used in a specific mode.
+//
+// If the services is started in any other mode, these will be converted to Anti
+// resources and stopped during stack start.
+func WithModalResources(
+	mode Mode,
+	resources ...resource.Resource,
+) basicOpt {
+	return WithModalResourceFuncs(mode, func(ctx context.Context) []resource.Resource { return resources })
+}
+
+func WithModalResourceFuncs(
+	mode Mode,
+	funcs ...func(context.Context) []resource.Resource,
+) basicOpt {
+	if !mode.Valid() || mode == ModeDisabled {
+		panic(fmt.Errorf("invalid mode %s for modal resources", mode))
+	}
+	return func(svc Service, bs *basicService) Service {
+		bs.resources = append(bs.resources, func(ctx context.Context) []resource.Resource {
+			m, _ := ServiceMode(ctx, svc.Name())
+			ret := make([]resource.Resource, 0, len(funcs))
+			for _, f := range funcs {
+				for _, r := range f(ctx) {
+					// convert to anti resources if the mode doesn't match
+					if m != mode && !resource.IsAnti(r) {
+						r = resource.Anti(r)
+					}
+					ret = append(ret, r)
+				}
+			}
+			return ret
+		})
+		return svc
+	}
+}

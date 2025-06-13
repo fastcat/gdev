@@ -46,7 +46,7 @@ func (p *PM) ID() string {
 }
 
 // Start implements Resource.
-func (p *PM) Start(ctx *resource.Context) error {
+func (p *PM) Start(ctx context.Context) error {
 	client := resource.ContextValue[api.API](ctx)
 	child, err := p.Config(ctx)
 	if err != nil {
@@ -91,7 +91,7 @@ func (p *PM) Start(ctx *resource.Context) error {
 }
 
 // Stop implements Resource.
-func (p *PM) Stop(ctx *resource.Context) error {
+func (p *PM) Stop(ctx context.Context) error {
 	client := resource.ContextValue[api.API](ctx)
 	child, err := p.Config(ctx)
 	if err != nil {
@@ -131,7 +131,7 @@ func (p *PM) Stop(ctx *resource.Context) error {
 }
 
 // Ready implements Resource
-func (p *PM) Ready(ctx *resource.Context) (bool, error) {
+func (p *PM) Ready(ctx context.Context) (bool, error) {
 	client := resource.ContextValue[api.API](ctx)
 	child, err := p.Config(ctx)
 	if err != nil {

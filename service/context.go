@@ -1,37 +1,37 @@
-package stack
+package service
 
 import (
 	"context"
 	"fmt"
 
 	"fastcat.org/go/gdev/internal"
-	"fastcat.org/go/gdev/service"
 )
 
 type Context struct {
 	context.Context
-	serviceModes map[string]service.Mode
+	serviceModes map[string]Mode
 }
 
 func NewContext(
 	ctx context.Context,
-	opts ...ctxOption,
+	opts ...ContextOption,
 ) *Context {
 	internal.CheckLockedDown()
 	return &Context{
 		Context:      ctx,
-		serviceModes: make(map[string]service.Mode, len(allServices)),
+		serviceModes: make(map[string]Mode),
 	}
 }
 
-type ctxOption func(*Context)
+type ContextOption func(*Context)
 
-func WithServiceModes(modes map[string]service.Mode) ctxOption {
+func WithServiceModes(modes map[string]Mode) ContextOption {
 	return func(ctx *Context) {
 		for svc, mode := range modes {
-			if _, ok := allServices[svc]; !ok {
-				panic(fmt.Errorf("service %s not registered", svc))
-			}
+			// TODO: find a way to validate service names without an import cycle
+			// if _, ok := allServices[svc]; !ok {
+			// 	panic(fmt.Errorf("service %s not registered", svc))
+			// }
 			if !mode.Valid() {
 				panic(fmt.Errorf("invalid mode %s for service %s", mode, svc))
 			}
@@ -49,10 +49,10 @@ func (ctx *Context) Value(key any) any {
 	return ctx.Context.Value(key)
 }
 
-func ServiceMode(ctx context.Context, svc string) (service.Mode, bool) {
-	modes, _ := ctx.Value(modesKey{}).(map[string]service.Mode)
+func ServiceMode(ctx context.Context, svc string) (Mode, bool) {
+	modes, _ := ctx.Value(modesKey{}).(map[string]Mode)
 	if mode, ok := modes[svc]; ok {
 		return mode, true
 	}
-	return service.ModeDefault, false
+	return ModeDefault, false
 }

@@ -1,13 +1,15 @@
 package resource
 
+import "context"
+
 type Resource interface {
 	ID() string
-	Start(ctx *Context) error
-	Stop(ctx *Context) error
-	Ready(ctx *Context) (bool, error) // TODO: provide not-ready details
+	Start(context.Context) error
+	Stop(context.Context) error
+	Ready(context.Context) (bool, error) // TODO: provide not-ready details
 }
 
 type ContainerResource interface {
 	Resource
-	ContainerImages(ctx *Context) ([]string, error)
+	ContainerImages(context.Context) ([]string, error)
 }
