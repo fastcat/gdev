@@ -17,10 +17,16 @@ jobs:
         go-version: '1.24'
 
     - name: Init
-      run: go tool mage -l
+      # compile the `go tool` apps here
+      run: |
+        go tool mage -l
+        go tool govulncheck -h
     - name: Build
       run: go tool mage -v compile
+    - name: Golangci-lint
+      uses: golangci/golangci-lint-action@v6.0.1
+      with: {}
     - name: Lint
       run: go tool mage -v lint
     - name: Test
-      run: go tool mage -v test
+      run: go tool mage -v test              
