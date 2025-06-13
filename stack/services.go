@@ -43,7 +43,7 @@ func AllInfrastructure() []service.Service {
 
 func AllServices() []service.Service {
 	internal.CheckLockedDown()
-	ret := make([]service.Service, 0, len(allServices))
+	ret := make([]service.Service, 0, len(serviceOrder))
 	for _, n := range serviceOrder {
 		ret = append(ret, allServices[n])
 	}

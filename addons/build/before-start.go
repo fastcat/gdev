@@ -9,6 +9,7 @@ import (
 
 	"fastcat.org/go/gdev/service"
 	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/stack"
 )
 
 type buildBeforeStart struct {
@@ -30,7 +31,14 @@ func (b *buildBeforeStart) Service(ctx context.Context, svc service.Service) err
 	if !ok {
 		return nil // Not a source service, nothing to do
 	}
-	// TODO: use service mode instead of dir existence to decide whether to build it
+	if m, ok := stack.ServiceMode(ctx, svc.Name()); !ok {
+		// skip building if not running the service?
+		return nil
+	} else if !src.UsesSourceInMode(m) {
+		// not gonna use the source, so don't build it
+		return nil
+	}
+
 	root, subDir, err := src.LocalSource(ctx)
 	if err != nil {
 		return fmt.Errorf("can't determine local source for service %s: %w", svc.Name(), err)

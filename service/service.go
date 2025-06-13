@@ -20,4 +20,5 @@ type ServiceWithSource interface {
 	// RemoteSource returns the VCS and repository URL for this service's source
 	// code.
 	RemoteSource(context.Context) (vcs, repo string, err error)
+	UsesSourceInMode(mode Mode) bool
 }

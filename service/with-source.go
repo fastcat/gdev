@@ -44,3 +44,9 @@ func (s *serviceWithSource) LocalSource(ctx context.Context) (root, subDir strin
 func (s *serviceWithSource) RemoteSource(ctx context.Context) (vcs, repo string, err error) {
 	return s.remoteSource(ctx)
 }
+
+func (s *serviceWithSource) UsesSourceInMode(mode Mode) bool {
+	// by default assume debug mode will be built by the debug launch, and default
+	// mode uses docker/etc artifacts instead of any source code.
+	return mode == ModeLocal
+}
