@@ -11,8 +11,10 @@ import (
 	"fastcat.org/go/gdev/magefiles/shx"
 )
 
+var lintOther = []any{Lint{}.Govulncheck}
+
 func LintDefault(ctx context.Context) error {
-	mg.CtxDeps(ctx, Lint{}.Golangci, Lint{}.Govulncheck)
+	mg.CtxDeps(ctx, append([]any{Lint{}.Golangci}, lintOther...)...)
 	return nil
 }
 
@@ -24,6 +26,11 @@ var findGCI = sync.OnceValue(func() string {
 	}
 	return "golangci-lint"
 })
+
+func (Lint) Other(ctx context.Context) error {
+	mg.CtxDeps(ctx, lintOther...)
+	return nil
+}
 
 func (Lint) Golangci(ctx context.Context) error {
 	fmt.Println("Lint: golangci-lint")
