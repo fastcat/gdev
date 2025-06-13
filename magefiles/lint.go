@@ -18,7 +18,7 @@ func LintDefault(ctx context.Context) error {
 	return nil
 }
 
-type Lint struct{}
+type Lint mg.Namespace
 
 var findGCI = sync.OnceValue(func() string {
 	if p, err := exec.LookPath("golangci-lint-v2"); err == nil {
