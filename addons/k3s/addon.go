@@ -105,6 +105,10 @@ var configureBootstrap = sync.OnceFunc(func() {
 						return err
 					}
 				}
+				// TODO: wait for the service to be ready
+				// TODO: fetch the client config (marker) from the resource context now
+				// that the service is healthy (and therefore the config has been
+				// written to merge from)
 				return nil
 			},
 		},
