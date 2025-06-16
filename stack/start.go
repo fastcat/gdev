@@ -10,11 +10,23 @@ import (
 )
 
 // TODO: make progress printing pluggable
-func Start(ctx context.Context, opts ...service.ContextOption) error {
+func Start(ctx context.Context, opts ...any) error {
+	var svcOpts []service.ContextOption
+	var rcOpts []resource.ContextOption
+	for _, opt := range opts {
+		switch o := opt.(type) {
+		case service.ContextOption:
+			svcOpts = append(svcOpts, o)
+		case resource.ContextOption:
+			rcOpts = append(rcOpts, o)
+		default:
+			return fmt.Errorf("unexpected option type %T, expected service.ContextOption or resource.ContextOption", o)
+		}
+	}
 	// TODO: don't double-layer if input already has resource/service context layers
 	// TODO: validate we have all the required service options
-	ctx = service.NewContext(ctx, opts...)
-	ctx, err := resource.NewContext(ctx)
+	ctx = service.NewContext(ctx, svcOpts...)
+	ctx, err := resource.NewContext(ctx, rcOpts...)
 	if err != nil {
 		return err
 	}
