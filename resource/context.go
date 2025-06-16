@@ -33,13 +33,24 @@ func AddContextEntry[T any](initializer func(context.Context) (T, error)) {
 	ctxEntries[key] = ctxEntry{anyInitializer}
 }
 
+type dryRunKey struct{}
+
 type Context struct {
 	context.Context
 	entries map[ctxKey]any
+	dryRun  bool
 }
 
-func NewContext(ctx context.Context) (*Context, error) {
-	rc := &Context{ctx, make(map[ctxKey]any, len(ctxEntries))}
+type ContextOption func(*Context)
+
+func WithDryRun() ContextOption {
+	return func(ctx *Context) {
+		ctx.dryRun = true
+	}
+}
+
+func NewContext(ctx context.Context, opts ...ContextOption) (*Context, error) {
+	rc := NewEmptyContext(ctx, opts...)
 	for k, e := range ctxEntries {
 		if v, err := e.initializer(rc); err != nil {
 			return nil, fmt.Errorf("failed to initialize %v: %w", k.typ(), err)
@@ -50,11 +61,22 @@ func NewContext(ctx context.Context) (*Context, error) {
 	return rc, nil
 }
 
-func NewEmptyContext(ctx context.Context) *Context {
-	return &Context{ctx, make(map[ctxKey]any, len(ctxEntries))}
+func NewEmptyContext(ctx context.Context, opts ...ContextOption) *Context {
+	rc := &Context{
+		ctx,
+		make(map[ctxKey]any, len(ctxEntries)),
+		false,
+	}
+	for _, opt := range opts {
+		opt(rc)
+	}
+	return rc
 }
 
 func (ctx *Context) Value(key any) any {
+	if _, ok := key.(dryRunKey); ok {
+		return ctx.dryRun
+	}
 	if ck, ok := key.(ctxKey); ok {
 		if val, ok := ctx.entries[ck]; ok {
 			return val
@@ -96,4 +118,14 @@ func ContextValue[T any](ctx context.Context) T {
 		return val.(T)
 	}
 	return ctx.Value(key).(T)
+}
+
+func DryRun(ctx context.Context) bool {
+	if rc, ok := ctx.(*Context); ok {
+		return rc.dryRun
+	}
+	if v := ctx.Value(dryRunKey{}); v != nil {
+		return v.(bool)
+	}
+	return false
 }
