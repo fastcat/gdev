@@ -9,8 +9,13 @@ import (
 	"fastcat.org/go/gdev/service"
 )
 
-// TODO: make progress printing pluggable
+// Start starts the stack with the given options.
+//
+// Options must be of type [service.ContextOption] or [resource.ContextOption],
+// and will be passed to [service.NewContext] and [resource.NewContext]
+// respectively.
 func Start(ctx context.Context, opts ...any) error {
+	// TODO: make progress printing pluggable
 	var svcOpts []service.ContextOption
 	var rcOpts []resource.ContextOption
 	for _, opt := range opts {

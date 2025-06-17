@@ -6,6 +6,7 @@ import (
 	"reflect"
 )
 
+// ctxKeyVal[T] implements [ctxKey].
 type ctxKeyVal[T any] struct {
 	_ [0]*T // make sure these aren't convertible between different T
 }
@@ -14,16 +15,32 @@ func (k ctxKeyVal[T]) typ() reflect.Type {
 	return reflect.TypeFor[T]()
 }
 
+// ctxKey is an interface for keys used in the context entries map, to store a
+// value associated with a specific type, as a simplistic dependency injection
+// mechanism.
+//
+// The only implementation of this interface is [ctxKeyVal[T]].
 type ctxKey interface {
 	typ() reflect.Type
 }
 
+// ctxEntry represents a dependency injection binding in the context. It is
+// associated with some specific type, and thus [ctxKey].
+//
+// It captures an initializer function to provide the injected value.
 type ctxEntry struct {
 	initializer func(context.Context) (any, error)
 }
 
 var ctxEntries = map[ctxKey]ctxEntry{}
 
+// AddContextEntry registers a new context entry for the given type T. Only one
+// initializer may be present per type. Only the exact type T is registered, not
+// any compatible interfaces.
+//
+// It is unsafe to call this function concurrently with itself, or with any
+// functions/methods that create or use a [Context]. In general, this should
+// only be called during app initialization.
 func AddContextEntry[T any](initializer func(context.Context) (T, error)) {
 	key := ctxKeyVal[T]{}
 	if _, ok := ctxEntries[key]; ok {
@@ -37,6 +54,8 @@ type dryRunKey struct{}
 
 type Context struct {
 	context.Context
+	// entries captures a map from the type-specific [ctxKey] to the initialized
+	// value.
 	entries map[ctxKey]any
 	dryRun  bool
 }
@@ -49,6 +68,10 @@ func WithDryRun() ContextOption {
 	}
 }
 
+// NewContext creates a new [Context] with the given parent context and options.
+//
+// All context entries registered with [AddContextEntry] will be initialized
+// proactively, and if any fail this function will return an error.
 func NewContext(ctx context.Context, opts ...ContextOption) (*Context, error) {
 	rc := NewEmptyContext(ctx, opts...)
 	for k, e := range ctxEntries {
@@ -61,6 +84,9 @@ func NewContext(ctx context.Context, opts ...ContextOption) (*Context, error) {
 	return rc, nil
 }
 
+// NewEmptyContext creates a new [Context] with the given parent context and
+// options, but does not initialize any context entries. If requested, they will
+// be initialized on demand, but if they fail in that case, it will panic.
 func NewEmptyContext(ctx context.Context, opts ...ContextOption) *Context {
 	rc := &Context{
 		ctx,
@@ -95,6 +121,10 @@ func (ctx *Context) Value(key any) any {
 	return ctx.Context.Value(key)
 }
 
+// ContextValue retrieves a value of type T from the context, which must have
+// been registered with [AddContextEntry]. If no value or initializer for the
+// type is found, it will panic. If an initializer is found but not a value, it
+// will also panic.
 func ContextValue[T any](ctx context.Context) T {
 	key := ctxKeyVal[T]{}
 	if _, ok := ctxEntries[key]; !ok {
