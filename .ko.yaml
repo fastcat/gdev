@@ -1,0 +1,8 @@
+defaultEnv:
+  - CGO_ENABLED=0
+builds:
+  - id: examples-stack-svc1
+    main: ./examples/stack/svc1
+    ldflags:
+      - -s -w
+      - -extldflags "-static"

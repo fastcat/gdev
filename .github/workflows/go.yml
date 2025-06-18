@@ -30,3 +30,9 @@ jobs:
       run: go tool mage -v lint:other
     - name: Test
       run: go tool mage -v test
+
+    - uses: ko-build/setup-ko@v0.8
+    - name: Build images with ko
+      # TODO: use mage for this so it can pick up all the defined builds automatically
+      run: |
+        ko build --base-import-paths ./examples/stack/svc1
