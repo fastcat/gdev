@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	"fastcat.org/go/gdev/addons/build"
+	"fastcat.org/go/gdev/addons/docker"
 	"fastcat.org/go/gdev/addons/golang"
 	"fastcat.org/go/gdev/addons/pm"
 	"fastcat.org/go/gdev/addons/pm/api"
@@ -27,22 +28,12 @@ func myStandardService(
 	allOpts := []service.BasicOpt{
 		service.WithModalResources(
 			service.ModeDefault,
-			// this would normally be a container service, using an api, but this
-			// example doesn't pull in k3s or docker
-			resource.PMStatic(api.Child{
-				Name: name,
-				Main: api.Exec{
-					Cmd: "docker",
-					Args: []string{
-						"run",
-						"--rm",
-						"-p", "8080:8080",
-						"--name", "sdev-" + name,
-						imageName,
-					},
-					Cwd: repo,
-				},
-			}),
+			docker.Container(
+				name,
+				imageName,
+				[]string{"8080"},
+				nil,
+			),
 		),
 		service.WithModalResources(
 			service.ModeLocal,
@@ -63,6 +54,7 @@ func main() {
 	// cspell:ignore sdev
 	instance.SetAppName("sdev")
 	pm.Configure()
+	docker.Configure()
 	build.Configure()
 	golang.Configure()
 

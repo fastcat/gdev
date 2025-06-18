@@ -9,7 +9,7 @@ import (
 func NewClient() (*client.Client, error) {
 	c, err := client.NewClientWithOpts(
 		client.FromEnv,
-		// client.WithAPIVersionNegotiation(), // maybe?
+		client.WithAPIVersionNegotiation(),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create docker client: %w", err)
