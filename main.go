@@ -9,6 +9,7 @@ import (
 	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/addons/k8s"
 	"fastcat.org/go/gdev/addons/nodejs"
+	"fastcat.org/go/gdev/addons/pm"
 	"fastcat.org/go/gdev/addons/postgres"
 	"fastcat.org/go/gdev/addons/valkey"
 	"fastcat.org/go/gdev/cmd"
@@ -22,7 +23,8 @@ func main() {
 
 	// enable all addons we can in the main build so everything gets compiled, etc.
 
-	bootstrap.Configure()  // many will tweak it
+	bootstrap.Configure() // many will tweak it
+	pm.Configure()
 	k8s.Configure()        // k3s will tweak it
 	containerd.Configure() // k3s will tweak it
 	docker.Configure()     // k3s would tweak it if we told k3s to use docker

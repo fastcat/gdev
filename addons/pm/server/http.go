@@ -23,7 +23,7 @@ type HTTP struct {
 	daemon   *daemon
 }
 
-func NewHTTP() (*HTTP, error) {
+func NewHTTP(tasks ...Task) (*HTTP, error) {
 	a := api.ListenAddr()
 	if au, _ := a.(*net.UnixAddr); au != nil {
 		// TODO: check if the socket is live first
@@ -36,7 +36,7 @@ func NewHTTP() (*HTTP, error) {
 		return nil, err
 	}
 
-	daemon := NewDaemon()
+	daemon := NewDaemon(tasks...)
 
 	s := &http.Server{
 		Addr:    a.String(),
@@ -53,6 +53,7 @@ func (h *HTTP) Run(ctx context.Context) error {
 	ctx, shutdown := context.WithCancel(ctx)
 	h.daemon.onTerminate = shutdown
 	var wg sync.WaitGroup
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -65,10 +66,14 @@ func (h *HTTP) Run(ctx context.Context) error {
 			_ = h.Server.Close()
 		}
 	}()
+
+	h.daemon.startTasks(ctx, &wg)
+
 	err := h.Server.Serve(h.Listener)
 	if errors.Is(err, http.ErrServerClosed) {
 		err = nil
 	}
+
 	wg.Wait()
 	err2 := h.daemon.Terminate(ctx)
 	return errors.Join(err, err2)

@@ -298,7 +298,7 @@ func pmAdd() *cobra.Command {
 }
 
 func pmDaemon(cmd *cobra.Command, _ []string) error {
-	d, err := server.NewHTTP()
+	d, err := server.NewHTTP(addon.Config.tasks...)
 	if err != nil {
 		return err
 	}

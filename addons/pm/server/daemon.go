@@ -6,6 +6,7 @@ import (
 	"log"
 	"maps"
 	"net/http"
+	"slices"
 	"sync"
 	"time"
 
@@ -17,11 +18,13 @@ type daemon struct {
 	mu          sync.Mutex
 	children    map[string]*child
 	onTerminate context.CancelFunc
+	tasks       []Task
 }
 
-func NewDaemon() *daemon {
+func NewDaemon(tasks ...Task) *daemon {
 	return &daemon{
 		children: make(map[string]*child),
+		tasks:    slices.Clone(tasks),
 	}
 }
 
