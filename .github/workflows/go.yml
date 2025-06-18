@@ -39,5 +39,12 @@ jobs:
     - uses: ko-build/setup-ko@v0.8
     - name: Build images with ko
       # TODO: use mage for this so it can pick up all the defined builds automatically
+      # make sure to overwrite all the labels from the chainguard base image
       run: |
-        ko build --base-import-paths ./examples/stack/svc1
+        ko build \
+          --base-import-paths \
+          --image-label org.opencontainers.image.authors="fastcat" \
+          --image-label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }}/examples/stack/svc1 \
+          --image-label org.opencontainers.image.url=${{ github.repositoryUrl }} \
+          --image-label org.opencontainers.image.vendor="fastcat" \
+          ./examples/stack/svc1
