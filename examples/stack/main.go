@@ -20,19 +20,27 @@ import (
 // repetition of the resource pattern.
 func myStandardService(
 	name string,
-	cmd string,
-	args []string,
+	repo, subDir string,
+	imageName string,
 	opts ...service.BasicOpt,
 ) service.Service {
 	allOpts := []service.BasicOpt{
 		service.WithModalResources(
 			service.ModeDefault,
-			// this would normally be a container service, but this example doesn't pull in k3s or docker
+			// this would normally be a container service, using an api, but this
+			// example doesn't pull in k3s or docker
 			resource.PMStatic(api.Child{
 				Name: name,
 				Main: api.Exec{
-					Cmd:  cmd,
-					Args: []string{"1h"},
+					Cmd: "docker",
+					Args: []string{
+						"run",
+						"--rm",
+						"-p", "8080:8080",
+						"--name", "sdev-" + name,
+						imageName,
+					},
+					Cwd: repo,
 				},
 			}),
 		),
@@ -41,8 +49,8 @@ func myStandardService(
 			resource.PMStatic(api.Child{
 				Name: name + "-local",
 				Main: api.Exec{
-					Cmd:  cmd,
-					Args: args,
+					Cmd:  "go",
+					Args: []string{"run", filepath.Join(".", subDir)},
 				},
 			}),
 		),
@@ -59,12 +67,12 @@ func main() {
 	golang.Configure()
 
 	svc1Repo := filepath.Join(shx.HomeDir(), "src", "gdev")
-	svc1Subdir := "examples/stack"
+	svc1Subdir := "examples/stack/svc1"
 	stack.AddService(
 		myStandardService(
 			"svc1",
-			"sleep",
-			[]string{"1h"},
+			svc1Repo, svc1Subdir,
+			"ghcr.io/fastcat/gdev/svc1",
 			service.WithSource(svc1Repo, svc1Subdir, "", ""),
 		),
 	)
