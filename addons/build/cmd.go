@@ -3,12 +3,12 @@ package build
 import (
 	"fmt"
 	"path/filepath"
-	"slices"
 	"strings"
+
+	"github.com/spf13/cobra"
 
 	"fastcat.org/go/gdev/service"
 	"fastcat.org/go/gdev/stack"
-	"github.com/spf13/cobra"
 )
 
 func makeCmd() *cobra.Command {
@@ -71,11 +71,7 @@ func makeCmd() *cobra.Command {
 		Short: "Build the local source for one or more services",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
-			root2idx := map[string]int{}
-			var builders []Builder
-			var strategies []string
-			var subdirs [][]string
-
+			svcs := make([]service.ServiceWithSource, 0, len(args))
 			for _, arg := range args {
 				svc := stack.ServiceByName(arg)
 				if svc == nil {
@@ -85,49 +81,9 @@ func makeCmd() *cobra.Command {
 				if !ok {
 					return fmt.Errorf("service %s does not have source to build", arg)
 				}
-				root, subdir, err := ss.LocalSource(ctx)
-				if err != nil {
-					return fmt.Errorf("error getting local source for service %s: %w", arg, err)
-				}
-				root = filepath.Clean(root)
-				if idx, ok := root2idx[root]; ok {
-					// append the subdir
-					subdirs[idx] = append(subdirs[idx], filepath.Clean(subdir))
-					continue
-				}
-
-				sn, b, err := DetectStrategy(root)
-				if err != nil {
-					return fmt.Errorf("error detecting build strategy for %q: %w", root, err)
-				} else if b == nil {
-					return fmt.Errorf("no build strategy found for %q", root)
-				}
-				builders = append(builders, b)
-				strategies = append(strategies, sn)
-				subdirs = append(subdirs, nil)
+				svcs = append(svcs, ss)
 			}
-
-			// run the builders
-			// TODO: support concurrent builds
-			for i, b := range builders {
-				if len(subdirs[i]) == 0 || slices.Contains(subdirs[i], ".") {
-					if opts.Verbose {
-						fmt.Printf("Building %s with %s\n", args[i], strategies[i])
-					}
-					if err := b.BuildAll(cmd.Context(), opts); err != nil {
-						return fmt.Errorf("error building %s: %w", args[i], err)
-					}
-				} else {
-					if opts.Verbose {
-						fmt.Printf("Building %d dirs in %s with %s\n", len(subdirs[i]), args[i], strategies[i])
-					}
-					if err := b.BuildDirs(cmd.Context(), subdirs[i], opts); err != nil {
-						return fmt.Errorf("error building %s: %w", args[i], err)
-					}
-				}
-			}
-
-			panic("")
+			return Services(ctx, svcs, opts)
 		},
 	}
 	buildCmd.AddCommand(buildServicesCmd)

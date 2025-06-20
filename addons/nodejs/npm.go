@@ -52,7 +52,6 @@ func detectNPM(root string) (build.Builder, error) {
 				return nil, err
 			}
 		}
-
 	}
 
 	// TODO: check if there's a `build` script in package.json
@@ -66,6 +65,11 @@ type npmBuilder struct {
 	pj          PackageJSON
 	ws          *PNPMWorkspaceYAML // may not exist, only valid if tool is pnpm
 	subdirs     []string
+}
+
+// Root implements build.Builder.
+func (b *npmBuilder) Root() string {
+	return b.root
 }
 
 func (b *npmBuilder) build(

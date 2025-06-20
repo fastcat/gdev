@@ -27,6 +27,11 @@ type goBuilder struct {
 	workspace bool
 }
 
+// Root implements build.Builder.
+func (b *goBuilder) Root() string {
+	return b.root
+}
+
 // BuildAll implements build.Builder.
 func (b *goBuilder) BuildAll(ctx context.Context, opts build.Options) error {
 	if b.workspace {

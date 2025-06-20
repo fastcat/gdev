@@ -10,6 +10,8 @@ import (
 // Builder represents a tool that can build a repo, or a set of subdirs within
 // the repo.
 type Builder interface {
+	// Root gives the root directory the builder targets.
+	Root() string
 	// BuildAll builds the whole repo
 	BuildAll(context.Context, Options) error
 	// ValidateSubdirs checks which subdirs are valid to pass to BuildDirs. It

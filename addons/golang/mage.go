@@ -24,6 +24,11 @@ type mageBuilder struct {
 	mageCmd []string
 }
 
+// Root implements build.Builder.
+func (b *mageBuilder) Root() string {
+	return b.root
+}
+
 func (b *mageBuilder) resolveMageCmd() []string {
 	if len(b.mageCmd) > 0 {
 		return b.mageCmd
