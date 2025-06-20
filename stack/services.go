@@ -49,3 +49,11 @@ func AllServices() []service.Service {
 	}
 	return ret
 }
+
+// ServiceByName returns the service with the given name, if it exists.
+//
+// If the service does not exist, it returns nil.
+func ServiceByName(name string) service.Service {
+	internal.CheckLockedDown()
+	return allServices[name]
+}
