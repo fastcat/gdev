@@ -2,12 +2,10 @@ package docker
 
 import (
 	"context"
-	"sync"
 
 	"github.com/docker/docker/client"
 
 	"fastcat.org/go/gdev/addons"
-	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/resource"
 )
@@ -31,13 +29,6 @@ func Configure(opts ...option) {
 		Initialize: initialize,
 	})
 }
-
-var configureBootstrap = sync.OnceFunc(func() {
-	bootstrap.Configure(bootstrap.WithAptPackages(
-		"Select Docker packages",
-		"docker.io",
-	))
-})
 
 func initialize() error {
 	resource.AddContextEntry(func(context.Context) (client.APIClient, error) {

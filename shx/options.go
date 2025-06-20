@@ -47,6 +47,9 @@ func (f optionFuncs) applyExec(cmd *exec.Cmd, res *Result) {
 }
 */
 
+// WithCombinedError changes the behavior of Run to return all errors in the
+// error return, instead of only returning errors starting the process there,
+// and errors from the process in the Result.
 func WithCombinedError() Option {
 	return optionCmdFunc(func(c *Cmd) {
 		c.combineExecErrors = true

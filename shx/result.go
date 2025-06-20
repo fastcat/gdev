@@ -19,6 +19,9 @@ func (r *Result) Err() error {
 }
 
 func (r *Result) Close() error {
+	if r == nil {
+		return nil
+	}
 	var errs []error
 	if r.stdoutCapture != nil {
 		errs = append(errs, r.stdoutCapture.Close())
