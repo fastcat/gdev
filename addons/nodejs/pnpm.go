@@ -11,27 +11,32 @@ import (
 	"fastcat.org/go/gdev/shx"
 )
 
-func detectNPM(root string) (build.Builder, error) {
+// TODO: should this just share code with npm?
+
+func detectPNPM(root string) (build.Builder, error) {
 	if _, err := os.Stat(filepath.Join(root, "package.json")); err != nil {
-		return nil, nil // no package.json, not an npm project
+		return nil, nil // no package.json, not a (p)npm project
+	}
+	if _, err := os.Stat(filepath.Join(root, "pnpm-lock.yaml")); err != nil {
+		return nil, nil // no pnpm lockfile, not a pnpm project
 	}
 	// TODO: check if there's a `build` script in package.json
-	return &npmBuilder{
+	return &pnpmBuilder{
 		root:        root,
 		buildScript: "build",
 	}, nil
 }
 
-type npmBuilder struct {
+type pnpmBuilder struct {
 	root        string
 	buildScript string
 }
 
 // BuildAll implements build.Builder.
-func (n *npmBuilder) BuildAll(ctx context.Context, opts build.Options) error {
+func (n *pnpmBuilder) BuildAll(ctx context.Context, opts build.Options) error {
 	shOpts := []shx.Option{shx.WithCwd(n.root)}
 	shOpts = append(shOpts, opts.ShellOpts()...)
-	res, err := shx.Run(ctx, []string{"npm", "run", n.buildScript}, shOpts...)
+	res, err := shx.Run(ctx, []string{"pnpm", "run", n.buildScript}, shOpts...)
 	if err != nil {
 		return fmt.Errorf("failed to start npm run %s: %w", n.buildScript, err)
 	}
@@ -51,15 +56,15 @@ func (n *npmBuilder) BuildAll(ctx context.Context, opts build.Options) error {
 // BuildDirs implements build.Builder.
 //
 // There is no subdir support for npm, so this just calls BuildAll.
-func (n *npmBuilder) BuildDirs(ctx context.Context, _ []string, opts build.Options) error {
-	// no subdirs for npm, just build the root
+func (n *pnpmBuilder) BuildDirs(ctx context.Context, _ []string, opts build.Options) error {
+	// TODO: pnpm workspace support
 	return n.BuildAll(ctx, opts)
 }
 
 // ValidSubdirs implements build.Builder.
 //
 // There is no subdir support for npm, so this returns nil.
-func (n *npmBuilder) ValidSubdirs(ctx context.Context) ([]string, error) {
-	// TODO: npm workspace support
+func (n *pnpmBuilder) ValidSubdirs(ctx context.Context) ([]string, error) {
+	// TODO: pnpm workspace support
 	return nil, nil
 }

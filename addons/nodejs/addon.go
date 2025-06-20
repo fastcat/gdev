@@ -38,6 +38,7 @@ func Configure(opts ...option) {
 var configureBuild = sync.OnceFunc(func() {
 	build.Configure(
 		build.WithStrategy("npm", detectNPM, nil),
+		build.WithStrategy("pnpm", detectPNPM, []string{"npm"}),
 	)
 })
 
