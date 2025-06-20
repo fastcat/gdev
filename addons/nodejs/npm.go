@@ -6,32 +6,55 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"fastcat.org/go/gdev/addons/build"
+	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/shx"
 )
 
 func detectNPM(root string) (build.Builder, error) {
-	if _, err := os.Stat(filepath.Join(root, "package.json")); err != nil {
+	pjPath := filepath.Join(root, "package.json")
+	if _, err := os.Stat(pjPath); err != nil {
 		return nil, nil // no package.json, not an npm project
 	}
-	// TODO: check if there's a `build` script in package.json
-	return &npmBuilder{
+	pj, err := internal.ReadJSONFile[PackageJSON](pjPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read %s: %w", pjPath, err)
+	}
+	b := &npmBuilder{
 		root:        root,
 		buildScript: "build",
-	}, nil
+		pj:          pj,
+	}
+
+	// if there are workspaces, expand them out
+	if b.subdirs, err = expandWorkspaces(root, pj.Workspaces); err != nil {
+		return nil, err
+	}
+
+	// TODO: check if there's a `build` script in package.json
+	return b, nil
 }
 
 type npmBuilder struct {
 	root        string
 	buildScript string
+	pj          PackageJSON
+	subdirs     []string
 }
 
-// BuildAll implements build.Builder.
-func (n *npmBuilder) BuildAll(ctx context.Context, opts build.Options) error {
+func (n *npmBuilder) build(
+	ctx context.Context,
+	args []string,
+	opts build.Options,
+) error {
 	shOpts := []shx.Option{shx.WithCwd(n.root)}
 	shOpts = append(shOpts, opts.ShellOpts()...)
-	res, err := shx.Run(ctx, []string{"npm", "run", n.buildScript}, shOpts...)
+	cna := []string{"npm", "run"}
+	cna = append(cna, args...)
+	cna = append(cna, n.buildScript)
+	res, err := shx.Run(ctx, cna, shOpts...)
 	if err != nil {
 		return fmt.Errorf("failed to start npm run %s: %w", n.buildScript, err)
 	}
@@ -48,18 +71,29 @@ func (n *npmBuilder) BuildAll(ctx context.Context, opts build.Options) error {
 	return nil
 }
 
+// BuildAll implements build.Builder.
+func (n *npmBuilder) BuildAll(ctx context.Context, opts build.Options) error {
+	return n.build(ctx, nil, opts)
+}
+
 // BuildDirs implements build.Builder.
 //
-// There is no subdir support for npm, so this just calls BuildAll.
-func (n *npmBuilder) BuildDirs(ctx context.Context, _ []string, opts build.Options) error {
-	// no subdirs for npm, just build the root
-	return n.BuildAll(ctx, opts)
+// This will include `--workspace=...` arg(s) for each subdir.
+func (n *npmBuilder) BuildDirs(ctx context.Context, dirs []string, opts build.Options) error {
+	args := make([]string, 0, len(dirs))
+	for _, dir := range dirs {
+		if !strings.HasPrefix(dir, "./") {
+			dir = "./" + dir
+		}
+		args = append(args, "--workspace="+dir)
+	}
+	return n.build(ctx, args, opts)
 }
 
 // ValidSubdirs implements build.Builder.
 //
-// There is no subdir support for npm, so this returns nil.
-func (n *npmBuilder) ValidSubdirs(ctx context.Context) ([]string, error) {
-	// TODO: npm workspace support
-	return nil, nil
+// This will return the workspace directories, if any, from the root
+// `package.json`, with globs expanded.
+func (n *npmBuilder) ValidSubdirs(context.Context) ([]string, error) {
+	return n.subdirs, nil
 }
