@@ -2,6 +2,7 @@ package nodejs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -23,14 +24,35 @@ func detectNPM(root string) (build.Builder, error) {
 		return nil, fmt.Errorf("failed to read %s: %w", pjPath, err)
 	}
 	b := &npmBuilder{
+		tool:        "npm",
 		root:        root,
 		buildScript: "build",
 		pj:          pj,
 	}
-
 	// if there are workspaces, expand them out
 	if b.subdirs, err = expandWorkspaces(root, pj.Workspaces); err != nil {
 		return nil, err
+	}
+
+	// detect if this is really a pnpm project
+	if _, err := os.Stat(filepath.Join(root, "pnpm-lock.yaml")); err == nil {
+		// it's a pnpm project, adjust
+		b.tool = "pnpm"
+		if len(pj.Workspaces) != 0 {
+			// have to use pnpm workspace if using pnpm
+			return nil, fmt.Errorf("cannot use npm workspaces with pnpm in %s", pjPath)
+		}
+		wsPath := filepath.Join(root, "pnpm-workspace.yaml")
+		b.ws, err = internal.ReadJSONFile[*PNPMWorkspaceYAML](wsPath)
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("failed to read %s: %w", wsPath, err)
+		} else if b.ws != nil {
+			// if there are workspaces, expand them out
+			if b.subdirs, err = expandWorkspaces(root, b.ws.Packages); err != nil {
+				return nil, err
+			}
+		}
+
 	}
 
 	// TODO: check if there's a `build` script in package.json
@@ -38,62 +60,71 @@ func detectNPM(root string) (build.Builder, error) {
 }
 
 type npmBuilder struct {
+	tool        string // "npm", "pnpm", ...
 	root        string
 	buildScript string
 	pj          PackageJSON
+	ws          *PNPMWorkspaceYAML // may not exist, only valid if tool is pnpm
 	subdirs     []string
 }
 
-func (n *npmBuilder) build(
+func (b *npmBuilder) build(
 	ctx context.Context,
 	args []string,
 	opts build.Options,
 ) error {
-	shOpts := []shx.Option{shx.WithCwd(n.root)}
+	shOpts := []shx.Option{shx.WithCwd(b.root)}
 	shOpts = append(shOpts, opts.ShellOpts()...)
-	cna := []string{"npm", "run"}
+	cna := []string{b.tool, "run"}
 	cna = append(cna, args...)
-	cna = append(cna, n.buildScript)
+	cna = append(cna, b.buildScript)
 	res, err := shx.Run(ctx, cna, shOpts...)
 	if err != nil {
-		return fmt.Errorf("failed to start npm run %s: %w", n.buildScript, err)
+		return fmt.Errorf("failed to start %s run %s: %w", b.tool, b.buildScript, err)
 	}
 	defer res.Close() // nolint:errcheck
 	if err = res.Err(); err != nil {
 		if !opts.Verbose {
 			_, _ = io.Copy(os.Stderr, res.Stdout())
 		}
-		return fmt.Errorf("npm run %s failed: %w", n.buildScript, err)
+		return fmt.Errorf("%s run %s failed: %w", b.tool, b.buildScript, err)
 	}
 	if err := res.Close(); err != nil {
-		return fmt.Errorf("error cleaning up after npm run %s: %w", n.buildScript, err)
+		return fmt.Errorf("error cleaning up after npm run %s: %w", b.buildScript, err)
 	}
 	return nil
 }
 
 // BuildAll implements build.Builder.
-func (n *npmBuilder) BuildAll(ctx context.Context, opts build.Options) error {
-	return n.build(ctx, nil, opts)
+func (b *npmBuilder) BuildAll(ctx context.Context, opts build.Options) error {
+	return b.build(ctx, nil, opts)
 }
 
 // BuildDirs implements build.Builder.
-//
-// This will include `--workspace=...` arg(s) for each subdir.
-func (n *npmBuilder) BuildDirs(ctx context.Context, dirs []string, opts build.Options) error {
+func (b *npmBuilder) BuildDirs(ctx context.Context, dirs []string, opts build.Options) error {
 	args := make([]string, 0, len(dirs))
+	var argBase string
+	switch b.tool {
+	case "npm":
+		argBase = "--workspace="
+	case "pnpm":
+		argBase = "--filter="
+	default:
+		return fmt.Errorf("unsupported tool %s for building npm-ish workspaces", b.tool)
+	}
+
 	for _, dir := range dirs {
+		// `./` prefix is required for the filter to be understood as a path in
+		// pnpm, is OK for npmq
 		if !strings.HasPrefix(dir, "./") {
 			dir = "./" + dir
 		}
-		args = append(args, "--workspace="+dir)
+		args = append(args, argBase+dir)
 	}
-	return n.build(ctx, args, opts)
+	return b.build(ctx, args, opts)
 }
 
 // ValidSubdirs implements build.Builder.
-//
-// This will return the workspace directories, if any, from the root
-// `package.json`, with globs expanded.
-func (n *npmBuilder) ValidSubdirs(context.Context) ([]string, error) {
-	return n.subdirs, nil
+func (b *npmBuilder) ValidSubdirs(context.Context) ([]string, error) {
+	return b.subdirs, nil
 }

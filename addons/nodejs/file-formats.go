@@ -7,6 +7,6 @@ type PackageJSON struct {
 	Workspaces []string          `json:"workspaces,omitempty"`
 }
 
-type PNPMWorkspacesYAML struct {
+type PNPMWorkspaceYAML struct {
 	Packages []string `json:"packages,omitempty"`
 }
