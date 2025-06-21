@@ -9,12 +9,14 @@ import (
 	"syscall"
 
 	"fastcat.org/go/gdev/addons"
+	"fastcat.org/go/gdev/config"
 	"fastcat.org/go/gdev/internal"
 )
 
 func Main() {
 	addons.Initialize()
 	internal.LockCustomizations()
+	config.Initialize()
 	ctx := context.Background()
 	// hook ctrl-c to context cancel
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
