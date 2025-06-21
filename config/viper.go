@@ -9,7 +9,7 @@ import (
 
 var vi *viper.Viper
 
-func Initialize() {
+func Initialize() error {
 	internal.CheckLockedDown()
 	if vi != nil {
 		panic("config already initialized")
@@ -17,4 +17,10 @@ func Initialize() {
 	vi = viper.New()
 	vi.SetEnvPrefix(instance.AppName())
 	vi.AutomaticEnv()
+	// TODO: let app instance customize this
+	vi.SetConfigType("yaml")
+	if err := vi.ReadInConfig(); err != nil {
+		return err
+	}
+	return nil
 }
