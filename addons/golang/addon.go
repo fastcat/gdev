@@ -12,6 +12,13 @@ import (
 )
 
 var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "golang",
+		Description: func() string {
+			return "Support for Go development"
+		},
+		Initialize: nil, // not needed here yet
+	},
 	Config: config{
 		// TODO
 	},
@@ -30,13 +37,7 @@ func Configure(opts ...option) {
 
 	configureBuild()
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "golang",
-		Description: func() string {
-			return "Support for Go development"
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
 }
 
 var configureBuild = sync.OnceFunc(func() {
@@ -45,12 +46,6 @@ var configureBuild = sync.OnceFunc(func() {
 		build.WithStrategy("mage", detectMage, []string{"go-build"}),
 	)
 })
-
-func initialize() error {
-	// TODO
-	addon.Initialized()
-	return nil
-}
 
 func buildResult(name string, res *shx.Result, err error) error {
 	if err != nil {

@@ -12,9 +12,20 @@ import (
 )
 
 var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "pm",
+		Description: func() string {
+			return "Process manager daemon"
+		},
+		// Initialize: initialize,
+	},
 	Config: config{
 		// placeholder
 	},
+}
+
+func init() {
+	addon.Definition.Initialize = initialize
 }
 
 type config struct {
@@ -28,13 +39,7 @@ func Configure(opts ...option) {
 		o(&addon.Config)
 	}
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "pm",
-		Description: func() string {
-			return "Process manager daemon"
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
 }
 
 func initialize() error {

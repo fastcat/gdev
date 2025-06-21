@@ -8,9 +8,20 @@ import (
 )
 
 var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "bootstrap",
+		Description: func() string {
+			return "Support for bootstrapping the local system with software installation & configuration"
+		},
+		// Initialize: initialize,
+	},
 	Config: config{
 		plan: NewPlan(),
 	},
+}
+
+func init() {
+	addon.Definition.Initialize = initialize
 }
 
 type config struct {
@@ -24,13 +35,7 @@ func Configure(opts ...option) {
 		o(&addon.Config)
 	}
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "bootstrap",
-		Description: func() string {
-			return "Support for bootstrapping the local system with software installation & configuration"
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
 }
 
 func initialize() error {
@@ -52,8 +57,6 @@ func initialize() error {
 	for _, f := range addon.Config.cmdFactories {
 		cmd.AddCommand(f.Build())
 	}
-
-	addon.Initialized()
 
 	return nil
 }

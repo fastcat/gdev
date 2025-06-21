@@ -2,7 +2,6 @@ package addons
 
 import (
 	"fmt"
-	"sync/atomic"
 
 	"fastcat.org/go/gdev/internal"
 )
@@ -15,7 +14,7 @@ type Definition struct {
 
 type registration struct {
 	Definition
-	initialized atomic.Bool
+	state *addonState
 }
 type Description struct {
 	Name        string
@@ -24,16 +23,22 @@ type Description struct {
 
 var enabled = map[string]*registration{}
 
-func Register(def Definition) {
-	if def.Name == "" {
+func Register[T any](a *Addon[T]) {
+	if a.Definition.Name == "" {
 		panic(fmt.Errorf("addon name required"))
 	}
-	internal.CheckCanCustomize()
-	if _, ok := enabled[def.Name]; ok {
-		panic(fmt.Errorf("addon %q already enabled", def.Name))
+	if a.Definition.Description == nil {
+		panic(fmt.Errorf("addon %q requires a description", a.Definition.Name))
 	}
-	enabled[def.Name] = &registration{Definition: def}
-	pending = append(pending, def.Name)
+	if a.Definition.Initialize == nil {
+		panic(fmt.Errorf("addon %q requires an initializer", a.Definition.Name))
+	}
+	internal.CheckCanCustomize()
+	if _, ok := enabled[a.Definition.Name]; ok {
+		panic(fmt.Errorf("addon %q already enabled", a.Definition.Name))
+	}
+	enabled[a.Definition.Name] = &registration{Definition: a.Definition, state: &a.addonState}
+	pending = append(pending, a.Definition.Name)
 }
 
 func Enabled() []Description {

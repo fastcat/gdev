@@ -12,10 +12,20 @@ import (
 )
 
 var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "containerd",
+		// Description: describe,
+		// Initialize: initialize,
+	},
 	Config: config{
 		// TODO: the default socket is a bad choice because it requires root access
 		clientAddr: "/run/containerd/containerd.sock",
 	},
+}
+
+func init() {
+	addon.Definition.Description = describe
+	addon.Definition.Initialize = initialize
 }
 
 func Configure(opts ...option) {
@@ -27,14 +37,12 @@ func Configure(opts ...option) {
 		panic(errors.New("containerd addr required"))
 	}
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "containerd",
-		Description: func() string {
-			internal.CheckLockedDown()
-			return "General containerd support, using socket " + addon.Config.clientAddr
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
+}
+
+func describe() string {
+	internal.CheckLockedDown()
+	return "General containerd support, using socket " + addon.Config.clientAddr
 }
 
 func initialize() error {
@@ -44,7 +52,6 @@ func initialize() error {
 
 	// TODO: image puller infrastructure
 
-	addon.Initialized()
 	return nil
 }
 

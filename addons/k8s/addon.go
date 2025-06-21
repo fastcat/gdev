@@ -13,10 +13,20 @@ import (
 )
 
 var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "k8s",
+		// Description: describe,
+		// Initialize: initialize,
+	},
 	Config: config{
 		contextName: instance.AppName,
 		namespace:   Namespace(apiCoreV1.NamespaceDefault),
 	},
+}
+
+func init() {
+	addon.Definition.Description = describe
+	addon.Definition.Initialize = initialize
 }
 
 func Configure(opts ...option) {
@@ -25,17 +35,15 @@ func Configure(opts ...option) {
 		o(&addon.Config)
 	}
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "k8s",
-		Description: func() string {
-			internal.CheckLockedDown()
-			return "General kubernetes support, using context " +
-				addon.Config.ContextName() +
-				" and namespace " +
-				string(addon.Config.namespace)
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
+}
+
+func describe() string {
+	internal.CheckLockedDown()
+	return "General kubernetes support, using context " +
+		addon.Config.ContextName() +
+		" and namespace " +
+		string(addon.Config.namespace)
 }
 
 func initialize() error {
@@ -48,8 +56,6 @@ func initialize() error {
 		return addon.Config.namespace, nil
 	})
 	// TODO: more
-
-	addon.Initialized()
 
 	return nil
 }

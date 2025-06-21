@@ -7,35 +7,33 @@ import (
 	"fastcat.org/go/gdev/internal"
 )
 
-type Addon[T any] struct {
-	Config      T
+type addonState struct {
 	registered  atomic.Bool
 	initialized atomic.Bool
 }
 
-func (a *Addon[T]) RegisterIfNeeded(def Definition) {
+type Addon[T any] struct {
+	addonState
+	Config     T
+	Definition Definition
+}
+
+func (a *Addon[T]) RegisterIfNeeded() {
 	if a.registered.CompareAndSwap(false, true) {
-		Register(def)
+		Register(a)
 	}
 }
 
-func (a *Addon[T]) CheckNotInitialized() {
+func (a *addonState) CheckNotInitialized() {
 	internal.CheckCanCustomize()
 	if a.initialized.Load() {
 		panic(errors.New("addon already initialized"))
 	}
 }
 
-func (a *Addon[T]) CheckInitialized() {
+func (a *addonState) CheckInitialized() {
 	internal.CheckLockedDown()
 	if !a.initialized.Load() {
 		panic(errors.New("addon not initialized"))
 	}
-}
-
-func (a *Addon[T]) Initialized() {
-	if !a.registered.Load() {
-		panic(errors.New("initializing addon without registering"))
-	}
-	a.initialized.Store(true)
 }

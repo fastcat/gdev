@@ -27,11 +27,29 @@ import (
 )
 
 var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "k3s",
+		// Description: describe,
+		// Initialize: initialize,
+	},
 	Config: config{
 		// contextName defaults to a late bind based on the app name
 		namespace: k8s.Namespace(apiCoreV1.NamespaceDefault),
 		k3sPath:   DefaultInstallPath,
 	},
+}
+
+func init() {
+	addon.Definition.Description = describe
+	addon.Definition.Initialize = initialize
+}
+
+func describe() string {
+	internal.CheckLockedDown()
+	return "Support running k3s for local kubernetes, using " +
+		addon.Config.provider.desc +
+		", context " + addon.Config.ContextName() +
+		", and namespace " + string(addon.Config.namespace)
 }
 
 type provider struct {
@@ -57,17 +75,7 @@ func Configure(opts ...option) {
 	configureBootstrap() // once
 	addon.Config.provider.configure()
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "k3s",
-		Description: func() string {
-			internal.CheckLockedDown()
-			return "Support running k3s for local kubernetes, using " +
-				addon.Config.provider.desc +
-				", context " + addon.Config.ContextName() +
-				", and namespace " + string(addon.Config.namespace)
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
 }
 
 var configurePM = sync.OnceFunc(func() {
@@ -164,8 +172,6 @@ func initialize() error {
 	// TODO: add infra service to wait for kube to be ready to run pods in the
 	// selected namespace: it exists, and at least one node is ready. except this
 	// really belongs in the k8s addon, but that produces an ordering issue.
-
-	addon.Initialized()
 
 	return nil
 }

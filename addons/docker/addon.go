@@ -10,7 +10,19 @@ import (
 	"fastcat.org/go/gdev/resource"
 )
 
-var addon addons.Addon[config]
+var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "docker",
+		Description: func() string {
+			internal.CheckLockedDown()
+			return "General docker support"
+		},
+		Initialize: initialize,
+	},
+	Config: config{
+		// placeholder
+	},
+}
 
 func Configure(opts ...option) {
 	addon.CheckNotInitialized()
@@ -20,21 +32,13 @@ func Configure(opts ...option) {
 
 	configureBootstrap()
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "docker",
-		Description: func() string {
-			internal.CheckLockedDown()
-			return "General docker support"
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
 }
 
 func initialize() error {
 	resource.AddContextEntry(func(context.Context) (client.APIClient, error) {
 		return NewClient()
 	})
-	addon.Initialized()
 	return nil
 }
 

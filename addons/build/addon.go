@@ -11,9 +11,20 @@ import (
 )
 
 var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "build",
+		Description: func() string {
+			return "Support for building repos/packages from source"
+		},
+		// Initialize: initialize,
+	},
 	Config: config{
 		strategies: make(map[string]strategy),
 	},
+}
+
+func init() {
+	addon.Definition.Initialize = initialize
 }
 
 type config struct {
@@ -29,13 +40,7 @@ func Configure(opts ...option) {
 		o(&addon.Config)
 	}
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "build",
-		Description: func() string {
-			return "Support for building repos/packages from source"
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
 }
 
 func WithStrategy(
@@ -65,7 +70,6 @@ func initialize() error {
 
 	stack.AddPreStartHookType[buildBeforeStart]()
 
-	addon.Initialized()
 	return nil
 }
 

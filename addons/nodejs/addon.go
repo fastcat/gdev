@@ -8,6 +8,13 @@ import (
 )
 
 var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "nodejs",
+		Description: func() string {
+			return "Support for Node.js development"
+		},
+		Initialize: nil, // not needed for this addon
+	},
 	Config: config{
 		// TODO
 	},
@@ -26,13 +33,7 @@ func Configure(opts ...option) {
 
 	configureBuild()
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "nodejs",
-		Description: func() string {
-			return "Support for Node.js development"
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
 }
 
 var configureBuild = sync.OnceFunc(func() {
@@ -40,9 +41,3 @@ var configureBuild = sync.OnceFunc(func() {
 		build.WithStrategy("npm", detectNPM, nil),
 	)
 })
-
-func initialize() error {
-	// TODO
-	addon.Initialized()
-	return nil
-}

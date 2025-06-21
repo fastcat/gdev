@@ -9,7 +9,23 @@ import (
 	"fastcat.org/go/gdev/stack"
 )
 
-var addon addons.Addon[config]
+var addon = addons.Addon[config]{
+	Definition: addons.Definition{
+		Name: "valkey",
+		Description: func() string {
+			internal.CheckLockedDown()
+			return "General valkey support"
+		},
+		// Initialize: initialize,
+	},
+	Config: config{
+		// placeholder
+	},
+}
+
+func init() {
+	addon.Definition.Initialize = initialize
+}
 
 type config struct {
 	enableService bool
@@ -25,14 +41,7 @@ func Configure(opts ...option) {
 
 	configureBootstrap()
 
-	addon.RegisterIfNeeded(addons.Definition{
-		Name: "valkey",
-		Description: func() string {
-			internal.CheckLockedDown()
-			return "General valkey support"
-		},
-		Initialize: initialize,
-	})
+	addon.RegisterIfNeeded()
 }
 
 // WithService causes a valkey server instance to be added to the stack, using
@@ -56,6 +65,5 @@ func initialize() error {
 		stack.AddService(Service(addon.Config.svcOpts...))
 	}
 
-	addon.Initialized()
 	return nil
 }
