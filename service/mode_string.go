@@ -11,11 +11,12 @@ func _() {
 	_ = x[ModeDefault-0]
 	_ = x[ModeLocal-1]
 	_ = x[ModeDebug-2]
+	_ = x[ModeDisabled-3]
 }
 
-const _Mode_name = "defaultlocaldebug"
+const _Mode_name = "defaultlocaldebugdisabled"
 
-var _Mode_index = [...]uint8{0, 7, 12, 17}
+var _Mode_index = [...]uint8{0, 7, 12, 17, 25}
 
 func (i Mode) String() string {
 	if i < 0 || i >= Mode(len(_Mode_index)-1) {

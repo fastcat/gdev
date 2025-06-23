@@ -8,7 +8,7 @@
 			"name": "help",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}",
 			"args": [
 				"--help"
@@ -18,7 +18,7 @@
 			"name": "pm",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}",
 			"args": [
 				"pm"
@@ -28,7 +28,7 @@
 			"name": "pm status",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}",
 			"args": [
 				"pm",
@@ -39,7 +39,7 @@
 			"name": "pm daemon",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}",
 			"args": [
 				"pm",
@@ -50,7 +50,7 @@
 			"name": "bootstrap",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}",
 			"args": [
 				"bootstrap"
@@ -60,7 +60,7 @@
 			"name": "bootstrap help",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}",
 			"args": [
 				"bootstrap",
@@ -71,7 +71,7 @@
 			"name": "bootstrap k3s cleanp-containerd",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}",
 			"args": [
 				"bootstrap",
@@ -83,7 +83,7 @@
 			"name": "stack start",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}",
 			"args": [
 				"start"
@@ -93,7 +93,7 @@
 			"name": "build self",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}",
 			"args": [
 				"build",
@@ -105,7 +105,7 @@
 			"name": "ex: stack start",
 			"type": "go",
 			"request": "launch",
-			"mode": "auto",
+			// "mode": "auto",
 			"program": "${workspaceFolder}/_example/stack",
 			"args": [
 				"start"

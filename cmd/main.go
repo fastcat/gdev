@@ -20,6 +20,7 @@ func Main() {
 		// TODO: let caller say if this should be fatal?
 		fmt.Fprintf(os.Stderr, "Error initializing config: %v\n", err)
 	}
+
 	ctx := context.Background()
 	// hook ctrl-c to context cancel
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)

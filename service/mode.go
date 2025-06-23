@@ -1,5 +1,10 @@
 package service
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 type Mode int
 
 const (
@@ -25,4 +30,33 @@ func ParseMode(value string) (Mode, bool) {
 		}
 	}
 	return Mode(0), false
+}
+
+func (m Mode) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.String())
+}
+
+func (m *Mode) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	} else if parsed, ok := ParseMode(s); !ok {
+		return fmt.Errorf("invalid mode %q", s)
+	} else {
+		*m = parsed
+		return nil
+	}
+}
+
+func (m Mode) MarshalText() ([]byte, error) {
+	return []byte(m.String()), nil
+}
+
+func (m *Mode) UnmarshalText(data []byte) error {
+	if parsed, ok := ParseMode(string(data)); !ok {
+		return fmt.Errorf("invalid mode %q", data)
+	} else {
+		*m = parsed
+		return nil
+	}
 }

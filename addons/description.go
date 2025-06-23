@@ -30,9 +30,6 @@ func Register[T any](a *Addon[T]) {
 	if a.Definition.Description == nil {
 		panic(fmt.Errorf("addon %q requires a description", a.Definition.Name))
 	}
-	if a.Definition.Initialize == nil {
-		panic(fmt.Errorf("addon %q requires an initializer", a.Definition.Name))
-	}
 	internal.CheckCanCustomize()
 	if _, ok := enabled[a.Definition.Name]; ok {
 		panic(fmt.Errorf("addon %q already enabled", a.Definition.Name))
