@@ -2,8 +2,6 @@ package gocache
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"sync"
 )
 
@@ -11,7 +9,7 @@ type DiskStorage struct {
 	mu      sync.Mutex
 	wg      sync.WaitGroup
 	closing bool
-	root    *os.Root
+	dd      *DiskDir
 }
 
 type DiskReader DiskStorage
@@ -25,11 +23,11 @@ var (
 )
 
 func NewDiskStorage(path string) (*DiskStorage, error) {
-	root, err := os.OpenRoot(path)
+	dd, err := NewDiskDir(path)
 	if err != nil {
 		return nil, err
 	}
-	return &DiskStorage{root: root}, nil
+	return &DiskStorage{dd: dd}, nil
 }
 
 func NewDiskReader(path string) (*DiskReader, error) {
@@ -48,6 +46,19 @@ func NewDiskWriter(path string) (*DiskWriter, error) {
 	}
 }
 
+// use checks root and closing under the mutex. methods must use it to access
+// the root member to ensure it is not closed or removed while they are using
+// it.
+func (d *DiskStorage) use() (*DiskDir, func(), error) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.closing || d.dd == nil || d.dd.root == nil {
+		return nil, nil, ErrDiskStorageClosed
+	}
+	d.wg.Add(1)
+	return d.dd, d.wg.Done, nil
+}
+
 // Close implements Storage.
 func (d *DiskStorage) Close() error {
 	// stop new stuff from starting
@@ -61,29 +72,13 @@ func (d *DiskStorage) Close() error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
-	if d.root != nil {
-		if err := d.root.Close(); err != nil {
+	if d.dd != nil {
+		if err := d.dd.Close(); err != nil {
 			return err
 		}
-		d.root = nil
 	}
 
 	return nil
-}
-
-var ErrDiskStorageClosed = fmt.Errorf("disk storage is closed")
-
-// use checks root and closing under the mutex. methods must use it to access
-// the root member to ensure it is not closed or removed while they are using
-// it.
-func (d *DiskStorage) use() (*os.Root, func(), error) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	if d.root == nil || d.closing {
-		return nil, nil, ErrDiskStorageClosed
-	}
-	d.wg.Add(1)
-	return d.root, d.wg.Done, nil
 }
 
 // Get implements Storage.
