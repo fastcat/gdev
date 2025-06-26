@@ -7,9 +7,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/goccy/go-yaml"
+
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
-	"github.com/goccy/go-yaml"
 )
 
 var loadedComments yaml.CommentMap
@@ -24,7 +25,7 @@ func load() error {
 		}
 		return err
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 	cm := yaml.CommentMap{}
 	d := yaml.NewDecoder(f, yaml.CommentToMap(cm))
 	decoded := make(map[string]any, len(keys))
@@ -62,7 +63,7 @@ func Save() error {
 	if err != nil {
 		return fmt.Errorf("error creating config temp file %q: %w", fn, err)
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 
 	// don't save default values
 	toSave := maps.Clone(data)
