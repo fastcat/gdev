@@ -6,19 +6,27 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"time"
 )
 
-// DiskDir represents a local directory used as part of a cache storage
+type diskDirFS interface {
+	fs.FS
+	fs.StatFS
+	fs.ReadDirFS
+}
+
+// DiskDir represents a directory used as part of a cache storage
 // implementation.
 //
 // Even remote caches need a local directory in which to store files.
 //
 // It uses the same on-disk format as the built-in Go build cache as of Go 1.24.
 type DiskDir struct {
-	root *os.Root
+	root  diskDirFS
+	close func() error
 }
 
 func NewDiskDir(path string) (*DiskDir, error) {
@@ -26,17 +34,21 @@ func NewDiskDir(path string) (*DiskDir, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &DiskDir{root: root}, nil
+	return &DiskDir{root: root.FS().(diskDirFS), close: root.Close}, nil
+}
+
+func DiskDirFromFS(fs diskDirFS, close func() error) *DiskDir {
+	return &DiskDir{root: fs, close: close}
 }
 
 func (d *DiskDir) Close() error {
-	if d.root != nil {
-		if err := d.root.Close(); err != nil {
+	if d.close != nil {
+		if err := d.close(); err != nil {
 			return err
 		}
-		d.root = nil
 	}
-
+	d.close = nil
+	d.root = nil
 	return nil
 }
 
@@ -69,11 +81,7 @@ const (
 )
 
 // ReadGoActionEntry reads the action data for the given ID from the disk
-// directory, expecting it to be in the Go format.
-//
-// The Go format is up to date as of Go 1.24.
-//
-// See: https://github.com/golang/go/blob/go1.24.4/src/cmd/go/internal/cache/cache.go#L201
+// directory.
 func (d *DiskDir) ReadActionEntry(id []byte) (*ActionEntry, error) {
 	f, err := d.root.Open(d.GoFileName(id, 'a'))
 	if err != nil {
