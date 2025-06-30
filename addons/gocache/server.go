@@ -9,15 +9,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sync"
 
 	"golang.org/x/sync/errgroup"
 )
 
 type server struct {
-	impl  ReadStorage
-	in    *bufio.Reader
-	inDec *json.Decoder
-	out   *bufio.Writer
+	impl     ReadStorage
+	in       *bufio.Reader
+	inDec    *json.Decoder
+	out      *bufio.Writer
+	bodyPool sync.Pool
 }
 
 func NewServer(
@@ -35,6 +37,12 @@ func NewServer(
 		in:    bin,
 		inDec: d,
 		out:   bufio.NewWriter(out),
+		bodyPool: sync.Pool{
+			New: func() any {
+				b := make([]byte, 0, 64*1024)
+				return &b
+			},
+		},
 	}
 }
 
@@ -57,6 +65,7 @@ func (s *server) Run(ctx context.Context) error {
 	})
 	eg2, eg2Ctx := errgroup.WithContext(ctx)
 	hits := map[Cmd]int{}
+
 	for {
 		req, err := s.readReq()
 		if err != nil {
@@ -96,16 +105,20 @@ func (s *server) Run(ctx context.Context) error {
 			})
 		case CmdPut:
 			if writeImpl == nil {
-				return errors.New("put command not supported by storage backend")
+				eg2.Go(func() error {
+					return s.sendErrResp(eg2Ctx, respCh, req.ID, "put not supported by this server")
+				})
+				continue
 			}
+			doneBody := noop
 			if req.BodySize > 0 {
-				body, err := s.readBody()
+				req.Body, doneBody, err = s.readBody()
 				if err != nil {
 					return err
 				}
-				req.Body = body
 			}
 			eg2.Go(func() error {
+				defer doneBody()
 				resp, err := writeImpl.Put(eg2Ctx, req)
 				if err != nil {
 					return err
@@ -118,8 +131,28 @@ func (s *server) Run(ctx context.Context) error {
 				}
 			})
 		default:
-			return fmt.Errorf("unknown command %q", req.Command)
+			eg2.Go(func() error {
+				return s.sendErrResp(eg2Ctx, respCh, req.ID, fmt.Sprintf("unknown command %s", req.Command))
+			})
 		}
+	}
+}
+
+func (s *server) sendErrResp(
+	ctx context.Context,
+	responses chan<- *Response,
+	id int64,
+	msg string,
+) error {
+	resp := &Response{
+		ID:  id,
+		Err: msg,
+	}
+	select {
+	case <-ctx.Done():
+		return fmt.Errorf("err canceled: %w", ctx.Err())
+	case responses <- resp:
+		return nil
 	}
 }
 
@@ -165,12 +198,20 @@ func (s *server) readReq() (*Request, error) {
 	return &req, err
 }
 
-func (s *server) readBody() (io.Reader, error) {
+func (s *server) readBody() (io.Reader, func(), error) {
 	// TODO: stream, pool
-	var body []byte
-	err := s.inDec.Decode(&body)
+	bodyPtr := s.bodyPool.Get().(*[]byte)
+	*bodyPtr = (*bodyPtr)[:0]
+	err := s.inDec.Decode(bodyPtr)
 	if err != nil {
-		return nil, err
+		return nil, noop, err
 	}
-	return bytes.NewReader(body), nil
+	return bytes.NewReader(*bodyPtr),
+		func() {
+			*bodyPtr = (*bodyPtr)[:0]
+			s.bodyPool.Put(bodyPtr)
+		},
+		nil
 }
+
+func noop() {}
