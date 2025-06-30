@@ -32,3 +32,12 @@ type Storage interface {
 	ReadStorage
 	WriteStorage
 }
+
+type StorageBackend interface {
+	io.Closer
+	ReadActionEntry(id []byte) (*ActionEntry, error)
+	CheckOutputFile(a ActionEntry) (string, error)
+	// may update a.Time
+	WriteOutput(a *ActionEntry, body io.Reader) (string, error)
+	WriteActionEntry(a ActionEntry) error
+}

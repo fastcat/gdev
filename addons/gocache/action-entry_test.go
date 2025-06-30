@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_parseActionEntry(t *testing.T) {
+func TestParseActionEntry(t *testing.T) {
 	tests := []struct {
 		input string
 		want  ActionEntry
@@ -34,7 +34,7 @@ func Test_parseActionEntry(t *testing.T) {
 	}
 	for idx, tt := range tests {
 		t.Run(strconv.Itoa(idx), func(t *testing.T) {
-			got, err := parseActionEntry([]byte(tt.input))
+			got, err := ParseActionEntry([]byte(tt.input))
 			if tt.err != nil {
 				assert.ErrorIs(t, err, tt.err)
 				return

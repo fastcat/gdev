@@ -9,7 +9,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 type diskDirBaseFS interface {
@@ -32,29 +31,29 @@ type diskDirFS interface {
 	Remove(name string) error
 }
 
-// DiskDir represents a directory used as part of a cache storage
+// diskStorageBackend represents a directory used as part of a cache storage
 // implementation.
 //
 // Even remote caches need a local directory in which to store files.
 //
 // It uses the same on-disk format as the built-in Go build cache as of Go 1.24.
-type DiskDir struct {
+type diskStorageBackend struct {
 	root diskDirFS
 }
 
-func DiskDirAtRoot(path string) (*DiskDir, error) {
+func DiskDirAtRoot(path string) (*diskStorageBackend, error) {
 	root, err := os.OpenRoot(path)
 	if err != nil {
 		return nil, err
 	}
-	return &DiskDir{root: wrapRoot(root)}, nil
+	return &diskStorageBackend{root: wrapRoot(root)}, nil
 }
 
-func DiskDirFromFS(fs diskDirFS, close func() error) *DiskDir {
-	return &DiskDir{root: fs}
+func DiskDirFromFS(fs diskDirFS, close func() error) *diskStorageBackend {
+	return &diskStorageBackend{root: fs}
 }
 
-func (d *DiskDir) Close() error {
+func (d *diskStorageBackend) Close() error {
 	if d.root != nil {
 		if err := d.root.Close(); err != nil {
 			return err
@@ -70,16 +69,9 @@ var (
 	ErrBadActionFileFormat = errors.New("bad action file format")
 )
 
-type ActionEntry struct {
-	ID       []byte
-	OutputID []byte
-	Size     int64
-	Time     time.Time
-}
-
 // GoFileName returns the (relative) path for the given ID and type in the disk
 // directory.
-func (d *DiskDir) GoFileName(id []byte, typ rune) string {
+func (d *diskStorageBackend) GoFileName(id []byte, typ rune) string {
 	return filepath.Join(
 		fmt.Sprintf("%02x", id[0]),
 		fmt.Sprintf("%x-%c", id, typ),
@@ -94,7 +86,7 @@ const (
 
 // ReadGoActionEntry reads the action data for the given ID from the disk
 // directory.
-func (d *DiskDir) ReadActionEntry(id []byte) (*ActionEntry, error) {
+func (d *diskStorageBackend) ReadActionEntry(id []byte) (*ActionEntry, error) {
 	f, err := d.root.Open(d.GoFileName(id, 'a'))
 	if err != nil {
 		return nil, err
@@ -104,7 +96,7 @@ func (d *DiskDir) ReadActionEntry(id []byte) (*ActionEntry, error) {
 	if err != nil {
 		return nil, err
 	}
-	parsed, err := parseActionEntry(data)
+	parsed, err := ParseActionEntry(data)
 	if err != nil {
 		return nil, err
 	}
@@ -114,41 +106,9 @@ func (d *DiskDir) ReadActionEntry(id []byte) (*ActionEntry, error) {
 	return parsed, nil
 }
 
-func parseActionEntry(data []byte) (*ActionEntry, error) {
-	if len(data) != actionEntrySize {
-		return nil, fmt.Errorf("%w: expect %d, got at least %d", ErrBadActionFileSize, actionEntrySize, len(data))
-	}
-	var parsed ActionEntry
-	var timeNanos int64
-	if n, err := fmt.Sscanf(
-		string(data),
-		"v1 %x %x %d %d\n",
-		&parsed.ID, &parsed.OutputID, &parsed.Size, &timeNanos,
-	); err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrBadActionFileFormat, err)
-	} else if n != 4 {
-		return nil, fmt.Errorf("%w: expected 4 fields, got %d", ErrBadActionFileFormat, n)
-	}
-	parsed.Time = time.Unix(0, timeNanos)
-	return &parsed, nil
-}
-
-func (a ActionEntry) WriteTo(w io.Writer) (int64, error) {
-	n, err := fmt.Fprintf(w,
-		"v1 %x %x %20d %20d\n",
-		a.ID, a.OutputID, a.Size, a.Time.UnixNano(),
-	)
-	if err != nil {
-		return int64(n), err
-	} else if n != actionEntrySize {
-		return int64(n), fmt.Errorf("%w: expected %d bytes, wrote %d", ErrBadActionFileSize, actionEntrySize, n)
-	}
-	return int64(n), nil
-}
-
 var ErrOutputFileWrongSize = errors.New("output file has wrong size")
 
-func (d *DiskDir) CheckOutputFile(a ActionEntry) (string, error) {
+func (d *diskStorageBackend) CheckOutputFile(a ActionEntry) (string, error) {
 	fn := d.GoFileName(a.OutputID, 'o')
 	st, err := d.root.Stat(fn)
 	if err != nil {
@@ -161,8 +121,16 @@ func (d *DiskDir) CheckOutputFile(a ActionEntry) (string, error) {
 	return d.root.FullName(fn), nil
 }
 
-func (d *DiskDir) WriteOutput(a ActionEntry, body io.Reader) (string, error) {
+func (d *diskStorageBackend) WriteOutput(a *ActionEntry, body io.Reader) (string, error) {
 	fn := d.GoFileName(a.OutputID, 'o')
+	// if it looks like the right size, and isn't newer than the action entry, we
+	// can skip writing the file
+	if st, err := d.root.Stat(fn); err == nil {
+		if st.Size() == a.Size && !st.ModTime().After(a.Time) {
+			return d.root.FullName(fn), nil
+		}
+	}
+
 	f, err := d.root.OpenFile(fn+".tmp", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return d.root.FullName(fn), err
@@ -191,7 +159,7 @@ func (d *DiskDir) WriteOutput(a ActionEntry, body io.Reader) (string, error) {
 	return d.root.FullName(fn), nil
 }
 
-func (d *DiskDir) WriteActionEntry(a ActionEntry) error {
+func (d *diskStorageBackend) WriteActionEntry(a ActionEntry) error {
 	fn := d.GoFileName(a.ID, 'a')
 	f, err := d.root.OpenFile(fn+".tmp", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
