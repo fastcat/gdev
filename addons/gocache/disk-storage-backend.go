@@ -127,7 +127,10 @@ func (d *diskStorageBackend) WriteOutput(a *ActionEntry, body io.Reader) (string
 	// can skip writing the file
 	if st, err := d.root.Stat(fn); err == nil {
 		if st.Size() == a.Size && !st.ModTime().After(a.Time) {
-			return d.root.FullName(fn), nil
+			// drain body that we aren't using, to ensure caller doesn't get messed up
+			// state
+			_, err = io.Copy(io.Discard, body) // nolint:errcheck
+			return d.root.FullName(fn), err
 		}
 	}
 
