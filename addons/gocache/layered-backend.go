@@ -29,7 +29,24 @@ func NewLayeredStorageBackend(local, remote StorageBackend, remoteReadOnly bool)
 
 // CheckOutputFile implements StorageBackend.
 func (l *layeredStorageBackend) CheckOutputFile(a ActionEntry) (string, error) {
-	panic("unimplemented")
+	fullFn, localErr := l.local.CheckOutputFile(a)
+	if localErr == nil {
+		// already present locally
+		return fullFn, nil
+	}
+	if _, err := l.remote.CheckOutputFile(a); err == nil {
+		f, err := l.remote.OpenOutputFile(a)
+		if err == nil {
+			defer f.Close() // nolint:errcheck
+			if fullFn, err = l.local.WriteOutput(a, f); err == nil {
+				// if we successfully wrote to local, return the local path
+				// TODO: a.time becomes wrong
+				return fullFn, nil
+			}
+		}
+	}
+	// if not found in remote, return the local error
+	return fullFn, localErr
 }
 
 // Close implements StorageBackend.
@@ -86,7 +103,7 @@ func (l *layeredStorageBackend) WriteActionEntry(a ActionEntry) error {
 }
 
 // WriteOutput implements StorageBackend.
-func (l *layeredStorageBackend) WriteOutput(a *ActionEntry, body io.Reader) (string, error) {
+func (l *layeredStorageBackend) WriteOutput(a ActionEntry, body io.Reader) (string, error) {
 	if l.remoteReadOnly {
 		return l.local.WriteOutput(a, body)
 	}
@@ -102,6 +119,7 @@ func (l *layeredStorageBackend) WriteOutput(a *ActionEntry, body io.Reader) (str
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
+		defer bodyCopyW.Close() // nolint:errcheck // else pipe won't know we're done
 		if localPath, err1 = l.local.WriteOutput(a, body); err1 != nil {
 			err1 = fmt.Errorf("failed to write output to local storage: %w", err1)
 		}
@@ -114,4 +132,17 @@ func (l *layeredStorageBackend) WriteOutput(a *ActionEntry, body io.Reader) (str
 	}()
 	wg.Wait()
 	return localPath, errors.Join(err1, err2)
+}
+
+func (l *layeredStorageBackend) OpenOutputFile(a ActionEntry) (io.ReadCloser, error) {
+	// try local first
+	f, localErr := l.local.OpenOutputFile(a)
+	if localErr == nil {
+		return f, nil
+	}
+	// if not found, try remote
+	if f, err := l.remote.OpenOutputFile(a); err == nil {
+		return f, nil
+	}
+	return nil, localErr
 }

@@ -5,6 +5,7 @@ import (
 	"fastcat.org/go/gdev/addons/build"
 	"fastcat.org/go/gdev/addons/containerd"
 	"fastcat.org/go/gdev/addons/docker"
+	"fastcat.org/go/gdev/addons/gocache"
 	"fastcat.org/go/gdev/addons/golang"
 	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/addons/k8s"
@@ -47,6 +48,7 @@ func main() {
 	build.Configure() // strategies will be registered by other addons
 	nodejs.Configure()
 	golang.Configure()
+	gocache.Configure()
 
 	cmd.Main()
 }

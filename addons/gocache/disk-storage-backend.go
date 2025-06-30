@@ -14,7 +14,6 @@ import (
 type diskDirBaseFS interface {
 	fs.FS
 	fs.StatFS
-	io.Closer
 }
 
 type writeFile interface {
@@ -23,12 +22,14 @@ type writeFile interface {
 }
 
 type diskDirFS interface {
+	io.Closer
 	diskDirBaseFS
 	Name() string
 	FullName(string) string
 	OpenFile(name string, flag int, perm fs.FileMode) (writeFile, error)
 	Rename(oldpath, newpath string) error
 	Remove(name string) error
+	Mkdir(path string, mode fs.FileMode) error
 }
 
 // diskStorageBackend represents a directory used as part of a cache storage
@@ -121,7 +122,7 @@ func (d *diskStorageBackend) CheckOutputFile(a ActionEntry) (string, error) {
 	return d.root.FullName(fn), nil
 }
 
-func (d *diskStorageBackend) WriteOutput(a *ActionEntry, body io.Reader) (string, error) {
+func (d *diskStorageBackend) WriteOutput(a ActionEntry, body io.Reader) (string, error) {
 	fn := d.GoFileName(a.OutputID, 'o')
 	// if it looks like the right size, and isn't newer than the action entry, we
 	// can skip writing the file
@@ -132,6 +133,10 @@ func (d *diskStorageBackend) WriteOutput(a *ActionEntry, body io.Reader) (string
 			_, err = io.Copy(io.Discard, body) // nolint:errcheck
 			return d.root.FullName(fn), err
 		}
+	}
+
+	if err := d.root.Mkdir(filepath.Dir(fn), 0o755); err != nil && !errors.Is(err, fs.ErrExist) {
+		return d.root.FullName(fn), fmt.Errorf("failed to create directory %q: %w", filepath.Dir(fn), err)
 	}
 
 	f, err := d.root.OpenFile(fn+".tmp", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
@@ -162,8 +167,16 @@ func (d *diskStorageBackend) WriteOutput(a *ActionEntry, body io.Reader) (string
 	return d.root.FullName(fn), nil
 }
 
+func (d *diskStorageBackend) OpenOutputFile(a ActionEntry) (io.ReadCloser, error) {
+	fn := d.GoFileName(a.OutputID, 'o')
+	return d.root.Open(fn)
+}
+
 func (d *diskStorageBackend) WriteActionEntry(a ActionEntry) error {
 	fn := d.GoFileName(a.ID, 'a')
+	if err := d.root.Mkdir(filepath.Dir(fn), 0o755); err != nil && !errors.Is(err, fs.ErrExist) {
+		return fmt.Errorf("failed to create directory %q: %w", filepath.Dir(fn), err)
+	}
 	f, err := d.root.OpenFile(fn+".tmp", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
@@ -178,9 +191,8 @@ func (d *diskStorageBackend) WriteActionEntry(a ActionEntry) error {
 	if err := f.Close(); err != nil {
 		return err
 	}
-	fullFn := d.root.FullName(fn)
-	if err := d.root.Rename(fullFn+".tmp", fullFn); err != nil {
-		if err2 := d.root.Remove(fullFn + ".tmp"); err2 != nil {
+	if err := d.root.Rename(fn+".tmp", fn); err != nil {
+		if err2 := d.root.Remove(fn + ".tmp"); err2 != nil {
 			err = errors.Join(err, err2)
 		}
 		return err

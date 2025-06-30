@@ -2,6 +2,7 @@
 	"cSpell.words": [
 		"dbus",
 		"gdev",
+		"GOBUILDCACHE",
 		"golangci",
 		"govulncheck",
 		"jedib0t",

@@ -38,6 +38,21 @@ func NewDiskReader(path string) (*ReadonlyStorageFrontend, error) {
 	}
 }
 
+func NewFrontend(backend StorageBackend) *StorageFrontend {
+	if backend == nil {
+		panic("backend must not be nil")
+	}
+	return &StorageFrontend{dd: backend}
+}
+
+// TODO: accept a read-only backend
+func NewReadonlyFrontend(backend StorageBackend) *ReadonlyStorageFrontend {
+	if backend == nil {
+		panic("backend must not be nil")
+	}
+	return (*ReadonlyStorageFrontend)(&StorageFrontend{dd: backend})
+}
+
 // use checks root and closing under the mutex. methods must use it to access
 // the root member to ensure it is not closed or removed while they are using
 // it.
@@ -128,12 +143,20 @@ func (d *StorageFrontend) Put(ctx context.Context, req *Request) (*Response, err
 		Size:     req.BodySize,
 		Time:     time.Now(),
 	}
-	outputPath, err := root.WriteOutput(&entry, req.Body)
-	if err != nil {
-		return &Response{
-			ID:  req.ID,
-			Err: err.Error(),
-		}, nil
+	res := Response{
+		ID:       req.ID,
+		OutputID: entry.OutputID,
+		Size:     entry.Size,
+		Time:     &entry.Time,
+	}
+	if req.Body != nil {
+		res.DiskPath, err = root.WriteOutput(entry, req.Body)
+		if err != nil {
+			return &Response{
+				ID:  req.ID,
+				Err: err.Error(),
+			}, nil
+		}
 	}
 	if err := root.WriteActionEntry(entry); err != nil {
 		return &Response{
@@ -142,13 +165,7 @@ func (d *StorageFrontend) Put(ctx context.Context, req *Request) (*Response, err
 		}, nil
 	}
 
-	return &Response{
-		ID:       req.ID,
-		OutputID: entry.OutputID,
-		Size:     entry.Size,
-		Time:     &entry.Time,
-		DiskPath: outputPath,
-	}, nil
+	return &res, nil
 }
 
 // Close implements ReadStorage.

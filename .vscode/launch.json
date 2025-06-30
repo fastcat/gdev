@@ -110,6 +110,12 @@
 			"args": [
 				"start"
 			]
+		},
+		{
+			"name": "attach: gdev",
+			"type": "go",
+			"request": "attach",
+			"processId": "gdev"
 		}
 	]
 }

@@ -22,3 +22,5 @@
 
 # gopls debug launches
 __debug_bin*
+
+/gdev

@@ -33,11 +33,15 @@ type Storage interface {
 	WriteStorage
 }
 
-type StorageBackend interface {
+type ReadonlyStorageBackend interface {
 	io.Closer
 	ReadActionEntry(id []byte) (*ActionEntry, error)
 	CheckOutputFile(a ActionEntry) (string, error)
-	// may update a.Time
-	WriteOutput(a *ActionEntry, body io.Reader) (string, error)
+	OpenOutputFile(a ActionEntry) (io.ReadCloser, error)
+}
+
+type StorageBackend interface {
+	ReadonlyStorageBackend
+	WriteOutput(a ActionEntry, body io.Reader) (string, error)
 	WriteActionEntry(a ActionEntry) error
 }
