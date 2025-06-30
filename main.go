@@ -5,6 +5,7 @@ import (
 	"fastcat.org/go/gdev/addons/build"
 	"fastcat.org/go/gdev/addons/containerd"
 	"fastcat.org/go/gdev/addons/docker"
+	"fastcat.org/go/gdev/addons/gcs"
 	"fastcat.org/go/gdev/addons/gocache"
 	gocachesftp "fastcat.org/go/gdev/addons/gocache-sftp"
 	"fastcat.org/go/gdev/addons/golang"
@@ -51,6 +52,7 @@ func main() {
 	golang.Configure()
 	gocache.Configure()
 	gocachesftp.Configure()
+	gcs.Configure()
 
 	cmd.Main()
 }
