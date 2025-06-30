@@ -8,11 +8,12 @@ import (
 )
 
 type layeredStorageBackend struct {
-	local  StorageBackend
-	remote StorageBackend
+	local          StorageBackend
+	remote         StorageBackend
+	remoteReadOnly bool
 }
 
-func NewLayeredStorageBackend(local, remote StorageBackend) *layeredStorageBackend {
+func NewLayeredStorageBackend(local, remote StorageBackend, remoteReadOnly bool) *layeredStorageBackend {
 	if local == nil || remote == nil {
 		panic(fmt.Errorf(
 			"both local and remote storage backends must be non-nil, got local=%T, remote=%T",
@@ -20,8 +21,9 @@ func NewLayeredStorageBackend(local, remote StorageBackend) *layeredStorageBacke
 		))
 	}
 	return &layeredStorageBackend{
-		local:  local,
-		remote: remote,
+		local:          local,
+		remote:         remote,
+		remoteReadOnly: remoteReadOnly,
 	}
 }
 
@@ -75,14 +77,20 @@ func (l *layeredStorageBackend) WriteActionEntry(a ActionEntry) error {
 	if err := l.local.WriteActionEntry(a); err != nil {
 		errs = append(errs, fmt.Errorf("failed to write action entry to local storage: %w", err))
 	}
-	if err := l.remote.WriteActionEntry(a); err != nil {
-		errs = append(errs, fmt.Errorf("failed to write action entry to remote storage: %w", err))
+	if !l.remoteReadOnly {
+		if err := l.remote.WriteActionEntry(a); err != nil {
+			errs = append(errs, fmt.Errorf("failed to write action entry to remote storage: %w", err))
+		}
 	}
 	return errors.Join(errs...)
 }
 
 // WriteOutput implements StorageBackend.
 func (l *layeredStorageBackend) WriteOutput(a *ActionEntry, body io.Reader) (string, error) {
+	if l.remoteReadOnly {
+		return l.local.WriteOutput(a, body)
+	}
+
 	// write body to both places concurrently
 	bodyCopyR, bodyCopyW := io.Pipe()
 	defer bodyCopyW.Close() // nolint:errcheck
