@@ -119,6 +119,12 @@ func (d *StorageFrontend) Get(ctx context.Context, req *Request) (*Response, err
 			Err:  err.Error(),
 			Miss: true,
 		}, nil
+	} else if outputPath == "" {
+		// remote read-only storage, we can't use the output file we have :(
+		return &Response{
+			ID:   req.ID,
+			Miss: true,
+		}, nil
 	}
 	return &Response{
 		ID:       req.ID,
