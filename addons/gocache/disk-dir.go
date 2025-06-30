@@ -12,10 +12,24 @@ import (
 	"time"
 )
 
-type diskDirFS interface {
+type diskDirBaseFS interface {
 	fs.FS
 	fs.StatFS
-	fs.ReadDirFS
+	io.Closer
+}
+
+type writeFile interface {
+	io.WriteCloser
+	Sync() error
+}
+
+type diskDirFS interface {
+	diskDirBaseFS
+	Name() string
+	FullName(string) string
+	OpenFile(name string, flag int, perm fs.FileMode) (writeFile, error)
+	Rename(oldpath, newpath string) error
+	Remove(name string) error
 }
 
 // DiskDir represents a directory used as part of a cache storage
@@ -25,30 +39,28 @@ type diskDirFS interface {
 //
 // It uses the same on-disk format as the built-in Go build cache as of Go 1.24.
 type DiskDir struct {
-	root  diskDirFS
-	close func() error
+	root diskDirFS
 }
 
-func NewDiskDir(path string) (*DiskDir, error) {
+func DiskDirAtRoot(path string) (*DiskDir, error) {
 	root, err := os.OpenRoot(path)
 	if err != nil {
 		return nil, err
 	}
-	return &DiskDir{root: root.FS().(diskDirFS), close: root.Close}, nil
+	return &DiskDir{root: wrapRoot(root)}, nil
 }
 
 func DiskDirFromFS(fs diskDirFS, close func() error) *DiskDir {
-	return &DiskDir{root: fs, close: close}
+	return &DiskDir{root: fs}
 }
 
 func (d *DiskDir) Close() error {
-	if d.close != nil {
-		if err := d.close(); err != nil {
+	if d.root != nil {
+		if err := d.root.Close(); err != nil {
 			return err
 		}
+		d.root = nil
 	}
-	d.close = nil
-	d.root = nil
 	return nil
 }
 
@@ -136,20 +148,71 @@ func (a ActionEntry) WriteTo(w io.Writer) (int64, error) {
 
 var ErrOutputFileWrongSize = errors.New("output file has wrong size")
 
-func (d *DiskDir) CheckOutputFile(a ActionEntry) error {
-	st, err := d.root.Stat(d.GoFileName(a.OutputID, 'o'))
+func (d *DiskDir) CheckOutputFile(a ActionEntry) (string, error) {
+	fn := d.GoFileName(a.OutputID, 'o')
+	st, err := d.root.Stat(fn)
+	if err != nil {
+		return d.root.FullName(fn), err
+	}
+	if st.Size() != a.Size {
+		return d.root.FullName(fn), ErrOutputFileWrongSize
+	}
+	// mtime of output file need not relate to mtime of action file
+	return d.root.FullName(fn), nil
+}
+
+func (d *DiskDir) WriteOutput(a ActionEntry, body io.Reader) (string, error) {
+	fn := d.GoFileName(a.OutputID, 'o')
+	f, err := d.root.OpenFile(fn+".tmp", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
+	if err != nil {
+		return d.root.FullName(fn), err
+	}
+	defer f.Close() //nolint:errcheck
+
+	if n, err := io.Copy(f, body); err != nil {
+		return d.root.FullName(fn), err
+	} else if n != a.Size {
+		return d.root.FullName(fn), fmt.Errorf("%w: expected %d bytes, got %d", ErrOutputFileWrongSize, a.Size, n)
+	}
+	if err := f.Sync(); err != nil {
+		return d.root.FullName(fn), err
+	}
+	if err := f.Close(); err != nil {
+		return d.root.FullName(fn), err
+	}
+	// TODO: go 1.24 os.Root.Rename
+	if err := d.root.Rename(fn+".tmp", fn); err != nil {
+		if err2 := os.Remove(fn + ".tmp"); err2 != nil {
+			err = errors.Join(err, err2)
+		}
+		return d.root.FullName(fn), err
+	}
+
+	return d.root.FullName(fn), nil
+}
+
+func (d *DiskDir) WriteActionEntry(a ActionEntry) error {
+	fn := d.GoFileName(a.ID, 'a')
+	f, err := d.root.OpenFile(fn+".tmp", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
-	if st.Size() != a.Size {
-		return ErrOutputFileWrongSize
+	defer f.Close() //nolint:errcheck
+	if _, err := a.WriteTo(f); err != nil {
+		return err
 	}
-	// mtime of output file need not relate to mtime of action file
+	if err := f.Sync(); err != nil {
+		return err
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	fullFn := d.root.FullName(fn)
+	if err := d.root.Rename(fullFn+".tmp", fullFn); err != nil {
+		if err2 := d.root.Remove(fullFn + ".tmp"); err2 != nil {
+			err = errors.Join(err, err2)
+		}
+		return err
+	}
 	return nil
-}
-
-// Touch updates the mtime of the action and output file for the given entry, to
-// mark them as recently used and prevent them from being trimmed.
-func (d *DiskDir) Touch(a ActionEntry) error {
-	panic("TODO")
 }

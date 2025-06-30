@@ -2,7 +2,10 @@ package gocache
 
 import (
 	"context"
+	"errors"
+	"os"
 	"sync"
+	"time"
 )
 
 type DiskStorage struct {
@@ -23,7 +26,7 @@ var (
 )
 
 func NewDiskStorage(path string) (*DiskStorage, error) {
-	dd, err := NewDiskDir(path)
+	dd, err := DiskDirAtRoot(path)
 	if err != nil {
 		return nil, err
 	}
@@ -89,9 +92,37 @@ func (d *DiskStorage) Get(ctx context.Context, req *Request) (*Response, error) 
 	}
 	defer done()
 
-	_ = root
-
-	panic("unimplemented")
+	entry, err := root.ReadActionEntry(req.ActionID)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// cache miss
+			return &Response{
+				ID:   req.ID,
+				Miss: true,
+			}, nil
+		}
+		// other error
+		return &Response{
+			ID:   req.ID,
+			Err:  err.Error(),
+			Miss: true,
+		}, nil
+	}
+	outputPath, err := root.CheckOutputFile(*entry)
+	if err != nil {
+		return &Response{
+			ID:   req.ID,
+			Err:  err.Error(),
+			Miss: true,
+		}, nil
+	}
+	return &Response{
+		ID:       req.ID,
+		OutputID: entry.OutputID,
+		Size:     entry.Size,
+		Time:     &entry.Time,
+		DiskPath: outputPath,
+	}, nil
 }
 
 // Put implements Storage.
@@ -102,9 +133,33 @@ func (d *DiskStorage) Put(ctx context.Context, req *Request) (*Response, error) 
 	}
 	defer done()
 
-	_ = root
+	entry := ActionEntry{
+		ID:       req.ActionID,
+		OutputID: req.OutputID,
+		Size:     req.BodySize,
+		Time:     time.Now(),
+	}
+	outputPath, err := root.WriteOutput(entry, req.Body)
+	if err != nil {
+		return &Response{
+			ID:  req.ID,
+			Err: err.Error(),
+		}, nil
+	}
+	if err := root.WriteActionEntry(entry); err != nil {
+		return &Response{
+			ID:  req.ID,
+			Err: err.Error(),
+		}, nil
+	}
 
-	panic("unimplemented")
+	return &Response{
+		ID:       req.ID,
+		OutputID: entry.OutputID,
+		Size:     entry.Size,
+		Time:     &entry.Time,
+		DiskPath: outputPath,
+	}, nil
 }
 
 // Close implements ReadStorage.
