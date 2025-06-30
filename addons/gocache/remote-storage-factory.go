@@ -1,6 +1,6 @@
 package gocache
 
 type RemoteStorageFactory interface {
-	Want(url string) bool
-	New(url string) (ReadonlyStorageBackend, error)
+	Want(uri string) bool
+	New(uri string) (ReadonlyStorageBackend, error)
 }

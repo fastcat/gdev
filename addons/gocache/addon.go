@@ -52,7 +52,8 @@ func initialize() error {
 }
 
 func makeCmd() *cobra.Command {
-	var write bool
+	writeThrough := true
+
 	cmd := &cobra.Command{
 		Use:   "gocache [remote...]",
 		Short: "Go build cache app",
@@ -80,9 +81,16 @@ func makeCmd() *cobra.Command {
 						if remote == nil {
 							remote = nextRemote
 							canWrite = nextCanWrite
-						} else if write && canWrite && nextCanWrite {
+							// if canWrite {
+							// 	fmt.Fprintln(os.Stderr, "remote write", url)
+							// } else {
+							// 	fmt.Fprintln(os.Stderr, "remote read", url)
+							// }
+						} else if writeThrough && canWrite && nextCanWrite {
+							// fmt.Fprintln(os.Stderr, "remote write-through", url)
 							remote = NewWriteThroughStorageBackend(nextW, remote.(StorageBackend))
 						} else {
+							// fmt.Fprintln(os.Stderr, "remote read-only", url)
 							remote = NewReadonlyStorageBackend(nextRemote, remote)
 							canWrite = false
 						}
@@ -97,18 +105,22 @@ func makeCmd() *cobra.Command {
 				return err
 			}
 			if remote != nil {
-				if write && canWrite {
+				if writeThrough && canWrite {
+					// fmt.Fprintln(os.Stderr, "final write-through", gbc)
 					backend = NewWriteThroughStorageBackend(backend, remote.(StorageBackend))
 				} else {
+					// fmt.Fprintln(os.Stderr, "final read-through", remote)
 					backend = NewReadThroughStorageBackend(backend, remote)
 				}
 			}
 			frontend := NewFrontend(backend)
 			s := NewServer(frontend, os.Stdin, os.Stdout)
+			// time.Sleep(5 * time.Second)
 			// TODO: signal handlers
 			return s.Run(cmd.Context())
 		},
 	}
-	cmd.Flags().BoolVarP(&write, "write", "w", false, "enable remote write operations if possible")
+	cmd.Flags().BoolVarP(&writeThrough, "write", "w", writeThrough,
+		"enable remote write operations if possible")
 	return cmd
 }

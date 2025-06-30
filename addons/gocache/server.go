@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"sync"
 
 	"golang.org/x/sync/errgroup"
@@ -77,7 +76,7 @@ func (s *server) Run(ctx context.Context) error {
 		hits[req.Command]++
 		switch req.Command {
 		case CmdClose:
-			fmt.Fprintf(os.Stderr, "done, hits: %v\n", hits)
+			// fmt.Fprintf(os.Stderr, "done, hits: %v\n", hits)
 			// wait for outstanding requests to complete
 			var errs []error
 			errs = append(errs, eg2.Wait())

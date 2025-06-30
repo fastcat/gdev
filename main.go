@@ -6,6 +6,7 @@ import (
 	"fastcat.org/go/gdev/addons/containerd"
 	"fastcat.org/go/gdev/addons/docker"
 	"fastcat.org/go/gdev/addons/gocache"
+	gocachesftp "fastcat.org/go/gdev/addons/gocache-sftp"
 	"fastcat.org/go/gdev/addons/golang"
 	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/addons/k8s"
@@ -49,6 +50,7 @@ func main() {
 	nodejs.Configure()
 	golang.Configure()
 	gocache.Configure()
+	gocachesftp.Configure()
 
 	cmd.Main()
 }

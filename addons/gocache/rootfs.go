@@ -10,7 +10,7 @@ type rootFS struct {
 	diskDirBaseFS
 }
 
-func wrapRoot(root *os.Root) diskDirFS {
+func wrapRoot(root *os.Root) DiskDirFS {
 	return &rootFS{root, root.FS().(diskDirBaseFS)}
 }
 
@@ -28,7 +28,7 @@ func (r *rootFS) Close() error {
 	return nil
 }
 
-func (r *rootFS) OpenFile(name string, flag int, perm os.FileMode) (writeFile, error) {
+func (r *rootFS) OpenFile(name string, flag int, perm os.FileMode) (WriteFile, error) {
 	return r.root.OpenFile(name, flag, perm)
 }
 

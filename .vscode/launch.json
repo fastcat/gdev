@@ -116,6 +116,28 @@
 			"type": "go",
 			"request": "attach",
 			"processId": "gdev"
+		},
+		{
+			"name": "gocache sftp",
+			"type": "go",
+			"request": "launch",
+			"program": "${workspaceFolder}",
+			"args": [
+				"gocache",
+				"sftp://${input:sftphost}/${input:sftpdir}"
+			]
+		}
+	],
+	"inputs": [
+		{
+			"id": "sftphost",
+			"type": "promptString",
+			"description": "SFTP host (e.g., user@host:port)"
+		},
+		{
+			"id": "sftpdir",
+			"type": "promptString",
+			"description": "SFTP base directory (absolute path)"
 		}
 	]
 }

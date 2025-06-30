@@ -3,6 +3,7 @@
 		"dbus",
 		"gdev",
 		"GOBUILDCACHE",
+		"gocachesftp",
 		"golangci",
 		"govulncheck",
 		"jedib0t",

@@ -16,17 +16,17 @@ type diskDirBaseFS interface {
 	fs.StatFS
 }
 
-type writeFile interface {
+type WriteFile interface {
 	io.WriteCloser
 	Sync() error
 }
 
-type diskDirFS interface {
+type DiskDirFS interface {
 	io.Closer
 	diskDirBaseFS
 	Name() string
 	FullName(string) string
-	OpenFile(name string, flag int, perm fs.FileMode) (writeFile, error)
+	OpenFile(name string, flag int, perm fs.FileMode) (WriteFile, error)
 	Rename(oldpath, newpath string) error
 	Remove(name string) error
 	Mkdir(path string, mode fs.FileMode) error
@@ -39,7 +39,7 @@ type diskDirFS interface {
 //
 // It uses the same on-disk format as the built-in Go build cache as of Go 1.24.
 type diskStorageBackend struct {
-	root diskDirFS
+	root DiskDirFS
 }
 
 func DiskDirAtRoot(path string) (*diskStorageBackend, error) {
@@ -50,7 +50,7 @@ func DiskDirAtRoot(path string) (*diskStorageBackend, error) {
 	return &diskStorageBackend{root: wrapRoot(root)}, nil
 }
 
-func DiskDirFromFS(fs diskDirFS, close func() error) *diskStorageBackend {
+func DiskDirFromFS(fs DiskDirFS) *diskStorageBackend {
 	return &diskStorageBackend{root: fs}
 }
 
@@ -110,7 +110,7 @@ func (d *diskStorageBackend) ReadActionEntry(id []byte) (*ActionEntry, error) {
 var ErrOutputFileWrongSize = errors.New("output file has wrong size")
 
 func (d *diskStorageBackend) CheckOutputFile(a ActionEntry) (string, error) {
-	fn := d.GoFileName(a.OutputID, 'o')
+	fn := d.GoFileName(a.OutputID, 'd')
 	st, err := d.root.Stat(fn)
 	if err != nil {
 		return d.root.FullName(fn), err
@@ -123,7 +123,7 @@ func (d *diskStorageBackend) CheckOutputFile(a ActionEntry) (string, error) {
 }
 
 func (d *diskStorageBackend) WriteOutput(a ActionEntry, body io.Reader) (string, error) {
-	fn := d.GoFileName(a.OutputID, 'o')
+	fn := d.GoFileName(a.OutputID, 'd')
 	// if it looks like the right size, and isn't newer than the action entry, we
 	// can skip writing the file
 	if st, err := d.root.Stat(fn); err == nil {
@@ -168,7 +168,7 @@ func (d *diskStorageBackend) WriteOutput(a ActionEntry, body io.Reader) (string,
 }
 
 func (d *diskStorageBackend) OpenOutputFile(a ActionEntry) (io.ReadCloser, error) {
-	fn := d.GoFileName(a.OutputID, 'o')
+	fn := d.GoFileName(a.OutputID, 'd')
 	return d.root.Open(fn)
 }
 
