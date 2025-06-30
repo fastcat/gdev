@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type server struct {
@@ -37,6 +39,8 @@ func NewServer(
 }
 
 func (s *server) Run(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	// write caps
 	writeImpl, _ := s.impl.(WriteStorage)
 	caps := []Cmd{CmdClose, CmdGet}
@@ -46,6 +50,12 @@ func (s *server) Run(ctx context.Context) error {
 	if err := s.writeResp(&Response{ID: 0, KnownCommands: caps}); err != nil {
 		return err
 	}
+	respCh := make(chan *Response, 1)
+	eg1, eg1Ctx := errgroup.WithContext(ctx)
+	eg1.Go(func() error {
+		return s.respWriterLoop(eg1Ctx, respCh)
+	})
+	eg2, eg2Ctx := errgroup.WithContext(ctx)
 	hits := map[Cmd]int{}
 	for {
 		req, err := s.readReq()
@@ -58,23 +68,32 @@ func (s *server) Run(ctx context.Context) error {
 		hits[req.Command]++
 		switch req.Command {
 		case CmdClose:
-			err := s.impl.Close()
-			if err != nil {
-				return err
-			}
 			fmt.Fprintf(os.Stderr, "done, hits: %v\n", hits)
-			if err := s.writeResp(&Response{ID: req.ID}); err != nil {
-				return err
+			// wait for outstanding requests to complete
+			var errs []error
+			errs = append(errs, eg2.Wait())
+			errs = append(errs, s.impl.Close())
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("close canceled: %w", ctx.Err())
+			case respCh <- &Response{ID: req.ID}:
 			}
-			return nil // stop server / close connection
+			close(respCh)
+			errs = append(errs, eg1.Wait())
+			return errors.Join(errs...)
 		case CmdGet:
-			resp, err := s.impl.Get(ctx, req)
-			if err != nil {
-				return err
-			}
-			if err := s.writeResp(resp); err != nil {
-				return err
-			}
+			eg2.Go(func() error {
+				resp, err := s.impl.Get(eg2Ctx, req)
+				if err != nil {
+					return err
+				}
+				select {
+				case <-eg2Ctx.Done():
+					return fmt.Errorf("get canceled: %w", eg2Ctx.Err())
+				case respCh <- resp:
+					return nil
+				}
+			})
 		case CmdPut:
 			if writeImpl == nil {
 				return errors.New("put command not supported by storage backend")
@@ -86,15 +105,39 @@ func (s *server) Run(ctx context.Context) error {
 				}
 				req.Body = body
 			}
-			resp, err := writeImpl.Put(ctx, req)
-			if err != nil {
-				return err
+			eg2.Go(func() error {
+				resp, err := writeImpl.Put(eg2Ctx, req)
+				if err != nil {
+					return err
+				}
+				select {
+				case <-eg2Ctx.Done():
+					return fmt.Errorf("put canceled: %w", eg2Ctx.Err())
+				case respCh <- resp:
+					return nil
+				}
+			})
+		default:
+			return fmt.Errorf("unknown command %q", req.Command)
+		}
+	}
+}
+
+func (s *server) respWriterLoop(
+	ctx context.Context,
+	responses <-chan *Response,
+) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case resp, ok := <-responses:
+			if !ok {
+				return nil
 			}
 			if err := s.writeResp(resp); err != nil {
 				return err
 			}
-		default:
-			return fmt.Errorf("unknown command %q", req.Command)
 		}
 	}
 }
