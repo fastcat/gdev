@@ -126,6 +126,17 @@
 				"gocache",
 				"sftp://${input:sftphost}/${input:sftpdir}"
 			]
+		},
+		{
+			"name": "uninstall k3s",
+			"type": "go",
+			"request": "launch",
+			"program": "${workspaceFolder}",
+			"args": [
+				"bootstrap",
+				"k3s",
+				"uninstall"
+			]
 		}
 	],
 	"inputs": [

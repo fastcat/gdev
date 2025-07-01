@@ -62,6 +62,17 @@ func WithCwd(path string) Option {
 	})
 }
 
+func CaptureOutput() Option {
+	return optionExecFunc(func(cmd *exec.Cmd, res *Result) {
+		if res.stdoutCapture != nil {
+			_ = res.stdoutCapture.Close()
+		}
+		res.stdoutCapture = &outCapture{}
+		res.stdoutCapture.init()
+		cmd.Stdout = res.stdoutCapture
+	})
+}
+
 func CaptureCombined() Option {
 	return optionExecFunc(func(cmd *exec.Cmd, res *Result) {
 		if res.stdoutCapture != nil {
@@ -71,7 +82,10 @@ func CaptureCombined() Option {
 			_ = res.stderrCapture.Close()
 		}
 		res.stdoutCapture = &outCapture{}
+		res.stdoutCapture.init()
 		res.stderrCapture = res.stdoutCapture
+		cmd.Stdout = res.stdoutCapture
+		cmd.Stderr = res.stdoutCapture
 	})
 }
 
@@ -79,7 +93,10 @@ func CaptureCombined() Option {
 // capture configuration.
 func PassStdout() Option {
 	return optionExecFunc(func(cmd *exec.Cmd, res *Result) {
-		res.stdoutCapture = nil
+		if res.stdoutCapture != nil {
+			_ = res.stdoutCapture.Close()
+			res.stdoutCapture = nil
+		}
 		cmd.Stdout = os.Stdout
 	})
 }
@@ -88,7 +105,10 @@ func PassStdout() Option {
 // capture configuration.
 func PassStderr() Option {
 	return optionExecFunc(func(cmd *exec.Cmd, res *Result) {
-		res.stderrCapture = nil
+		if res.stderrCapture != nil {
+			_ = res.stderrCapture.Close()
+			res.stderrCapture = nil
+		}
 		cmd.Stderr = os.Stderr
 	})
 }
@@ -104,14 +124,28 @@ func PassStdin() Option {
 // respectively, and clears any prior capture configuration.
 func PassOutput() Option {
 	return optionExecFunc(func(cmd *exec.Cmd, res *Result) {
-		res.stdoutCapture, res.stderrCapture = nil, nil
+		if res.stdoutCapture != nil {
+			_ = res.stdoutCapture.Close()
+			res.stdoutCapture = nil
+		}
+		if res.stderrCapture != nil {
+			_ = res.stderrCapture.Close()
+			res.stderrCapture = nil
+		}
 		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
 	})
 }
 
 func PassStdio() Option {
 	return optionExecFunc(func(cmd *exec.Cmd, res *Result) {
-		res.stdoutCapture, res.stderrCapture = nil, nil
+		if res.stdoutCapture != nil {
+			_ = res.stdoutCapture.Close()
+			res.stdoutCapture = nil
+		}
+		if res.stderrCapture != nil {
+			_ = res.stderrCapture.Close()
+			res.stderrCapture = nil
+		}
 		cmd.Stdout, cmd.Stderr, cmd.Stdin = os.Stdout, os.Stderr, os.Stdin
 	})
 }

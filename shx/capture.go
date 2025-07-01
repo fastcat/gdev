@@ -19,6 +19,14 @@ type outCapture struct {
 	tmpFile *os.File
 }
 
+func (c *outCapture) init() {
+	if c.writer != nil || c.tmpFile != nil || c.buffer != nil {
+		return
+	}
+	// make sure there's a non-nil buffer to write to / read EOF from
+	c.buffer = &bytes.Buffer{}
+}
+
 func (c *outCapture) Close() error {
 	if c == nil {
 		return nil

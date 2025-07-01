@@ -8,6 +8,7 @@
 		"govulncheck",
 		"jedib0t",
 		"journalctl",
+		"kubelet",
 		"libc",
 		"nolint",
 		"NOPASSWD",

@@ -92,9 +92,11 @@ var configureBootstrap = sync.OnceFunc(func() {
 			Short: "install / update k3s",
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, _ []string) error {
-				if err := InstallStable(cmd.Context(), DefaultInstallPath); err != nil {
+				fmt.Printf("Installing k3s to %s\n", addon.Config.k3sPath)
+				if err := InstallStable(cmd.Context(), addon.Config.k3sPath); err != nil {
 					return err
 				}
+				fmt.Printf("Installing sudoers file\n")
 				if err := InstallSudoers(cmd.Context(), DefaultInstallPath); err != nil {
 					return err
 				}
