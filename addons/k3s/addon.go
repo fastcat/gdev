@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/spf13/cobra"
 	apiCoreV1 "k8s.io/api/core/v1"
@@ -115,9 +117,23 @@ var configureBootstrap = sync.OnceFunc(func() {
 				if err != nil {
 					return fmt.Errorf("failed to start k3s service: %w", err)
 				}
-				_, err = mergeKubeConfig(ctx)
-				if err != nil {
-					return fmt.Errorf("failed to merge kube config: %w", err)
+				timeout := time.After(30 * time.Second)
+				retry := time.NewTicker(time.Second)
+				for {
+					_, err = mergeKubeConfig(ctx)
+					if err == nil {
+						break
+					} else if err != nil && !errors.Is(err, os.ErrNotExist) {
+						return fmt.Errorf("failed to merge kube config: %w", err)
+					}
+					select {
+					case <-ctx.Done():
+						return context.Cause(ctx)
+					case <-timeout:
+						return fmt.Errorf("timed out waiting for k3s kube config to be created")
+					case <-retry.C:
+						// loop and try again
+					}
 				}
 				return nil
 			},
@@ -286,10 +302,10 @@ func stackService(cfg *config) service.Service {
 						Path:     "/ping",
 					},
 				},
-			}),
+			}).
+				// TODO: make this a more generic wait resource
+				WithWaitOnStart(),
 		),
-		// TODO: add a "waiter" resource for k3s to be ready: not just pinging, but
-		// the local node healthy too.
 	)
 }
 

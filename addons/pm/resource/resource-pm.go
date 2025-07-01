@@ -14,6 +14,7 @@ type PM struct {
 	Name          string
 	Config        func(context.Context) (*api.Child, error)
 	LimitRestarts bool
+	WaitOnStart   bool
 }
 
 func PMStatic(config api.Child) *PM {
@@ -38,7 +39,10 @@ func PMDynamic(name string, config func(context.Context) (*api.Child, error)) *P
 	}
 }
 
-var _ resource.Resource = (*PM)(nil)
+func (p *PM) WithWaitOnStart() *PM {
+	p.WaitOnStart = true
+	return p
+}
 
 // ID implements Resource.
 func (p *PM) ID() string {
@@ -86,7 +90,28 @@ func (p *PM) Start(ctx context.Context) error {
 		}
 	}
 	// TODO: logging or something
-	_ = cur
+
+	if p.WaitOnStart {
+		ticker := time.NewTicker(100 * time.Millisecond)
+		defer ticker.Stop()
+		first := true
+		for !p.isReady(child, cur) {
+			if first {
+				fmt.Printf("Waiting for child %s to be ready...\n", child.Name)
+				first = false
+			}
+			select {
+			case <-ctx.Done():
+				return context.Cause(ctx)
+			case <-ticker.C:
+				cur, err = client.Child(ctx, child.Name)
+				if err != nil {
+					return fmt.Errorf("failed checking child %s status: %w", child.Name, err)
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -141,14 +166,18 @@ func (p *PM) Ready(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed checking child %s status: %w", child.Name, err)
 	}
+	return p.isReady(child, cur), nil
+}
+
+func (p *PM) isReady(child *api.Child, cur *api.ChildWithStatus) bool {
 	if cur.Status.State != api.ChildRunning {
 		// TODO: Done state for one-shot jobs
 		// TODO: say why it's unhealthy
-		return false, nil
+		return false
 	}
-	if child.HealthCheck == nil {
+	if cur.HealthCheck == nil {
 		// TODO: wait for it to run for a min amount of time?
-		return true, nil
+		return true
 	}
-	return cur.Status.Health.Healthy, nil
+	return cur.Status.Health.Healthy
 }
