@@ -1,19 +1,30 @@
 package containers
 
 import (
+	"strings"
+	"sync"
 	"time"
 
 	"fastcat.org/go/gdev/instance"
 )
 
-const (
-	LabelInstance  = "fastcat.org/go/gdev/instance"
-	LabelCreatedAt = "fastcat.org/go/gdev/created-at"
-)
+var LabelDomain = sync.OnceValue(func() string {
+	return instance.AppName() + ".gdev.fastcat.org"
+})
+
+var LabelInstance = sync.OnceValue(func() string {
+	return LabelDomain() + "/instance"
+})
+
+var LabelCreatedAt = sync.OnceValue(func() string {
+	return LabelDomain() + "/created-at"
+})
+
+var timeFormat = strings.ReplaceAll(time.RFC3339Nano, ":", "-")
 
 func DefaultLabels() map[string]string {
 	return map[string]string{
-		LabelInstance:  instance.AppName(),
-		LabelCreatedAt: time.Now().UTC().Format(time.RFC3339Nano),
+		LabelInstance():  instance.AppName(),
+		LabelCreatedAt(): time.Now().UTC().Format(timeFormat),
 	}
 }

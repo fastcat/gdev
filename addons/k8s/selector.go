@@ -6,11 +6,10 @@ import (
 	metaApplyV1 "k8s.io/client-go/applyconfigurations/meta/v1"
 
 	"fastcat.org/go/gdev/addons/containers"
-	"fastcat.org/go/gdev/instance"
 )
 
 var AppLabel = sync.OnceValue(func() string {
-	return "fastcat.org/go/gdev/" + instance.AppName() + "/app"
+	return containers.LabelDomain() + "/app"
 })
 
 func AppSelector(name string) *metaApplyV1.LabelSelectorApplyConfiguration {

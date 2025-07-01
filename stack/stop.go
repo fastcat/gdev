@@ -10,7 +10,11 @@ import (
 )
 
 // TODO: make progress printing pluggable
-func Stop(ctx context.Context, includeInfrastructure bool) error {
+func Stop(
+	ctx context.Context,
+	includeInfrastructure bool,
+	exclude []string,
+) error {
 	ctx, err := resource.NewContext(ctx)
 	if err != nil {
 		return err
@@ -19,6 +23,15 @@ func Stop(ctx context.Context, includeInfrastructure bool) error {
 	if includeInfrastructure {
 		// infra starts before services, StopServices will reverse this order
 		svcs = append(AllInfrastructure(), svcs...)
+	}
+	if len(exclude) != 0 {
+		filtered := make([]service.Service, 0, len(svcs))
+		for _, svc := range svcs {
+			if !slices.Contains(exclude, svc.Name()) {
+				filtered = append(filtered, svc)
+			}
+		}
+		svcs = filtered
 	}
 	if err := StopServices(ctx, svcs...); err != nil {
 		return err

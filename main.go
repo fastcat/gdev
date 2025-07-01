@@ -34,6 +34,10 @@ func main() {
 	docker.Configure()     // k3s would tweak it if we told k3s to use docker
 	k3s.Configure(
 		k3s.WithProvider(containerd.K3SProvider()),
+		k3s.WithK3SArgs(
+			// allow using any unprivileged port as a node port
+			"--service-node-port-range=1024-65535",
+		),
 	)
 	postgres.Configure(
 		postgres.WithService(),

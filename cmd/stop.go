@@ -11,11 +11,12 @@ import (
 
 type StackStopOptions struct {
 	IncludeInfrastructure bool
+	Exclude               []string
 }
 
 func StackStop(ctx context.Context, opts StackStopOptions) error {
 	// TODO: use go-pretty/v6/progress
-	return stack.Stop(ctx, opts.IncludeInfrastructure)
+	return stack.Stop(ctx, opts.IncludeInfrastructure, opts.Exclude)
 	// TODO: mechanism for full stop wait?
 }
 
@@ -31,5 +32,7 @@ func init() {
 	}
 	cmd.Flags().BoolVar(&opts.IncludeInfrastructure, "include-infrastructure", opts.IncludeInfrastructure,
 		"stop infrastructure too, not just normal services")
+	cmd.Flags().StringSliceVar(&opts.Exclude, "exclude", opts.Exclude,
+		"exclude these resources from stopping (suffix match after slash)")
 	instance.AddCommands(cmd)
 }

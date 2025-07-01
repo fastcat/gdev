@@ -12,6 +12,7 @@ import (
 
 	"fastcat.org/go/gdev/addons/pm/api"
 	"fastcat.org/go/gdev/addons/pm/internal"
+	internalG "fastcat.org/go/gdev/internal"
 )
 
 type daemon struct {
@@ -199,6 +200,10 @@ func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 			State:       status.State,
 			Pid:         pid,
 		}
+		if status.Health.LastHealthy != nil || status.Health.LastUnhealthy != nil {
+			cs.Healthy = internalG.Ptr(status.Health.Healthy)
+		}
+
 		ret = append(ret, cs)
 	}
 	return ret, nil

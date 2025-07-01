@@ -47,6 +47,6 @@ func initialize() error {
 }
 
 const (
-	FakeServerDefaultImage = "fake-gcs-server"
+	FakeServerDefaultImage = "fsouza/fake-gcs-server"
 	DefaultExposedPort     = 4443 // FIXME
 )

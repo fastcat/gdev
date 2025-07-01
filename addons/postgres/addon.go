@@ -62,7 +62,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 
 func initialize() error {
 	if addon.Config.enableService {
-		stack.AddService(Service(addon.Config.svcOpts...))
+		stack.AddInfrastructure(Service(addon.Config.svcOpts...))
 	}
 
 	return nil

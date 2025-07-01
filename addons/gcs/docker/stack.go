@@ -18,11 +18,12 @@ func WithDockerService() internal.Option {
 }
 
 func setupDockerService(cfg *internal.Config) error {
+	name := "fake-gcs-server"
 	stack.AddInfrastructure(service.New(
-		"fake-gcs-server",
+		name,
 		service.WithResourceFuncs(func(ctx context.Context) []resource.Resource {
 			dv := docker.Volume("gcs-data")
-			dc := docker.Container("fake-gcs-server", cfg.FakeServerImage).
+			dc := docker.Container(name, cfg.FakeServerImage).
 				WithPorts(strconv.Itoa(cfg.ExposedPort)).
 				WithCmd(cfg.Args()...).
 				// NOTE: container accepts both a `/data` dir (for preload) and a

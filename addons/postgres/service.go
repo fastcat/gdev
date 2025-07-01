@@ -103,9 +103,8 @@ func (c pgSvcConfig) pvc() k8s.Resource {
 	pvc := applyCoreV1.PersistentVolumeClaim(c.pvcName(), "").
 		// TODO: standard labels & annotations
 		WithSpec(applyCoreV1.PersistentVolumeClaimSpec().
-			// TODO: this assumes k3s, doesn't allow other providers, nor using longhorn
-			// or whatever
-			WithStorageClassName("local-path").
+			// omit storage class so we get the default one, which should be
+			// local-path under k3s
 			WithAccessModes(apiCoreV1.ReadWriteOnce).
 			// resource limits are not honored, and we couldn't set a good limit if
 			// they were, so skip it. at least a request is required however.

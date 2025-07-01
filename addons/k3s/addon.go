@@ -106,17 +106,17 @@ var configureBootstrap = sync.OnceFunc(func() {
 			Short: "do first time start to setup baseline k3s configuration",
 			Args:  cobra.NoArgs,
 			RunE: func(cmd *cobra.Command, _ []string) error {
-				ctx := resource.NewEmptyContext(cmd.Context())
-				rs := stackService(&addon.Config).Resources(ctx)
-				for _, r := range rs {
-					if err := r.Start(ctx); err != nil {
-						return err
-					}
+				ctx := cmd.Context()
+				ctx = service.NewContext(ctx)
+				ctx = resource.NewEmptyContext(ctx)
+				err := stack.StartServices(ctx, "k3s", stackService(&addon.Config))
+				if err != nil {
+					return fmt.Errorf("failed to start k3s service: %w", err)
 				}
-				// TODO: wait for the service to be ready
-				// TODO: fetch the client config (marker) from the resource context now
-				// that the service is healthy (and therefore the config has been
-				// written to merge from)
+				_, err = mergeKubeConfig(ctx)
+				if err != nil {
+					return fmt.Errorf("failed to merge kube config: %w", err)
+				}
 				return nil
 			},
 		},
@@ -159,10 +159,6 @@ func initialize() error {
 	// TODO: this isn't in the right place, as the k3s kube config won't exist to
 	// merge from until after k3s is running.
 	resource.AddContextEntry(mergeKubeConfig)
-
-	// TODO: resource context setup
-
-	// TODO: hook into a bootstrap system to install/uninstall k3s
 
 	// TODO: hook into stop to add a way to kill off all the k3s containers. this
 	// is easy with docker but harder with containerd once k3s (which _is_
