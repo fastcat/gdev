@@ -170,13 +170,15 @@ func (l *layeredStorageBackend) WriteOutput(a ActionEntry, body io.Reader) (stri
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		defer bodyCopyW.Close() // nolint:errcheck // else pipe won't know we're done
+		defer bodyCopyW.Close()         // nolint:errcheck // else pipe won't know we're done
+		defer io.Copy(io.Discard, body) // nolint:errcheck // drain the body to avoid deadlock
 		if localPath, err1 = l.localW.WriteOutput(a, body); err1 != nil {
 			err1 = fmt.Errorf("failed to write output to local storage: %w", err1)
 		}
 	}()
 	go func() {
 		defer wg.Done()
+		defer io.Copy(io.Discard, bodyCopyR) // nolint:errcheck // drain the body to avoid deadlock
 		if _, err2 = l.remoteW.WriteOutput(a, bodyCopyR); err2 != nil {
 			err2 = fmt.Errorf("failed to write output to remote storage: %w", err2)
 		}

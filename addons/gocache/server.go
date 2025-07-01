@@ -74,6 +74,7 @@ func (s *server) Run(ctx context.Context) error {
 			return err
 		}
 		hits[req.Command]++
+		// fmt.Fprintln(os.Stderr, "got request:", DumpReq(req))
 		switch req.Command {
 		case CmdClose:
 			// fmt.Fprintf(os.Stderr, "done, hits: %v\n", hits)
@@ -167,6 +168,7 @@ func (s *server) respWriterLoop(
 			if !ok {
 				return nil
 			}
+			// fmt.Fprintln(os.Stderr, "writing response:", resp)
 			if err := s.writeResp(resp); err != nil {
 				return err
 			}

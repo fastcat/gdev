@@ -1,4 +1,4 @@
-package gocachesftp
+package gocache_gcs
 
 import (
 	"fastcat.org/go/gdev/addons"
@@ -7,8 +7,8 @@ import (
 
 var addon = addons.Addon[config]{
 	Definition: addons.Definition{
-		Name:        "gocache-sftp",
-		Description: func() string { return "Go build cache SFTP remote storage" },
+		Name:        "gocache-gcs",
+		Description: func() string { return "Go build cache GCS remote storage" },
 		Initialize:  initialize,
 	},
 }
@@ -24,5 +24,5 @@ func initialize() error {
 func Configure() {
 	addon.CheckNotInitialized()
 	addon.RegisterIfNeeded()
-	gocache.Configure(gocache.WithRemoteStorageFactory(sftpCacheFactory{}))
+	gocache.Configure(gocache.WithRemoteStorageFactory(gcsCacheFactory{}))
 }

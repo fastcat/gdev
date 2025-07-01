@@ -1,4 +1,4 @@
-package gocachesftp
+package gocache_sftp
 
 import (
 	"errors"

@@ -8,7 +8,8 @@ import (
 	"fastcat.org/go/gdev/addons/gcs"
 	gcs_k8s "fastcat.org/go/gdev/addons/gcs/k8s"
 	"fastcat.org/go/gdev/addons/gocache"
-	gocachesftp "fastcat.org/go/gdev/addons/gocache-sftp"
+	gocache_gcs "fastcat.org/go/gdev/addons/gocache/gcs"
+	gocache_sftp "fastcat.org/go/gdev/addons/gocache/sftp"
 	"fastcat.org/go/gdev/addons/golang"
 	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/addons/k8s"
@@ -56,7 +57,8 @@ func main() {
 	nodejs.Configure()
 	golang.Configure()
 	gocache.Configure()
-	gocachesftp.Configure()
+	gocache_sftp.Configure()
+	gocache_gcs.Configure()
 	gcs.Configure(gcs_k8s.WithK8SService())
 
 	cmd.Main()
