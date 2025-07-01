@@ -4,6 +4,8 @@ import (
 	"context"
 
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
+
+	"fastcat.org/go/gdev/addons/containers"
 )
 
 // podder generalizes the pattern of a k8s resource that schedules pods
@@ -46,9 +48,23 @@ func (p *podder[Client, Resource, Apply]) ContainerImages(ctx context.Context) (
 }
 
 func StatefulSet(apply *applyAppsV1.StatefulSetApplyConfiguration) ContainerResource {
+	l := containers.DefaultLabels()
+	apply.
+		WithLabels(l).
+		WithAnnotations(l)
+	apply.Spec.Template.
+		WithLabels(l).
+		WithAnnotations(l)
 	return newPodder(accStatefulSet, apply)
 }
 
 func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) ContainerResource {
+	l := containers.DefaultLabels()
+	apply.
+		WithLabels(l).
+		WithAnnotations(l)
+	apply.Spec.Template.
+		WithLabels(l).
+		WithAnnotations(l)
 	return newPodder(accDeployment, apply)
 }

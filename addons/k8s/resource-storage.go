@@ -6,6 +6,8 @@ import (
 	apiCoreV1 "k8s.io/api/core/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
 	clientCoreV1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
+	"fastcat.org/go/gdev/addons/containers"
 )
 
 type pvc struct {
@@ -23,5 +25,9 @@ func (r *pvc) Stop(ctx context.Context) error {
 }
 
 func PersistentVolumeClaim(apply *applyCoreV1.PersistentVolumeClaimApplyConfiguration) Resource {
+	l := containers.DefaultLabels()
+	apply.
+		WithLabels(l).
+		WithAnnotations(l)
 	return &pvc{newApply(accPVC, apply)}
 }

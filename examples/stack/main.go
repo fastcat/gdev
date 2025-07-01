@@ -28,12 +28,7 @@ func myStandardService(
 	allOpts := []service.BasicOpt{
 		service.WithModalResources(
 			service.ModeDefault,
-			docker.Container(
-				name,
-				imageName,
-				[]string{"8080"},
-				nil,
-			),
+			docker.Container(name, imageName).WithPorts("8080"),
 		),
 		service.WithModalResources(
 			service.ModeLocal,

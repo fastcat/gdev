@@ -4,23 +4,27 @@ import (
 	"context"
 	"fmt"
 	"maps"
-	"slices"
 
 	"github.com/containerd/errdefs"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 
+	"fastcat.org/go/gdev/addons/containers"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/resource"
 )
 
 type containerResource struct {
-	Name  string
-	Image string
-	Ports []string
-	Env   map[string]string
+	Name       string
+	Image      string
+	Entrypoint []string
+	Cmd        []string
+	Env        map[string]string
+	Ports      []string
+	Mounts     []mount.Mount
 }
 
 // Container creates a new container resource with the specified name and
@@ -31,17 +35,53 @@ type containerResource struct {
 //
 // This is a convenience tool for extremely simple use cases, and should not be
 // used in more complex scenarios.
-func Container(
-	name, image string,
-	ports []string,
-	env map[string]string,
-) *containerResource {
+func Container(name, image string) *containerResource {
 	return &containerResource{
 		Name:  name,
 		Image: image,
-		Ports: slices.Clone(ports),
-		Env:   maps.Clone(env),
 	}
+}
+
+// WithEntrypoint **overwrites** the entrypoint of the container.
+func (c *containerResource) WithEntrypoint(entrypoint ...string) *containerResource {
+	c.Entrypoint = entrypoint
+	return c
+}
+
+// WithCmd **overwrites** the command (or entrypoint args) of the container.
+func (c *containerResource) WithCmd(cmd ...string) *containerResource {
+	c.Cmd = append(c.Cmd, cmd...)
+	return c
+}
+
+// WithEnv **appends** the environment variables to the container, or overwrites
+// any existing env vars of the same names.
+func (c *containerResource) WithEnv(env map[string]string) *containerResource {
+	if c.Env == nil {
+		c.Env = make(map[string]string, len(env))
+	}
+	maps.Copy(c.Env, env)
+	return c
+}
+
+// WithPort **appends** the specified port(s) to the container.
+func (c *containerResource) WithPorts(port ...string) *containerResource {
+	c.Ports = append(c.Ports, port...)
+	return c
+}
+
+func (c *containerResource) WithMounts(mounts ...mount.Mount) *containerResource {
+	c.Mounts = append(c.Mounts, mounts...)
+	return c
+}
+
+func (c *containerResource) WithVolumeMount(name, path string) *containerResource {
+	c.Mounts = append(c.Mounts, mount.Mount{
+		Type:   mount.TypeVolume,
+		Source: name,
+		Target: path,
+	})
+	return c
 }
 
 // ContainerImages implements resource.ContainerResource.
@@ -67,7 +107,14 @@ func (c *containerResource) Start(ctx context.Context) error {
 		return fmt.Errorf("docker client not found in context")
 	}
 	cc := container.Config{
-		Image: c.Image,
+		Image:  c.Image,
+		Labels: containers.DefaultLabels(),
+	}
+	if len(c.Cmd) > 0 {
+		cc.Cmd = c.Cmd
+	}
+	if len(c.Entrypoint) > 0 {
+		cc.Entrypoint = c.Entrypoint
 	}
 	if len(c.Env) > 0 {
 		envs := make([]string, 0, len(c.Env))
@@ -77,6 +124,9 @@ func (c *containerResource) Start(ctx context.Context) error {
 		cc.Env = envs
 	}
 	hc := container.HostConfig{}
+	if len(c.Mounts) > 0 {
+		hc.Mounts = append(hc.Mounts, c.Mounts...)
+	}
 	if len(c.Ports) > 0 {
 		exposed, bindings, err := nat.ParsePortSpecs(c.Ports)
 		if err != nil {

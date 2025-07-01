@@ -21,16 +21,15 @@ func setupDockerService(cfg *internal.Config) error {
 	stack.AddInfrastructure(service.New(
 		"fake-gcs-server",
 		service.WithResourceFuncs(func(ctx context.Context) []resource.Resource {
-			// dv := docker.Volume() // FIXME
-			dc := docker.Container(
-				"fake-gcs-server",
-				cfg.FakeServerImage,
-				[]string{strconv.Itoa(cfg.ExposedPort)}, // FIXME?
-				map[string]string{
-					// FIXME
-				},
-			)
+			dv := docker.Volume("gcs-data")
+			dc := docker.Container("fake-gcs-server", cfg.FakeServerImage).
+				WithPorts(strconv.Itoa(cfg.ExposedPort)).
+				WithCmd(cfg.Args()...).
+				// NOTE: container accepts both a `/data` dir (for preload) and a
+				// `/storage` dir where it saves the bucket data.
+				WithVolumeMount(dv.Name, "/storage")
 			return []resource.Resource{
+				dv,
 				dc,
 			}
 		}),
