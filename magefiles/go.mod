@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev/magefiles
 
-go 1.24.2
+go 1.25
 
 require github.com/magefile/mage v1.15.0
 

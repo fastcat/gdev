@@ -1,4 +1,6 @@
-go 1.24.2
+go 1.25
+
+toolchain go1.25rc1
 
 use (
 	.

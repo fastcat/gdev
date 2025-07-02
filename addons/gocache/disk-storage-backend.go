@@ -47,7 +47,7 @@ func DiskDirAtRoot(path string) (*diskStorageBackend, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &diskStorageBackend{root: wrapRoot(root)}, nil
+	return &diskStorageBackend{root: &rootFS{*root}}, nil
 }
 
 func DiskDirFromFS(fs DiskDirFS) *diskStorageBackend {
@@ -156,7 +156,6 @@ func (d *diskStorageBackend) WriteOutput(a ActionEntry, body io.Reader) (string,
 	if err := f.Close(); err != nil {
 		return d.root.FullName(fn), err
 	}
-	// TODO: go 1.24 os.Root.Rename
 	if err := d.root.Rename(fn+".tmp", fn); err != nil {
 		if err2 := os.Remove(fn + ".tmp"); err2 != nil {
 			err = errors.Join(err, err2)
