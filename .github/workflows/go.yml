@@ -24,7 +24,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.25rc1'
+        go-version: '~1.25.0-rc.1'
 
     - name: Build
       run: go tool mage -v compile
