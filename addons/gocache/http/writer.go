@@ -2,6 +2,7 @@ package gocache_http
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -17,7 +18,7 @@ type writer struct {
 
 func (w *writer) start() {
 	w.run = make(chan struct{})
-	w.errCh = make(chan error, 1)
+	w.errCh = make(chan error, 3)
 	go w.do()
 	// wait for it to be ready, it won't be safe to call Close() until this
 	<-w.run
@@ -35,6 +36,19 @@ func (w *writer) do() {
 		return
 	}
 	w.resp = resp
+	// send a signal that we have the response
+	errCh <- nil
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		_, _ = io.Copy(io.Discard, resp.Body)
+		_ = resp.Body.Close()
+		err := statusError(resp.StatusCode)
+		if err != nil {
+			err = fmt.Errorf("failed to write %q: %s: %w", resp.Request.URL, resp.Status, err)
+		} else {
+			err = fmt.Errorf("failed to write %q: %s", resp.Request.URL, resp.Status)
+		}
+		errCh <- err
+	}
 }
 
 // Close implements gocache.WriteFile.
@@ -69,8 +83,38 @@ func (w *writer) Close() error {
 
 // Sync implements gocache.WriteFile.
 //
-// It is a no-op
-func (w *writer) Sync() error { return nil }
+// It closes the request body and waits to get the response from the server to
+// catch permission type errors and the like.
+func (w *writer) Sync() error {
+	if w.pw != nil {
+		if err := w.pw.Close(); err != nil {
+			return err
+		}
+		w.pw = nil
+	}
+	var errs []error
+	if w.errCh != nil {
+		for err := range w.errCh {
+			if err != nil {
+				errs = append(errs, err)
+			} else if w.resp != nil {
+				break
+			}
+		}
+	}
+	if w.resp != nil &&
+		(w.resp.StatusCode < 200 || w.resp.StatusCode >= 300) {
+		// translate errors
+		err := statusError(w.resp.StatusCode)
+		if err != nil {
+			err = fmt.Errorf("failed to write %q: %s: %w", w.resp.Request.URL, w.resp.Status, err)
+		} else {
+			err = fmt.Errorf("failed to write %q: %s", w.resp.Request.URL, w.resp.Status)
+		}
+		errs = append(errs, err)
+	}
+	return errors.Join(errs...)
+}
 
 // Write implements gocache.WriteFile.
 func (w *writer) Write(data []byte) (n int, err error) {

@@ -92,15 +92,31 @@ func (b *backend) Open(name string) (fs.File, error) {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		_, _ = io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
-		if resp.StatusCode == http.StatusNotFound {
-			return nil, fmt.Errorf("%w: %q", os.ErrNotExist, u)
+		if err := statusError(resp.StatusCode); err != nil {
+			return nil, fmt.Errorf("failed to open %q: %s: %w", u, resp.Status, err)
 		}
 		return nil, fmt.Errorf("failed to open %q: %s", u, resp.Status)
 	}
 	return &reader{resp: resp}, nil
 }
 
+func statusError(code int) error {
+	switch code {
+	case http.StatusNotFound:
+		return os.ErrNotExist
+	case http.StatusUnauthorized, http.StatusForbidden:
+		return os.ErrPermission
+	default:
+		return nil
+	}
+}
+
 // OpenFile implements gocache.DiskDirFS.
+//
+// It only supports write-only mode.
+//
+// Due to the limitations of HTTP, it can't report permission and other errors
+// until _after_ the file is written and closed.
 func (b *backend) OpenFile(name string, flag int, _ fs.FileMode) (gocache.WriteFile, error) {
 	if flag != os.O_WRONLY|os.O_CREATE|os.O_TRUNC {
 		return nil, fmt.Errorf("unsupported flag %d", flag)

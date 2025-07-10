@@ -18,6 +18,10 @@ type diskDirBaseFS interface {
 
 type WriteFile interface {
 	io.WriteCloser
+	// Sync flushes any buffered data to disk.
+	//
+	// Unlike normal fsync, it may only be called immediately before Close().
+	// Backends are permitted to reject Write() after Sync().
 	Sync() error
 }
 
