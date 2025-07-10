@@ -25,7 +25,8 @@ func init() {
 }
 
 type config struct {
-	remotes []RemoteStorageFactory
+	factories      []RemoteStorageFactory
+	defaultRemotes []string
 }
 type option func(*config)
 
@@ -34,7 +35,28 @@ func WithRemoteStorageFactory(f RemoteStorageFactory) option {
 		panic("factory must not be nil")
 	}
 	return func(c *config) {
-		c.remotes = append(c.remotes, f)
+		c.factories = append(c.factories, f)
+	}
+}
+
+func WithDefaultRemotes(remotes ...string) option {
+	if len(remotes) == 0 {
+		panic("remotes must not be empty")
+	}
+	return func(c *config) {
+		for _, r := range remotes {
+			ok := false
+			for _, f := range c.factories {
+				if f.Want(r) {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				panic(fmt.Sprintf("remote %q is not supported by any registered factory", r))
+			}
+		}
+		c.defaultRemotes = append(c.defaultRemotes, remotes...)
 	}
 }
 
@@ -53,6 +75,7 @@ func initialize() error {
 
 func makeCmd() *cobra.Command {
 	writeThrough := true
+	withDefaults := true
 
 	cmd := &cobra.Command{
 		Use:   "gocache [remote...]",
@@ -68,10 +91,16 @@ func makeCmd() *cobra.Command {
 			// most-remote
 			var remote ReadonlyStorageBackend
 			canWrite := true
+			if withDefaults {
+				expanded := make([]string, 0, len(addon.Config.defaultRemotes)+len(args))
+				expanded = append(expanded, addon.Config.defaultRemotes...)
+				expanded = append(expanded, args...)
+				args = expanded
+			}
 		ARGS:
 			for i := len(args) - 1; i >= 0; i-- {
 				url := args[i]
-				for _, f := range addon.Config.remotes {
+				for _, f := range addon.Config.factories {
 					if f.Want(url) {
 						nextRemote, err := f.New(url)
 						if err != nil {
@@ -120,7 +149,12 @@ func makeCmd() *cobra.Command {
 			return s.Run(cmd.Context())
 		},
 	}
-	cmd.Flags().BoolVarP(&writeThrough, "write", "w", writeThrough,
+	f := cmd.Flags()
+	f.BoolVarP(&writeThrough, "write", "w", writeThrough,
 		"enable remote write operations if possible")
+	f.BoolVar(&withDefaults, "with-defaults", withDefaults,
+		fmt.Sprintf("include default remotes (%d) in the list of remotes to use",
+			len(addon.Config.defaultRemotes)),
+	)
 	return cmd
 }

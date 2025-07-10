@@ -56,9 +56,13 @@ func main() {
 	build.Configure() // strategies will be registered by other addons
 	nodejs.Configure()
 	golang.Configure()
-	gocache.Configure()
 	gocache_sftp.Configure()
 	gocache_gcs.Configure()
+	gocache.Configure(
+		// NOTE: you will not have access to this bucket, it is just here as an
+		// example and for author testing
+		gocache.WithDefaultRemotes("gs://gdev-go-build-cache/v1"),
+	)
 	gcs.Configure(gcs_k8s.WithK8SService())
 
 	cmd.Main()
