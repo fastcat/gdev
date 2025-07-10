@@ -17,10 +17,10 @@ import (
 	"fastcat.org/go/gdev/addons/gocache"
 )
 
-type sftpCacheFactory struct{}
+type factory struct{}
 
 // Want implements gocache.RemoteStorageFactory.
-func (sftpCacheFactory) Want(uri string) bool {
+func (factory) Want(uri string) bool {
 	u, err := url.Parse(uri)
 	if err != nil {
 		return false
@@ -29,7 +29,7 @@ func (sftpCacheFactory) Want(uri string) bool {
 }
 
 // New implements gocache.RemoteStorageFactory.
-func (s sftpCacheFactory) New(uri string) (_ gocache.ReadonlyStorageBackend, finalErr error) {
+func (s factory) New(uri string) (_ gocache.ReadonlyStorageBackend, finalErr error) {
 	u, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
@@ -96,5 +96,5 @@ func (s sftpCacheFactory) New(uri string) (_ gocache.ReadonlyStorageBackend, fin
 	if !strings.HasPrefix(u.Path, "/") {
 		return nil, fmt.Errorf("sftp base directory must be absolute, got %q", u.Path)
 	}
-	return gocache.DiskDirFromFS(&sftpStorageBackend{sshClient, sftpClient, u}), nil
+	return gocache.DiskDirFromFS(&backend{sshClient, sftpClient, u}), nil
 }

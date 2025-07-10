@@ -13,14 +13,14 @@ import (
 	"fastcat.org/go/gdev/addons/gocache"
 )
 
-type sftpStorageBackend struct {
+type backend struct {
 	sshC    *ssh.Client
 	sftpC   *sftp.Client
 	baseURL *url.URL
 }
 
 // Close implements gocache.DiskDirFS.
-func (s *sftpStorageBackend) Close() error {
+func (s *backend) Close() error {
 	var errs []error
 	if s.sftpC != nil {
 		errs = append(errs, s.sftpC.Close())
@@ -34,14 +34,14 @@ func (s *sftpStorageBackend) Close() error {
 }
 
 // FullName implements gocache.DiskDirFS.
-func (s *sftpStorageBackend) FullName(name string) string {
+func (s *backend) FullName(name string) string {
 	u2 := *s.baseURL
 	u2.Path = path.Join(s.baseURL.Path, name)
 	return u2.String()
 }
 
 // Mkdir implements gocache.DiskDirFS.
-func (s *sftpStorageBackend) Mkdir(name string, _ fs.FileMode) error {
+func (s *backend) Mkdir(name string, _ fs.FileMode) error {
 	p := path.Join(s.baseURL.Path, name)
 	// ErrExists doesn't work right over sftp, in addition to the client lib not
 	// translating the ErrExists, the sftp server may just return a generic error
@@ -58,33 +58,33 @@ func (s *sftpStorageBackend) Mkdir(name string, _ fs.FileMode) error {
 }
 
 // Name implements gocache.DiskDirFS.
-func (s *sftpStorageBackend) Name() string {
+func (s *backend) Name() string {
 	return s.baseURL.String()
 }
 
 // Open implements gocache.DiskDirFS.
-func (s *sftpStorageBackend) Open(name string) (fs.File, error) {
+func (s *backend) Open(name string) (fs.File, error) {
 	p := path.Join(s.baseURL.Path, name)
 	f, err := s.sftpC.Open(p)
 	return f, err
 }
 
 // OpenFile implements gocache.DiskDirFS.
-func (s *sftpStorageBackend) OpenFile(name string, flag int, _ fs.FileMode) (gocache.WriteFile, error) {
+func (s *backend) OpenFile(name string, flag int, _ fs.FileMode) (gocache.WriteFile, error) {
 	p := path.Join(s.baseURL.Path, name)
 	f, err := s.sftpC.OpenFile(p, flag)
 	return f, err
 }
 
 // Remove implements gocache.DiskDirFS.
-func (s *sftpStorageBackend) Remove(name string) error {
+func (s *backend) Remove(name string) error {
 	p := path.Join(s.baseURL.Path, name)
 	err := s.sftpC.Remove(p)
 	return err
 }
 
 // Rename implements gocache.DiskDirFS.
-func (s *sftpStorageBackend) Rename(oldpath, newpath string) error {
+func (s *backend) Rename(oldpath, newpath string) error {
 	old := path.Join(s.baseURL.Path, oldpath)
 	new := path.Join(s.baseURL.Path, newpath)
 	// sftp rename may fail if the target exists
@@ -94,7 +94,7 @@ func (s *sftpStorageBackend) Rename(oldpath, newpath string) error {
 }
 
 // Stat implements gocache.DiskDirFS.
-func (s *sftpStorageBackend) Stat(name string) (fs.FileInfo, error) {
+func (s *backend) Stat(name string) (fs.FileInfo, error) {
 	p := path.Join(s.baseURL.Path, name)
 	st, err := s.sftpC.Stat(p)
 	return st, err

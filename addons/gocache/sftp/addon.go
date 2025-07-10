@@ -24,5 +24,5 @@ func initialize() error {
 func Configure() {
 	addon.CheckNotInitialized()
 	addon.RegisterIfNeeded()
-	gocache.Configure(gocache.WithRemoteStorageFactory(sftpCacheFactory{}))
+	gocache.Configure(gocache.WithRemoteStorageFactory(factory{}))
 }

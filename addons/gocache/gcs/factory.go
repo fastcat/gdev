@@ -11,10 +11,10 @@ import (
 	"fastcat.org/go/gdev/addons/gocache"
 )
 
-type gcsCacheFactory struct{}
+type factory struct{}
 
 // Want implements gocache.RemoteStorageFactory.
-func (gcsCacheFactory) Want(uri string) bool {
+func (factory) Want(uri string) bool {
 	u, err := url.Parse(uri)
 	if err != nil {
 		return false
@@ -23,7 +23,7 @@ func (gcsCacheFactory) Want(uri string) bool {
 }
 
 // New implements gocache.RemoteStorageFactory.
-func (gcsCacheFactory) New(uri string) (gocache.ReadonlyStorageBackend, error) {
+func (factory) New(uri string) (gocache.ReadonlyStorageBackend, error) {
 	u, err := url.Parse(uri)
 	if err != nil {
 		return nil, err
@@ -42,5 +42,5 @@ func (gcsCacheFactory) New(uri string) (gocache.ReadonlyStorageBackend, error) {
 	bucket := client.Bucket(u.Host)
 	basePath := strings.TrimPrefix(u.Path, "/")
 
-	return gocache.DiskDirFromFS(&gcsStorageBackend{ctx, client, bucket, u.Host, basePath}), nil
+	return gocache.DiskDirFromFS(&backend{ctx, client, bucket, u.Host, basePath}), nil
 }
