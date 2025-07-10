@@ -90,7 +90,11 @@ func (b *backend) Open(name string) (fs.File, error) {
 		return nil, fmt.Errorf("failed to open %q: %w", u, err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		_, _ = io.Copy(io.Discard, resp.Body)
 		resp.Body.Close()
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, fmt.Errorf("%w: %q", os.ErrNotExist, u)
+		}
 		return nil, fmt.Errorf("failed to open %q: %s", u, resp.Status)
 	}
 	return &reader{resp: resp}, nil
