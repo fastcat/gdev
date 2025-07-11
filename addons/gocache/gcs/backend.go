@@ -67,7 +67,7 @@ func (g *backend) Open(name string) (fs.File, error) {
 		}
 		return nil, err
 	}
-	return &readerWrapper{*reader, path.Base(p)}, nil
+	return &readerWrapper{reader, path.Base(p)}, nil
 }
 
 // OpenFile implements gocache.DiskDirFS.

@@ -8,7 +8,7 @@ import (
 )
 
 type readerWrapper struct {
-	storage.Reader
+	*storage.Reader
 	name string
 }
 
