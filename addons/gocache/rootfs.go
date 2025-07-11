@@ -11,7 +11,7 @@ type rootFS struct {
 }
 
 func (r *rootFS) FullName(name string) string {
-	return filepath.Join(r.Root.Name(), name)
+	return filepath.Join(r.Name(), name)
 }
 
 // Open implements DiskDirFS.

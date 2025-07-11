@@ -29,13 +29,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer os.RemoveAll(td)
+	defer os.RemoveAll(td) //nolint:errcheck
 	fmt.Println("Using temporary directory:", td)
 	tdr, err := os.OpenRoot(td)
 	if err != nil {
 		panic(err)
 	}
-	defer tdr.Close()
+	defer tdr.Close() //nolint:errcheck
 
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
@@ -63,7 +63,7 @@ func main() {
 	go func() {
 		sig := <-sigCh
 		fmt.Printf("Received %v, shutting down\n", sig)
-		s.Shutdown(context.TODO())
+		s.Shutdown(context.TODO()) //nolint:errcheck
 	}()
 
 	if err := s.ListenAndServe(); err != nil {
@@ -133,7 +133,7 @@ func (h *handler) getOrHead(res http.ResponseWriter, req *http.Request, p string
 		h.errToHTTP(req, res, err)
 		return
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 	st, err := f.Stat()
 	if err != nil {
 		h.err(http.StatusInternalServerError, req, err)
@@ -164,14 +164,20 @@ func (h *handler) put(res http.ResponseWriter, req *http.Request, p string) {
 		h.errToHTTP(req, res, err)
 		return
 	}
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 	if _, err := io.Copy(f, req.Body); err != nil {
 		h.err(http.StatusInternalServerError, req, err)
 		res.WriteHeader(http.StatusInternalServerError)
-		return
+	} else if err := f.Sync(); err != nil {
+		h.err(http.StatusInternalServerError, req, err)
+		res.WriteHeader(http.StatusInternalServerError)
+	} else if err := f.Close(); err != nil {
+		h.err(http.StatusInternalServerError, req, err)
+		res.WriteHeader(http.StatusInternalServerError)
+	} else {
+		res.WriteHeader(http.StatusNoContent)
+		h.ok(http.StatusNoContent, req)
 	}
-	res.WriteHeader(http.StatusNoContent)
-	h.ok(http.StatusNoContent, req)
 }
 
 func (h *handler) delete(res http.ResponseWriter, req *http.Request, p string) {

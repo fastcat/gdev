@@ -23,5 +23,6 @@
 	"gopls": {
 		"formatting.gofumpt": true,
 		"formatting.local": "fastcat.org"
-	}
+	},
+	"go.lintTool": "golangci-lint-v2"
 }

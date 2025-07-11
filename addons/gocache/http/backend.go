@@ -89,7 +89,7 @@ func (b *backend) Open(name string) (fs.File, error) {
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		_, _ = io.Copy(io.Discard, resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		if err := statusError(resp.StatusCode); err != nil {
 			return nil, fmt.Errorf("failed to open %q: %s: %w", u, resp.Status, err)
 		}
@@ -144,12 +144,11 @@ func (b *backend) Remove(name string) error {
 	if err != nil {
 		return fmt.Errorf("failed to remove %q: %w", u, err)
 	}
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		resp.Body.Close()
 		return fmt.Errorf("failed to remove %q: %s", u, resp.Status)
 	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	resp.Body.Close()
 	return nil
 }
 
@@ -157,7 +156,7 @@ func (b *backend) Remove(name string) error {
 //
 // It requires the server to support the WebDAV MOVE method using an absolute
 // path (but not an absolute URL) for the Destination.
-func (b *backend) Rename(oldpath string, newpath string) error {
+func (b *backend) Rename(oldpath, newpath string) error {
 	u := b.fullURL(oldpath)
 	newURL := b.fullURL(newpath)
 	req, err := http.NewRequest("MOVE", u.String(), nil)
@@ -173,12 +172,11 @@ func (b *backend) Rename(oldpath string, newpath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to rename %q to %q: %w", u, newURL, err)
 	}
+	_, _ = io.Copy(io.Discard, resp.Body)
+	_ = resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		resp.Body.Close()
 		return fmt.Errorf("failed to rename %q to %q: %s", u, newURL, resp.Status)
 	}
-	_, _ = io.Copy(io.Discard, resp.Body)
-	resp.Body.Close()
 	return nil
 }
 
@@ -194,7 +192,8 @@ func (b *backend) Stat(name string) (fs.FileInfo, error) {
 		return nil, fmt.Errorf("failed to stat %q: %w", u, err)
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		resp.Body.Close()
+		_, _ = io.Copy(io.Discard, resp.Body)
+		_ = resp.Body.Close()
 		return nil, fmt.Errorf("failed to stat %q: %s", u, resp.Status)
 	}
 	return &readerInfo{resp: resp}, nil
