@@ -14,10 +14,9 @@ import (
 )
 
 type backend struct {
-	c         *http.Client
-	a         Authorizer
-	base      *url.URL
-	putMethod string
+	c    *http.Client
+	a    Authorizer
+	base *url.URL
 }
 
 func newBackend(
@@ -43,10 +42,9 @@ func newBackend(
 		a = nopAuthorizer{}
 	}
 	return &backend{
-		c:         c,
-		a:         a,
-		base:      u,
-		putMethod: http.MethodPut,
+		c:    c,
+		a:    a,
+		base: u,
 	}, nil
 }
 

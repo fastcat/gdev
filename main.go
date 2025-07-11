@@ -9,6 +9,7 @@ import (
 	gcs_k8s "fastcat.org/go/gdev/addons/gcs/k8s"
 	"fastcat.org/go/gdev/addons/gocache"
 	gocache_gcs "fastcat.org/go/gdev/addons/gocache/gcs"
+	gocache_http "fastcat.org/go/gdev/addons/gocache/http"
 	gocache_sftp "fastcat.org/go/gdev/addons/gocache/sftp"
 	"fastcat.org/go/gdev/addons/golang"
 	"fastcat.org/go/gdev/addons/k3s"
@@ -58,6 +59,7 @@ func main() {
 	golang.Configure()
 	gocache_sftp.Configure()
 	gocache_gcs.Configure()
+	gocache_http.Configure()
 	gocache.Configure(
 		// NOTE: you will not have access to this bucket, it is just here as an
 		// example and for author testing

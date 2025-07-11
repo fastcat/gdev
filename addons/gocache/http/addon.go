@@ -16,8 +16,7 @@ var addon = addons.Addon[config]{
 }
 
 type config struct {
-	auth      Authorizer
-	putMethod string
+	auth Authorizer
 }
 type option func(*config)
 
@@ -25,6 +24,18 @@ type Authorizer interface {
 	// Authorize updates the request with any necessary headers or other changes
 	// to authorize it against the backend.
 	Authorize(req *http.Request) error
+}
+
+func WithAuthorizer(a Authorizer) option {
+	if a == nil {
+		panic("authorizer must not be nil")
+	}
+	return func(c *config) {
+		if c.auth != nil {
+			panic("authorizer already set")
+		}
+		c.auth = a
+	}
 }
 
 func Configure(opts ...option) {

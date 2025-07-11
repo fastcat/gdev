@@ -24,9 +24,6 @@ func (f factory) New(uri string) (gocache.ReadonlyStorageBackend, error) {
 	if err != nil {
 		return nil, err
 	}
-	if addon.Config.putMethod != "" {
-		be.putMethod = addon.Config.putMethod
-	}
 	return gocache.DiskDirFromFS(be), nil
 }
 

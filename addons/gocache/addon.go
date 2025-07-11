@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -76,6 +77,7 @@ func initialize() error {
 func makeCmd() *cobra.Command {
 	writeThrough := true
 	withDefaults := true
+	waitForDebugger := false
 
 	cmd := &cobra.Command{
 		Use:   "gocache [remote...]",
@@ -144,7 +146,13 @@ func makeCmd() *cobra.Command {
 			}
 			frontend := NewFrontend(backend)
 			s := NewServer(frontend, os.Stdin, os.Stdout)
-			// time.Sleep(5 * time.Second)
+			if waitForDebugger {
+				fmt.Fprintln(os.Stderr, "Waiting for debugger to attach...")
+				// stick a breakpoint here and use the debugger to change the value
+				for waitForDebugger {
+					time.Sleep(100 * time.Millisecond)
+				}
+			}
 			// TODO: signal handlers
 			return s.Run(cmd.Context())
 		},
@@ -156,5 +164,8 @@ func makeCmd() *cobra.Command {
 		fmt.Sprintf("include default remotes (%d) in the list of remotes to use",
 			len(addon.Config.defaultRemotes)),
 	)
+	f.BoolVar(&waitForDebugger, "debug", waitForDebugger,
+		"wait for a debugger to attach before starting the server")
+	f.Lookup("debug").Hidden = true
 	return cmd
 }
