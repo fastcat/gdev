@@ -51,7 +51,7 @@ func DiskDirAtRoot(path string) (*diskStorageBackend, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &diskStorageBackend{root: &rootFS{*root}}, nil
+	return &diskStorageBackend{root: &rootFS{root}}, nil
 }
 
 func DiskDirFromFS(fs DiskDirFS) *diskStorageBackend {

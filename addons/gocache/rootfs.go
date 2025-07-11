@@ -7,7 +7,7 @@ import (
 )
 
 type rootFS struct {
-	os.Root
+	*os.Root
 }
 
 func (r *rootFS) FullName(name string) string {
