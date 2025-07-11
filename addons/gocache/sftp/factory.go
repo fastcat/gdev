@@ -19,6 +19,11 @@ import (
 
 type factory struct{}
 
+// Name implements gocache.RemoteStorageFactory.
+func (factory) Name() string {
+	return "sftp"
+}
+
 // Want implements gocache.RemoteStorageFactory.
 func (factory) Want(uri string) bool {
 	u, err := url.Parse(uri)

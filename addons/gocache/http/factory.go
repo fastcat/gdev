@@ -9,6 +9,11 @@ import (
 
 type factory struct{}
 
+// Name implements gocache.RemoteStorageFactory.
+func (factory) Name() string {
+	return "http"
+}
+
 // Want implements gocache.RemoteStorageFactory.
 func (f factory) Want(uri string) bool {
 	u, err := url.Parse(uri)

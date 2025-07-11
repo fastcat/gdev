@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -70,6 +72,9 @@ func Configure(opts ...option) {
 }
 
 func initialize() error {
+	if len(addon.Config.factories) == 0 {
+		return fmt.Errorf("cannot enable gocache without any storage backends")
+	}
 	instance.AddCommandBuilders(makeCmd)
 	return nil
 }
@@ -78,11 +83,23 @@ func makeCmd() *cobra.Command {
 	writeThrough := true
 	withDefaults := true
 	waitForDebugger := false
+	envName := strings.ToUpper(instance.AppName()) + "_GOCACHE_BACKENDS"
+	backendNames := make([]string, 0, len(addon.Config.factories))
+	for _, f := range addon.Config.factories {
+		backendNames = append(backendNames, f.Name())
+	}
+	slices.Sort(backendNames)
 
 	cmd := &cobra.Command{
 		Use:   "gocache [remote...]",
 		Short: "Go build cache app",
-		Long:  "Use with GOBUILDCACHE environment variable",
+		Long: "Implementation of GOBUILDCACHE with pluggable backends\n" +
+			"\n" +
+			"Supported remote backends: " + strings.Join(backendNames, ", ") + "\n" +
+			"\n" +
+			"To use, export GOBUILDCACHE='" + instance.AppName() + " gocache [remote...]'\n" +
+			"\n" +
+			"You can also provide remotes via the " + envName + " environment variable\n",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cd, err := os.UserCacheDir()
 			if err != nil {
@@ -93,12 +110,15 @@ func makeCmd() *cobra.Command {
 			// most-remote
 			var remote ReadonlyStorageBackend
 			canWrite := true
+			var fullArgs []string
 			if withDefaults {
-				expanded := make([]string, 0, len(addon.Config.defaultRemotes)+len(args))
-				expanded = append(expanded, addon.Config.defaultRemotes...)
-				expanded = append(expanded, args...)
-				args = expanded
+				fullArgs = append(fullArgs, addon.Config.defaultRemotes...)
 			}
+			if envBackends := os.Getenv(envName); envBackends != "" {
+				fullArgs = append(fullArgs, strings.Fields(envBackends)...)
+			}
+			fullArgs = append(fullArgs, args...)
+			args = fullArgs
 		ARGS:
 			for i := len(args) - 1; i >= 0; i-- {
 				url := args[i]
