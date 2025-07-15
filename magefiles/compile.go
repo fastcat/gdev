@@ -11,7 +11,19 @@ import (
 
 func Compile(ctx context.Context) error {
 	fmt.Println("Compile: go build")
-	return shx.Run(ctx, "go", "build", "-v", "./...")
+	// have to tell go each module, else it will only build the root module
+	w, err := workFile()
+	if err != nil {
+		return err
+	}
+	args := []string{"build", "-v"}
+	for _, m := range w.Use {
+		if m.Path == "./magefiles" {
+			continue
+		}
+		args = append(args, m.Path+"/...")
+	}
+	return shx.Run(ctx, "go", args...)
 }
 
 type Build mg.Namespace
