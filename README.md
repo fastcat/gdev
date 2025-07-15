@@ -17,10 +17,19 @@ team's development stack.
   etc.), local source code, or in a debugger
 - Building (e.g. compiling) services before starting them when running from
   local source code.
+- Useful helper tools to support the above
+
+Typically you would create your own `xdev` tools that pulls in `gdev` and the
+addons your stack needs. Your `main()` would configure those addons, and any
+custom ones, and then call the `gdev/cmd.Main()` to run the app. Several
+examples of how to build such apps are available under `examples`, including
+`examples/gdev` which has (nearly) all addons enabled, but only has
+infrastructure, not app, services defined.
 
 ## Infrastructure
 
-`gdev` provides building blocks for several common pieces of infrastructure:
+`gdev` provides building blocks for several common pieces of infrastructure for
+running your stack:
 
 - Docker
 - Containerd
@@ -55,6 +64,15 @@ More will be added, and like the infrastructure services, these capabilities are
 implemented using only exported APIs, so you can also add your own custom build
 patterns.
 
+## Helper Tools
+
+### `GOBUILDCACHE`
+
+`gdev` contains a set of addons to provide a `GOBUILDCACHE` implementation with
+pluggable remote backends. Included are backends for HTTP, GCS, S3, and SFTP.
+You can also provide your own backends by registering implementations of some
+interfaces.
+
 ## Custom Commands
 
 Your development environment probably benefits from some helper automation for
@@ -68,7 +86,9 @@ While `gdev` contains helper code for working with many systems, including them
 all can cause major binary bloat. When building your `gdev`-based command, the
 `addon` pattern means that your tool (once compiled) will only include the
 dependencies needed for the components you use. Don't use Kubernetes in your
-stack? No worries, your binary won't be bloated by its large client SDK.
+stack? No worries, your binary won't be bloated by its large client SDK. Addons
+with large dependencies are broken out into separate modules, so your build also
+won't have to download those unused modules.
 
 ## Usage
 
