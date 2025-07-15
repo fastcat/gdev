@@ -29,16 +29,16 @@ jobs:
       with:
         go-version: '~1.25.0-rc.2'
 
-    - name: Submit Dependencies (root)
-      uses: actions/go-dependency-submission@v2
-      with:
-          go-mod-path: go.mod
+    # - name: Submit Dependencies (root)
+    #   uses: actions/go-dependency-submission@v2
+    #   with:
+    #       go-mod-path: go.mod
     - name: Submit Dependencies (gdev)
-      # this should get almost everything else
+      # this should get almost everything
       uses: actions/go-dependency-submission@v2
       with:
           go-mod-path: examples/gdev/go.mod
-    - name: Submit Dependencies (mage)
-      uses: actions/go-dependency-submission@v2
-      with:
-          go-mod-path: magefiles/go.mod
+    # - name: Submit Dependencies (mage)
+    #   uses: actions/go-dependency-submission@v2
+    #   with:
+    #       go-mod-path: magefiles/go.mod
