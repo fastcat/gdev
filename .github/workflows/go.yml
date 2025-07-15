@@ -33,7 +33,7 @@ jobs:
         set -x
         pushd magefiles
         go env
-        go install -x -v github.com/magefile/mage
+        GOWORK=off go install -x -v github.com/magefile/mage
         popd
         mage -l
 
