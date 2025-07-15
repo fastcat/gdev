@@ -30,9 +30,11 @@ jobs:
 
     - name: Setup Mage
       run: |
+        set -x
         pushd magefiles
         go install -x -v github.com/magefile/mage
         popd
+        go env
         mage -l
 
     - name: Build
