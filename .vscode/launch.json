@@ -115,7 +115,7 @@
 			"name": "attach: gdev",
 			"type": "go",
 			"request": "attach",
-			"processId": "gdev"
+			"processId": "gdev.debug"
 		},
 		{
 			"name": "gocache sftp",
