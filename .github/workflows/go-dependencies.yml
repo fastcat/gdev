@@ -12,8 +12,7 @@ permissions:
   contents: read
 
 jobs:
-
-  build:
+  deps:
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: fastcat.org/go/gdev
