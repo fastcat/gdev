@@ -9,5 +9,5 @@ import (
 
 func Compile(ctx context.Context) error {
 	fmt.Println("Compile: go build")
-	return shx.Run(ctx, "go", "build", "-x", "-v", "./...")
+	return shx.Run(ctx, "go", "build", "-v", "./...")
 }
