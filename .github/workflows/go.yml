@@ -32,13 +32,13 @@ jobs:
       run: |
         set -x
         pushd magefiles
-        go env
-        GOWORK=off go install -x -v github.com/magefile/mage
+        GOWORK=off go install github.com/magefile/mage
+        mage -v -compile gdev.mage
         popd
-        mage -l
+        ./magefiles/gdev.mage -l
 
     - name: Build
-      run: mage -v compile
+      run: ./magefiles/gdev.mage -v compile
     - name: Golangci-lint
       uses: golangci/golangci-lint-action@v8.0.0
       with:
@@ -47,9 +47,9 @@ jobs:
         # https://github.com/golangci/golangci-lint/pull/5872
         version: 5971d1c3110cef16b9b24a37878240e835047229
     - name: Other Lint
-      run: mage -v lint:other
+      run: ./magefiles/gdev.mage -v lint:other
     - name: Test
-      run: mage -v test
+      run: ./magefiles/gdev.mage -v test
 
     - uses: ko-build/setup-ko@v0.8
     - name: Build images with ko
