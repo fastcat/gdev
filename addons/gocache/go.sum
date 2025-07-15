@@ -1,5 +1,3 @@
-fastcat.org/go/gdev v0.0.0-20250715140038-dc0d60683dff h1:njbDnANRDH6xOsCguf4rHSH0iuZFvXobPFrrJ6NpkzQ=
-fastcat.org/go/gdev v0.0.0-20250715140038-dc0d60683dff/go.mod h1:SSh9A9p0CnKCV3Xs/X+/dpv178R9w6NwAbw7kzL55fI=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

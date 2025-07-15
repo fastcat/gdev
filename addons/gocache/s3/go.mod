@@ -3,6 +3,7 @@ module fastcat.org/go/gdev/addons/gocache/s3
 go 1.25rc2
 
 require (
+	fastcat.org/go/gdev/addons/gocache v0.0.0-20250715141832-7d262ed37bb6
 	github.com/aws/aws-sdk-go-v2 v1.36.5
 	github.com/aws/aws-sdk-go-v2/config v1.29.17
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.83.0
@@ -24,4 +25,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.25.5 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.30.3 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.34.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/spf13/cobra v1.9.1 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 )
