@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev
 
-go 1.25rc2
+go 1.25
 
 require (
 	github.com/coreos/go-systemd/v22 v22.5.0
