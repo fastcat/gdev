@@ -57,25 +57,51 @@ func (w *writer) do() {
 		chunkBuf.Reset()
 		// CopyNBuffer
 		n, crErr := io.CopyN(chunkBuf, io.LimitReader(w.pr, chunkSize), chunkSize)
+		// avoid using multi-part if we get everything in a single chunk
+		if partNum == 1 {
+			if errors.Is(crErr, io.EOF) {
+				// important that we upload even if it's a zero-byte file
+				if _, err := w.c.PutObject(w.ctx, &s3.PutObjectInput{
+					Bucket:      &w.bucketName,
+					Key:         &w.key,
+					Body:        chunkBuf,
+					ContentType: aws.String("application/octet-stream"),
+				}); err != nil {
+					errCh <- translateErr(err)
+				}
+				return
+			} else {
+				// start the multipart upload
+				if resp, err := w.c.CreateMultipartUpload(w.ctx, &s3.CreateMultipartUploadInput{
+					Bucket:      &w.bucketName,
+					Key:         &w.key,
+					ContentType: aws.String("application/octet-stream"),
+				}); err != nil {
+					errCh <- translateErr(err)
+					return
+				} else {
+					w.uploadID = *resp.UploadId
+				}
+			}
+		}
 		if n > 0 {
-			// upload the chunk
-			resp, err := w.c.UploadPart(w.ctx, &s3.UploadPartInput{
+			// upload the chunk. if n==0 we must have gotten an error, probably EOF
+			if resp, err := w.c.UploadPart(w.ctx, &s3.UploadPartInput{
 				Bucket:     &w.bucketName,
 				Key:        &w.key,
 				PartNumber: &partNum,
 				UploadId:   &w.uploadID,
-				Body:       bytes.NewReader(chunkBuf.Bytes()[:n]),
-			})
-			if err != nil {
+				Body:       chunkBuf,
+			}); err != nil {
 				errCh <- err
 				return
+			} else {
+				w.parts = append(w.parts, types.CompletedPart{
+					PartNumber: aws.Int32(partNum),
+					// ETag is required, including checksums seems to break things
+					ETag: resp.ETag,
+				})
 			}
-			w.parts = append(w.parts, types.CompletedPart{
-				PartNumber: aws.Int32(partNum),
-				// ETag is required
-				ETag: resp.ETag,
-				// Including checksums seems to break things
-			})
 		}
 		if crErr != nil {
 			if !errors.Is(crErr, io.EOF) {
@@ -101,7 +127,7 @@ func (w *writer) Close() error {
 	// wait for the background goroutine to finish
 	if w.errCh != nil {
 		for err := range w.errCh {
-			errs = append(errs, translateNotFound(err))
+			errs = append(errs, translateErr(err))
 		}
 	}
 	if w.uploadID != "" {
@@ -115,7 +141,7 @@ func (w *writer) Close() error {
 				Parts: w.parts,
 			},
 		}); err != nil {
-			errs = append(errs, translateNotFound(err))
+			errs = append(errs, translateErr(err))
 		}
 		w.uploadID = ""
 	}
@@ -138,7 +164,7 @@ func (w *writer) Sync() error {
 	if w.errCh != nil {
 		for err := range w.errCh {
 			if err != nil {
-				errs = append(errs, translateNotFound(err))
+				errs = append(errs, translateErr(err))
 			}
 		}
 	}

@@ -68,7 +68,7 @@ func (b *backend) Open(name string) (fs.File, error) {
 		Key:    &p,
 	})
 	if err != nil {
-		err = translateNotFound(err)
+		err = translateErr(err)
 		return nil, err
 	}
 	return &readerWrapper{resp, path.Base(p)}, nil
@@ -81,20 +81,11 @@ func (b *backend) OpenFile(name string, flag int, perm fs.FileMode) (gocache.Wri
 	}
 	p := path.Join(b.basePath, name)
 	pr, pw := io.Pipe()
-	resp, err := b.client.CreateMultipartUpload(b.ctx, &s3.CreateMultipartUploadInput{
-		Bucket:      &b.bucketName,
-		Key:         &p,
-		ContentType: aws.String("application/octet-stream"),
-	})
-	if err != nil {
-		return nil, translateNotFound(err)
-	}
 	w := &writer{
 		ctx:        b.ctx,
 		c:          b.client,
 		bucketName: b.bucketName,
 		key:        p,
-		uploadID:   *resp.UploadId,
 		pr:         pr,
 		pw:         pw,
 	}
@@ -109,7 +100,7 @@ func (b *backend) Remove(name string) error {
 		Bucket: &b.bucketName,
 		Key:    &p,
 	}); err != nil {
-		return translateNotFound(err)
+		return translateErr(err)
 	}
 	return nil
 }
@@ -133,7 +124,7 @@ func (b *backend) Rename(oldpath, newpath string) error {
 				b.cantRename.Store(true)
 				// fall through to the copy+delete strategy
 			} else {
-				return translateNotFound(err)
+				return translateErr(err)
 			}
 		}
 	}
@@ -144,13 +135,13 @@ func (b *backend) Rename(oldpath, newpath string) error {
 		CopySource: aws.String(path.Join(b.bucketName, oldObj)),
 		Key:        &newObj,
 	}); err != nil {
-		return translateNotFound(err)
+		return translateErr(err)
 	}
 	if _, err := b.client.DeleteObject(b.ctx, &s3.DeleteObjectInput{
 		Bucket: &b.bucketName,
 		Key:    &oldObj,
 	}); err != nil {
-		return translateNotFound(err)
+		return translateErr(err)
 	}
 	return nil
 }
@@ -163,12 +154,12 @@ func (b *backend) Stat(name string) (fs.FileInfo, error) {
 		Key:    &p,
 	})
 	if err != nil {
-		return nil, translateNotFound(err)
+		return nil, translateErr(err)
 	}
 	return &fileInfo{resp, path.Base(p)}, nil
 }
 
-func translateNotFound(err error) error {
+func translateErr(err error) error {
 	var nfe *types.NotFound
 	var nsk *types.NoSuchKey
 	if errors.As(err, &nfe) {
