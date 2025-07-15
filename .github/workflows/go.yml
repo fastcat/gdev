@@ -32,9 +32,9 @@ jobs:
       run: |
         set -x
         pushd magefiles
+        go env
         go install -x -v github.com/magefile/mage
         popd
-        go env
         mage -l
 
     - name: Build
