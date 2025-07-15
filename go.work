@@ -2,12 +2,15 @@ go 1.25rc2
 
 use (
 	.
+	./addons/docker
 	./addons/gcs
 	./addons/gocache
 	./addons/gocache/gcs
 	./addons/gocache/s3
 	./addons/k3s
 	./addons/k8s
+	./addons/postgres
+	./addons/valkey
 	./examples/gdev
 	./magefiles
 )
