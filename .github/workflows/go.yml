@@ -20,8 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: fastcat.org/go/gdev
+      GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
     steps:
     - uses: actions/checkout@v4
+    - name: Setup Go Module Access Token
+      run: |
+        git config --global url.https://$GH_ACCESS_TOKEN@github.com/fastcat/gdev.insteadOf https://github.com/fastcat/gdev
 
     - name: Set up Go
       uses: actions/setup-go@v4
