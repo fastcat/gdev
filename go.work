@@ -1,8 +1,12 @@
-go 1.25
-
-toolchain go1.25rc2
+go 1.25rc2
 
 use (
 	.
+	./addons/gocache
+	./addons/gocache/gcs
+	./addons/gocache/s3
+	./addons/k3s
+	./addons/k8s
+	./examples/gdev
 	./magefiles
 )
