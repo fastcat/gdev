@@ -119,5 +119,5 @@ func (g *backend) Stat(name string) (fs.FileInfo, error) {
 		}
 		return nil, err
 	}
-	return &writerFileInfo{*attrs}, nil
+	return &fileInfo{*attrs}, nil
 }

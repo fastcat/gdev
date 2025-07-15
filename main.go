@@ -10,6 +10,7 @@ import (
 	"fastcat.org/go/gdev/addons/gocache"
 	gocache_gcs "fastcat.org/go/gdev/addons/gocache/gcs"
 	gocache_http "fastcat.org/go/gdev/addons/gocache/http"
+	gocache_s3 "fastcat.org/go/gdev/addons/gocache/s3"
 	gocache_sftp "fastcat.org/go/gdev/addons/gocache/sftp"
 	"fastcat.org/go/gdev/addons/golang"
 	"fastcat.org/go/gdev/addons/k3s"
@@ -60,6 +61,9 @@ func main() {
 	gocache_sftp.Configure()
 	gocache_gcs.Configure()
 	gocache_http.Configure()
+	gocache_s3.Configure(
+		gocache_s3.WithRegion("us-east-1"),
+	)
 	gocache.Configure(
 		// NOTE: you will not have access to this bucket, it is just here as an
 		// example and for author testing

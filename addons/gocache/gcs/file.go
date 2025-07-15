@@ -58,33 +58,33 @@ func (w *writerWrapper) Sync() error {
 	return nil
 }
 
-type writerFileInfo struct {
+type fileInfo struct {
 	storage.ObjectAttrs
 }
 
-func (fi *writerFileInfo) Name() string {
+func (fi *fileInfo) Name() string {
 	return fi.ObjectAttrs.Name
 }
 
-func (fi *writerFileInfo) Size() int64 {
+func (fi *fileInfo) Size() int64 {
 	return fi.ObjectAttrs.Size
 }
 
-func (fi *writerFileInfo) Mode() fs.FileMode {
+func (fi *fileInfo) Mode() fs.FileMode {
 	// not applicable here
 	return 0o644
 }
 
-func (fi *writerFileInfo) ModTime() time.Time {
+func (fi *fileInfo) ModTime() time.Time {
 	return fi.Updated
 }
 
-func (fi *writerFileInfo) IsDir() bool {
+func (fi *fileInfo) IsDir() bool {
 	// not applicable here
 	return false
 }
 
-func (fi *writerFileInfo) Sys() any {
+func (fi *fileInfo) Sys() any {
 	// not applicable here
 	return nil
 }
