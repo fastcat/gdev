@@ -1,8 +1,10 @@
 name: Go Deps
 
-on:
-  push:
-    branches: [ "main" ]
+# broken by https://github.com/actions/go-dependency-submission/issues/90
+on: {}
+# on:
+#   push:
+#     branches: [ "main" ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
