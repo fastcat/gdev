@@ -1,5 +1,7 @@
 go 1.25rc2
 
+toolchain go1.25rc2
+
 use (
 	.
 	./addons/containerd
