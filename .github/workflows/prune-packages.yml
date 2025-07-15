@@ -13,8 +13,9 @@ jobs:
   prune:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/delete-package-versions@v5
+    - name: Prune gdev/svc1
+      uses: actions/delete-package-versions@v5
       with:
-        package-name: "gdev/svc1"
+        package-name: "svc1"
         package-type: "container"
         min-versions-to-keep: 2
