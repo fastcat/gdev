@@ -18,6 +18,8 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: fastcat.org/go/gdev
     steps:
     - uses: actions/checkout@v4
 
