@@ -20,12 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: fastcat.org/go/gdev
-      GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+      GH_ACTIONS_TOKEN: ${{ secrets.GH_ACTIONS_TOKEN }}
     steps:
     - uses: actions/checkout@v4
     - name: Setup Go Module Access Token
       run: |
-        git config --global url.https://$GH_ACCESS_TOKEN@github.com/fastcat/gdev.insteadOf https://github.com/fastcat/gdev
+        git config --global url."https://$GH_ACTIONS_TOKEN@github.com/fastcat/gdev".insteadOf https://github.com/fastcat/gdev
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -33,16 +33,10 @@ jobs:
         go-version: '~1.25.0-rc.2'
 
     - name: Setup Mage
-      run: |
-        set -x
-        pushd magefiles
-        GOWORK=off go install github.com/magefile/mage
-        popd
-        mage -v -compile gdev.mage
-        ./magefiles/gdev.mage -l
+      run: go tool mage -l
 
     - name: Build
-      run: ./magefiles/gdev.mage -v compile
+      run: go tool mage -v compile
     - name: Golangci-lint
       uses: golangci/golangci-lint-action@v8.0.0
       with:
@@ -51,9 +45,9 @@ jobs:
         # https://github.com/golangci/golangci-lint/pull/5872
         version: 5971d1c3110cef16b9b24a37878240e835047229
     - name: Other Lint
-      run: ./magefiles/gdev.mage -v lint:other
+      run: go tool mage -v lint:other
     - name: Test
-      run: ./magefiles/gdev.mage -v test
+      run: go tool mage -v test
 
     - uses: ko-build/setup-ko@v0.8
     - name: Build images with ko
