@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.0.0-20250715143046-90596a7886da h1:Pthx8T4tlQzRqG3UMVtrzfdGqFPnN/eC+noXGMTN+Xk=
-fastcat.org/go/gdev v0.0.0-20250715143046-90596a7886da/go.mod h1:3PDGuPqiNva71TF36sthJaoF2cIukeOxGXV8u6dZSwA=
-fastcat.org/go/gdev/addons/docker v0.0.0-20250715143046-90596a7886da h1:+9x1diGUZDd+/tov//AQdwY5haAwn48oH4rxN9f9sLU=
-fastcat.org/go/gdev/addons/docker v0.0.0-20250715143046-90596a7886da/go.mod h1:nnrgW34bnR5E+kUqY6BhtgL3BL6zA+k1GVxuraZlzgA=
+fastcat.org/go/gdev v0.1.0 h1:dJN4kcN/MeO1QorwYr3LRHAmqIToMEs0/8RtKIbrnI0=
+fastcat.org/go/gdev v0.1.0/go.mod h1:nKamNe5HIxPPl3/rUAfn+SeFufGUH5/AbuthrVX78wQ=
+fastcat.org/go/gdev/addons/docker v0.0.0-20250715180227-2934c1615d13 h1:VoPR3oTXIuVkVU9gKIp7tm+yJt/1I6Mg30TxQ+PIilQ=
+fastcat.org/go/gdev/addons/docker v0.0.0-20250715180227-2934c1615d13/go.mod h1:XfCuCbvxFZChsfF2y9OhOJL+xfJNjg61hUa0NpL9XZ4=
 github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c h1:udKWzYgxTojEKWjV8V+WSxDXJ4NFATAsZjh8iIbsQIg=
 github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
@@ -56,6 +56,7 @@ github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 h1:X5VWvz21y3gzm9Nw/kaUeku/1+uBhcekkmy4IkffJww=
+github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1/go.mod h1:Zanoh4+gvIgluNqcfMVTJueD4wSS5hT7zTt4Mrutd90=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jedib0t/go-pretty/v6 v6.6.7 h1:m+LbHpm0aIAPLzLbMfn8dc3Ht8MW7lsSO4MPItz/Uuo=

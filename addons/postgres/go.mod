@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/postgres
 go 1.25rc2
 
 require (
-	fastcat.org/go/gdev v0.0.0-20250715143046-90596a7886da
-	fastcat.org/go/gdev/addons/k8s v0.0.0-20250715143046-90596a7886da
+	fastcat.org/go/gdev v0.1.0
+	fastcat.org/go/gdev/addons/k8s v0.0.0-20250715180227-2934c1615d13
 	k8s.io/api v0.33.2
 	k8s.io/apimachinery v0.33.2
 	k8s.io/client-go v0.33.2
