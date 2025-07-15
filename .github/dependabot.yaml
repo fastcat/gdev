@@ -1,0 +1,76 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: /
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/containerd
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/docker
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/gcs
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/gocache
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/gocache/gcs
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/gocache/s3
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/k3s
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/k8s
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/postgres
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /addons/valkey
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /examples/gdev
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /examples/stack
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+- package-ecosystem: gomod
+  directory: /magefiles
+  multi-ecosystem-group: everything
+  patterns:
+  - "*"
+multi-ecosystem-groups:
+  everything:
+    schedule:
+      interval: weekly
