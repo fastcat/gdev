@@ -1,0 +1,43 @@
+name: Release
+
+on: workflow_dispatch
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: fastcat.org/go/gdev
+      GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Go Module Access Token
+      run: |
+        git config --global url."https://$GH_ACTIONS_TOKEN@github.com/fastcat/gdev".insteadOf https://github.com/fastcat/gdev
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '~1.25.0-rc.2'
+
+    - name: Tag Release
+      uses: go-semantic-release/action@v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        allow-initial-development-versions: true
+        force-bump-patch-version: true
+
+    - uses: ko-build/setup-ko@v0.8
+    - name: Build images with ko
+      # TODO: use mage for this so it can pick up all the defined builds automatically
+      # make sure to overwrite all the labels from the chainguard base image
+      run: |
+        ko build \
+          --base-import-paths \
+          --image-label org.opencontainers.image.authors="fastcat" \
+          --image-label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }}/examples/stack/svc1 \
+          --image-label org.opencontainers.image.url=${{ github.repositoryUrl }} \
+          --image-label org.opencontainers.image.vendor="fastcat" \
+          ./examples/stack/svc1

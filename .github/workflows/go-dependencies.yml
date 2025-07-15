@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOPRIVATE: fastcat.org/go/gdev
-      GH_ACTIONS_TOKEN: ${{ secrets.GH_ACTIONS_TOKEN }}
+      GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@v4
     - name: Setup Go Module Access Token
