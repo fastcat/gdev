@@ -15,11 +15,11 @@ const StepNameAptUpdate = "apt update"
 // ordering constraints in the options.
 func WithExtraAptUpdate(name string, opts ...stepOpt) option {
 	opts = append([]stepOpt{WithAfter(StepNameAptUpdate)}, opts...)
-	return WithSteps(Step(name, doAptUpdate, opts...))
+	return WithSteps(NewStep(name, doAptUpdate, opts...))
 }
 
-func aptUpdate() *step {
-	return Step(StepNameAptUpdate, doAptUpdate)
+func aptUpdate() *Step {
+	return NewStep(StepNameAptUpdate, doAptUpdate)
 }
 
 var sourcesDirty = NewKey[bool]("apt sources dirty")
@@ -53,8 +53,8 @@ func ChangedAptSources(ctx *Context) {
 // to be before this step.
 const StepNameAptInstall = "apt install"
 
-func aptInstall() *step {
-	return Step(
+func aptInstall() *Step {
+	return NewStep(
 		StepNameAptInstall,
 		doAptInstall,
 		WithAfter(StepNameAptUpdate),
@@ -69,7 +69,7 @@ func aptInstall() *step {
 // add new apt sources that call [ChangedAptSources] and [AddAptPackages].
 func WithExtraAptInstall(name string, opts ...stepOpt) option {
 	opts = append([]stepOpt{WithAfter(StepNameAptInstall)}, opts...)
-	return WithSteps(Step(name, doAptUpdate, opts...))
+	return WithSteps(NewStep(name, doAptUpdate, opts...))
 }
 
 var pendingPackages = NewKey[map[string]struct{}]("pending-apt-packages")
@@ -115,13 +115,13 @@ func AddAptPackages(ctx *Context, names ...string) {
 	}
 }
 
-// WithAptPackages is an option for [Configure] that will register the given
-// package(s) to be installed by the main `apt install` step.
+// WithAptPackages is an option for [Configure] that will register a step to
+// mark the given package(s) to be installed by the main `apt install` step.
 func WithAptPackages(
 	stepName string,
 	packages ...string,
 ) option {
-	return WithSteps(Step(
+	return WithSteps(NewStep(
 		stepName,
 		func(ctx *Context) error {
 			AddAptPackages(ctx, packages...)

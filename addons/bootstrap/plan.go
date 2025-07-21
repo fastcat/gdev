@@ -9,19 +9,19 @@ import (
 )
 
 type plan struct {
-	byName map[string]*step
+	byName map[string]*Step
 	// steps to run in an order that will satisfy their dependencies.
-	ordered []*step
+	ordered []*Step
 	// steps whose dependencies haven't been registered yet and thus can't be
 	// placed in the ordered list.
-	pending []*step
+	pending []*Step
 }
 
 func NewPlan() *plan {
-	return &plan{byName: map[string]*step{}}
+	return &plan{byName: map[string]*Step{}}
 }
 
-func (p *plan) AddSteps(steps ...*step) {
+func (p *plan) AddSteps(steps ...*Step) {
 	for _, s := range steps {
 		if p.byName[s.name] != nil {
 			panic(fmt.Errorf("already have step named %s", s.name))
@@ -51,7 +51,7 @@ func (p *plan) tryResolveAll() {
 	}
 }
 
-func (p *plan) resolveOne(s *step) bool {
+func (p *plan) resolveOne(s *Step) bool {
 	unsatisfied := maps.Clone(s.after)
 	for _, s2 := range p.ordered {
 		delete(unsatisfied, s2.name)
@@ -61,7 +61,7 @@ func (p *plan) resolveOne(s *step) bool {
 		// ordered list
 		return false
 	}
-	if slices.ContainsFunc(p.pending, func(s2 *step) bool {
+	if slices.ContainsFunc(p.pending, func(s2 *Step) bool {
 		_, ok := s2.before[s.name]
 		return ok
 	}) {
@@ -171,4 +171,4 @@ func (p *plan) AddDefaultSteps() {
 	}
 }
 
-var defaultStepFactories = map[string]func() *step{}
+var defaultStepFactories = map[string]func() *Step{}

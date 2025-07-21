@@ -89,7 +89,7 @@ func WithChildCmds(cmds ...*cobra.Command) option {
 	}
 }
 
-func WithSteps(steps ...*step) option {
+func WithSteps(steps ...*Step) option {
 	return func(c *config) {
 		c.plan.AddSteps(steps...)
 	}

@@ -16,7 +16,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			"Select Docker packages",
 			"docker.io",
 		),
-		bootstrap.WithSteps(bootstrap.Step(
+		bootstrap.WithSteps(bootstrap.NewStep(
 			"Add user to docker group",
 			addUserToDockerGroup,
 			bootstrap.WithSim(func(*bootstrap.Context) error {

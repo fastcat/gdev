@@ -157,13 +157,13 @@ var configureBootstrap = sync.OnceFunc(func() {
 	)
 
 	bootstrap.Configure(
-		bootstrap.WithSteps(bootstrap.Step("Install k3s",
+		bootstrap.WithSteps(bootstrap.NewStep("Install k3s",
 			func(ctx *bootstrap.Context) error {
 				return InstallStable(ctx, DefaultInstallPath)
 			},
 			// TODO: sim invoker that will still read the release data
 		)),
-		bootstrap.WithSteps(bootstrap.Step("Install sudoers to run k3s",
+		bootstrap.WithSteps(bootstrap.NewStep("Install sudoers to run k3s",
 			func(ctx *bootstrap.Context) error {
 				return InstallSudoers(ctx, DefaultInstallPath)
 			},
