@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.25rc2
 
 require (
-	fastcat.org/go/gdev v0.1.0
+	fastcat.org/go/gdev v0.1.1-0.20250721213343-e7241f7213fb
 	fastcat.org/go/gdev/addons/containerd v0.0.0-20250715180227-2934c1615d13
 	fastcat.org/go/gdev/addons/docker v0.0.0-20250715180227-2934c1615d13
 	fastcat.org/go/gdev/addons/gcs v0.0.0-20250715180227-2934c1615d13
@@ -122,7 +122,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
-	github.com/spf13/pflag v1.0.6 // indirect
+	github.com/spf13/pflag v1.0.7 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/zeebo/errs v1.4.0 // indirect
