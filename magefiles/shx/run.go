@@ -94,3 +94,9 @@ func WithOutput() execOpt {
 		c.Stdout = os.Stdout
 	}
 }
+
+func WithCwd(cwd string) execOpt {
+	return func(c *exec.Cmd) {
+		c.Dir = cwd
+	}
+}

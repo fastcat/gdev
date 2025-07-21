@@ -75,3 +75,24 @@ func Format(ctx context.Context) error {
 	fmt.Println("Format: golangci-lint")
 	return shx.Run(ctx, findGCI(), "fmt")
 }
+
+func Tidy(ctx context.Context) error {
+	w, err := workFile()
+	if err != nil {
+		return err
+	}
+	for _, m := range w.Use {
+		fmt.Printf("Tidy: %s\n", m.Path)
+		if err := shx.Cmd(ctx, "go", "mod", "tidy", "-v").
+			With(
+				shx.WithCwd(m.Path),
+			).Run(); err != nil {
+			return fmt.Errorf("error tidying %s: %w", m.Path, err)
+		}
+	}
+	fmt.Println("Tidy: go work sync")
+	if err := shx.Cmd(ctx, "go", "work", "sync").Run(); err != nil {
+		return fmt.Errorf("error syncing go work: %w", err)
+	}
+	return nil
+}
