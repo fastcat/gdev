@@ -1,7 +1,11 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
+
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/bootstrap/textedit"
 	"fastcat.org/go/gdev/addons/build"
 	"fastcat.org/go/gdev/addons/containerd"
 	"fastcat.org/go/gdev/addons/docker"
@@ -30,7 +34,11 @@ func main() {
 
 	// enable all addons we can in the main build so everything gets compiled, etc.
 
-	bootstrap.Configure() // many will tweak it
+	bootstrap.Configure(
+		bootstrap.WithAptPackages("Select Go packages for install", "golang"),
+		bootstrap.WithSteps(shellRCSteps()...),
+		// many things will add more options
+	)
 	pm.Configure()
 	k8s.Configure()        // k3s will tweak it
 	containerd.Configure() // k3s will tweak it
@@ -72,4 +80,22 @@ func main() {
 	gcs.Configure(gcs_k8s.WithK8SService())
 
 	cmd.Main()
+}
+
+func shellRCSteps() []*bootstrap.Step {
+	var ret []*bootstrap.Step
+	ret = append(ret, bootstrap.NewStep(
+		"Set GOPRIVATE in ~/.bashrc",
+		func(ctx *bootstrap.Context) error {
+			e := textedit.AppendLine(
+				`export GOPRIVATE="${GOPRIVATE:+${GOPRIVATE},}fastcat.org/go"`,
+			)
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return err
+			}
+			return textedit.EditFile(filepath.Join(home, ".bashrc"), e)
+		},
+	))
+	return ret
 }
