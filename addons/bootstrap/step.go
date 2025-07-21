@@ -8,6 +8,10 @@ type step struct {
 	before map[string]struct{}
 }
 
+// Step creates a new bootstrap step with the given name and run function.
+//
+// Dependencies, simulation (dry-run) mode special case, and other options can
+// be set via the additional option arguments.
 func Step(
 	name string,
 	run func(*Context) error,

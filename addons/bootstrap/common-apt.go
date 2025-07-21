@@ -43,7 +43,7 @@ func doAptUpdate(ctx *Context) error {
 }
 
 // ChangedAptSources will mark the apt sources list as dirty, so a secondary
-// `apt update` step will actually run
+// `apt update` step registered with [WithExtraAptUpdate] will actually run.
 func ChangedAptSources(ctx *Context) {
 	Save(ctx, sourcesDirty, true)
 }
@@ -64,6 +64,9 @@ func aptInstall() *step {
 // WithExtraAptInstall adds a secondary `apt install` step with the given name.
 // It will always run after the main `apt install` step. You may pass additional
 // ordering constraints in the options.
+//
+// You likely want to pair this with [WithExtraAptUpdate], one or more steps to
+// add new apt sources that call [ChangedAptSources] and [AddAptPackages].
 func WithExtraAptInstall(name string, opts ...stepOpt) option {
 	opts = append([]stepOpt{WithAfter(StepNameAptInstall)}, opts...)
 	return WithSteps(Step(name, doAptUpdate, opts...))
@@ -96,6 +99,11 @@ func doAptInstall(ctx *Context) error {
 	return nil
 }
 
+// AddAptPackages adds the given package names to the pending list of packages
+// to install. They will be installed by the next `apt install` step, either the
+// "main" one, or one registered by [WithExtraAptInstall].
+//
+// The caller is responsible for ensuring that such a step runs after this.
 func AddAptPackages(ctx *Context, names ...string) {
 	pkgSet, _ := Get(ctx, pendingPackages)
 	if pkgSet == nil {
@@ -107,6 +115,8 @@ func AddAptPackages(ctx *Context, names ...string) {
 	}
 }
 
+// WithAptPackages is an option for [Configure] that will register the given
+// package(s) to be installed by the main `apt install` step.
 func WithAptPackages(
 	stepName string,
 	packages ...string,
