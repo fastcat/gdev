@@ -55,10 +55,13 @@ jobs:
         cache-dependency-path: examples/stack/svc2/common/config/rush/pnpm-lock.yaml
     - name: "svc2: Rush Install"
       run: node common/scripts/install-run-rush.js install
+      working-directory: examples/stack/svc2
     - name: "svc2: Rush Build"
       run: node common/scripts/install-run-rush.js build --verbose
+      working-directory: examples/stack/svc2
     - name: "svc2: Rush Deploy"
       run: node common/scripts/install-run-rush.js deploy
+      working-directory: examples/stack/svc2
     - name: "svc2: Build & Publish Docker Image"
       uses: docker/build-push-action@v6
       with:
