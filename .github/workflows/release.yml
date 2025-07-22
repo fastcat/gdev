@@ -25,6 +25,20 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '~1.25.0-rc.2'
+    - uses: ko-build/setup-ko@v0.8
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "lts/*"
+        # TODO: cache doesn't support rush
+        cache-dependency-path: examples/stack/svc2/common/config/rush/pnpm-lock.yaml
+
+    - name: "svc2: Rush"
+      working-directory: examples/stack/svc2
+      run: |
+        set -xe
+        node common/scripts/install-run-rush.js install
+        node common/scripts/install-run-rush.js build --verbose
+        node common/scripts/install-run-rush.js deploy
 
     - name: Tag Release
       id: semrel
@@ -34,7 +48,6 @@ jobs:
         allow-initial-development-versions: true
         force-bump-patch-version: true
 
-    - uses: ko-build/setup-ko@v0.8
     - name: Build images with ko
       # TODO: use mage for this so it can pick up all the defined builds automatically
       # make sure to overwrite all the labels from the chainguard base image
@@ -48,18 +61,6 @@ jobs:
           --tags "latest,${{ steps.semrel.outputs.version }}" \
           ./examples/stack/svc1
 
-    - uses: actions/setup-node@v4
-      with:
-        node-version: "lts/*"
-        # TODO: cache doesn't support rush
-        cache-dependency-path: examples/stack/svc2/common/config/rush/pnpm-lock.yaml
-    - name: "svc2: Rush"
-      working-directory: examples/stack/svc2
-      run: |
-        set -xe
-        node common/scripts/install-run-rush.js install
-        node common/scripts/install-run-rush.js build --verbose
-        node common/scripts/install-run-rush.js deploy
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
