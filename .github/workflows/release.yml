@@ -17,7 +17,8 @@ jobs:
       GOPRIVATE: fastcat.org/go/gdev
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
     - name: Setup Go Module Access Token
       run: |
         git config --global url."https://x-access-token:$GH_ACTIONS_TOKEN@github.com/fastcat/gdev".insteadOf https://github.com/fastcat/gdev
@@ -25,14 +26,16 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '~1.25.0-rc.2'
-    - uses: ko-build/setup-ko@v0.8
-    - uses: actions/setup-node@v4
+    - name: Set up NodeJS
+      uses: actions/setup-node@v4
       with:
         node-version: "lts/*"
         # TODO: cache doesn't support rush
         cache-dependency-path: examples/stack/svc2/common/config/rush/pnpm-lock.yaml
+    - name: Set up ko
+      uses: ko-build/setup-ko@v0.8
 
-    - name: "svc2: Rush"
+    - name: "Build svc2"
       working-directory: examples/stack/svc2
       run: |
         set -xe
@@ -48,7 +51,7 @@ jobs:
         allow-initial-development-versions: true
         force-bump-patch-version: true
 
-    - name: Build images with ko
+    - name: Build & Publish svc1
       # TODO: use mage for this so it can pick up all the defined builds automatically
       # make sure to overwrite all the labels from the chainguard base image
       run: |
@@ -61,7 +64,7 @@ jobs:
           --tags "latest,${{ steps.semrel.outputs.version }}" \
           ./examples/stack/svc1
 
-    - name: "svc2: Build & Publish Docker Image"
+    - name: Publish svc2
       uses: docker/build-push-action@v6
       with:
         context: examples/stack/svc2
