@@ -1,0 +1,26 @@
+{
+  "name": "@fastcat/gdev-example-svc2",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "exports": "./dist/index.mjs",
+  "scripts": {
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node ."
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "description": "",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "typescript": "~5.8.3",
+    "@tsconfig/node22": "~22.0.2",
+    "@types/node": "^22"
+  }
+}

@@ -27,6 +27,7 @@ jobs:
         go-version: '~1.25.0-rc.2'
 
     - name: Tag Release
+      id: semrel
       uses: go-semantic-release/action@v1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -41,7 +42,29 @@ jobs:
         ko build \
           --base-import-paths \
           --image-label org.opencontainers.image.authors="fastcat" \
-          --image-label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }}/examples/stack/svc1 \
+          --image-label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc1 \
           --image-label org.opencontainers.image.url=${{ github.repositoryUrl }} \
           --image-label org.opencontainers.image.vendor="fastcat" \
+          --tags "latest,${{ steps.semrel.outputs.version }}" \
           ./examples/stack/svc1
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "lts/*"
+        # TODO: cache doesn't support rush
+        cache-dependency-path: examples/stack/svc2/common/config/rush/pnpm-lock.yaml
+    - name: "svc2: Rush Install"
+      run: node common/scripts/install-run-rush.js install
+    - name: "svc2: Rush Build"
+      run: node common/scripts/install-run-rush.js build --verbose
+    - name: "svc2: Rush Deploy"
+      run: node common/scripts/install-run-rush.js deploy
+    - name: "svc2: Build & Publish Docker Image"
+      uses: docker/build-push-action@v6
+      with:
+        context: examples/stack/svc2
+        file: examples/stack/svc2/app/Dockerfile
+        push: true
+        tags: |
+          fastcat/gdev-example-svc2:${{ steps.semrel.outputs.version }}
+          fastcat/gdev-example-svc2:latest

@@ -119,7 +119,7 @@ func (b *npmBuilder) BuildDirs(ctx context.Context, dirs []string, opts build.Op
 
 	for _, dir := range dirs {
 		// `./` prefix is required for the filter to be understood as a path in
-		// pnpm, is OK for npmq
+		// pnpm, is OK for npm
 		if !strings.HasPrefix(dir, "./") {
 			dir = "./" + dir
 		}

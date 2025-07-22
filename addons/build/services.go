@@ -29,10 +29,10 @@ func Services(
 		if err != nil {
 			return fmt.Errorf("error getting local source for service %s: %w", svc.Name(), err)
 		}
-		root = filepath.Clean(root)
+		root, subdir = filepath.Clean(root), filepath.Clean(subdir)
 		if idx, ok := root2idx[root]; ok {
 			// append the subdir
-			subdirs[idx] = append(subdirs[idx], filepath.Clean(subdir))
+			subdirs[idx] = append(subdirs[idx], subdir)
 			continue
 		}
 
@@ -44,7 +44,7 @@ func Services(
 		}
 		builders = append(builders, b)
 		strategies = append(strategies, sn)
-		subdirs = append(subdirs, nil)
+		subdirs = append(subdirs, []string{subdir})
 	}
 
 	// run the builders

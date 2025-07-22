@@ -1,0 +1,13 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.155.1",
+  "pnpmVersion": "8.15.8",
+  "nodeSupportedVersionRange": "^22",
+  "projects": [
+    {
+      "packageName": "@fastcat/gdev-example-svc2",
+      "projectFolder": "app",
+      "shouldPublish": false
+    }
+  ]
+}

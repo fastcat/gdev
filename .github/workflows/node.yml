@@ -1,0 +1,38 @@
+name: Node
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "lts/*"
+        # TODO: cache doesn't support rush
+        cache-dependency-path: examples/stack/svc2/common/config/rush/pnpm-lock.yaml
+    - name: "svc2: Rush Install"
+      run: node common/scripts/install-run-rush.js install
+    - name: "svc2: Rush Build"
+      run: node common/scripts/install-run-rush.js build --verbose
+    - name: "svc2: Rush Deploy"
+      run: node common/scripts/install-run-rush.js deploy
+    - name: "svc2: Build Docker Image"
+      uses: docker/build-push-action@v6
+      with:
+        context: examples/stack/svc2/common/deploy/
+        file: examples/stack/svc2/app/Dockerfile
+        load: true
+        push: false
