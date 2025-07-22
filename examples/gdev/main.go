@@ -73,9 +73,12 @@ func main() {
 		gocache_s3.WithRegion("us-east-1"),
 	)
 	gocache.Configure(
-		// NOTE: you will not have access to this bucket, it is just here as an
+		// NOTE: you will not have access to these buckets, it is just here as an
 		// example and for author testing
-		gocache.WithDefaultRemotes("gs://gdev-go-build-cache/v1"),
+		gocache.WithDefaultRemotes(
+			"gs://gdev-go-build-cache/v1",
+			"s3://gdev-go-build-cache/v1",
+		),
 	)
 	gcs.Configure(gcs_k8s.WithK8SService())
 
