@@ -20,7 +20,8 @@ jobs:
       GOPRIVATE: fastcat.org/go/gdev
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
     - name: Setup Go Module Access Token
       run: |
         git config --global url."https://x-access-token:$GH_ACTIONS_TOKEN@github.com/fastcat/gdev".insteadOf https://github.com/fastcat/gdev
