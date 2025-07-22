@@ -73,8 +73,8 @@ jobs:
         file: examples/stack/svc2/app/Dockerfile
         push: true
         tags: |
-          fastcat/gdev-example-svc2:${{ steps.semrel.outputs.version }}
-          fastcat/gdev-example-svc2:latest
+          fastcat/gdev/svc2:${{ steps.semrel.outputs.version }}
+          fastcat/gdev/svc2:latest
         labels: |
           org.opencontainers.image.authors=fastcat
           org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc2
