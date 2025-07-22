@@ -1,6 +1,6 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
-fastcat.org/go/gdev v0.1.0 h1:dJN4kcN/MeO1QorwYr3LRHAmqIToMEs0/8RtKIbrnI0=
-fastcat.org/go/gdev v0.1.0/go.mod h1:nKamNe5HIxPPl3/rUAfn+SeFufGUH5/AbuthrVX78wQ=
+fastcat.org/go/gdev v0.2.4 h1:totoxg6ZzhvclHVtt5J0TtiwhaM+ZTYWtzMwoTV2uNE=
+fastcat.org/go/gdev v0.2.4/go.mod h1:horCmG2dSCsXkoga3AVPoUGnr8gKvlYWNWNyW4c48Qs=
 github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 h1:He8afgbRMd7mFxO99hRNu+6tazq8nFF9lIwo9JFroBk=
 github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6/go.mod h1:8o94RPi1/7XTJvwPpRSzSUedZrtlirdB3r9Z20bi2f8=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=

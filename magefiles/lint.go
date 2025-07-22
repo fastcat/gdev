@@ -6,9 +6,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/magefile/mage/mg"
+	"golang.org/x/mod/modfile"
 
 	"fastcat.org/go/gdev/magefiles/shx"
 )
@@ -94,5 +96,43 @@ func Tidy(ctx context.Context) error {
 	if err := shx.Cmd(ctx, "go", "work", "sync").Run(); err != nil {
 		return fmt.Errorf("error syncing go work: %w", err)
 	}
+	return nil
+}
+
+func SyncSelf(ctx context.Context) error {
+	w, err := workFile()
+	if err != nil {
+		return err
+	}
+	for _, m := range w.Use {
+		fmt.Printf("Sync self: %s\n", m.Path)
+		mc, err := os.ReadFile(filepath.Join(m.Path, "go.mod"))
+		if err != nil {
+			return err
+		}
+		mf, err := modfile.Parse("go.mod", mc, nil)
+		if err != nil {
+			return err
+		}
+		args := []string{"get"}
+		for _, r := range mf.Require {
+			if r.Mod.Path == "fastcat.org/go/gdev" {
+				args = append(args, r.Mod.Path+"@latest")
+			} else if strings.HasPrefix(r.Mod.Path, "fastcat.org/go/gdev/") {
+				// TODO: get tags for sub-modules:
+				// https://github.com/fastcat/gdev/issues/2
+				args = append(args, r.Mod.Path+"@main")
+			}
+		}
+		if len(args) < 2 {
+			continue
+		}
+		if err := shx.Cmd(ctx, "go", args...).
+			With(shx.WithCwd(m.Path), shx.WithOutput()).
+			Run(); err != nil {
+			return err
+		}
+	}
+	mg.CtxDeps(ctx, Tidy)
 	return nil
 }

@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/docker
 go 1.25rc2
 
 require (
-	fastcat.org/go/gdev v0.1.0
+	fastcat.org/go/gdev v0.2.4
 	github.com/containerd/errdefs v1.0.0
 	github.com/docker/docker v28.3.2+incompatible
 	github.com/docker/go-connections v0.5.0
