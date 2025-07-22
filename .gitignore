@@ -28,3 +28,4 @@ __debug_bin*
 /example-*
 
 .semrel
+.generated-go-semantic-release-changelog.md
