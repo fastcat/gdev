@@ -61,12 +61,6 @@ jobs:
           --tags "latest,${{ steps.semrel.outputs.version }}" \
           ./examples/stack/svc1
 
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: dummy
-        password: ${{ secrets.GITHUB_TOKEN }}
     - name: "svc2: Build & Publish Docker Image"
       uses: docker/build-push-action@v6
       with:
