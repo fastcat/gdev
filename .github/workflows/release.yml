@@ -53,15 +53,13 @@ jobs:
         node-version: "lts/*"
         # TODO: cache doesn't support rush
         cache-dependency-path: examples/stack/svc2/common/config/rush/pnpm-lock.yaml
-    - name: "svc2: Rush Install"
-      run: node common/scripts/install-run-rush.js install
+    - name: "svc2: Rush"
       working-directory: examples/stack/svc2
-    - name: "svc2: Rush Build"
-      run: node common/scripts/install-run-rush.js build --verbose
-      working-directory: examples/stack/svc2
-    - name: "svc2: Rush Deploy"
-      run: node common/scripts/install-run-rush.js deploy
-      working-directory: examples/stack/svc2
+      run: |
+        set -xe
+        node common/scripts/install-run-rush.js install
+        node common/scripts/install-run-rush.js build --verbose
+        node common/scripts/install-run-rush.js deploy
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
