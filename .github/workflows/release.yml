@@ -50,6 +50,11 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         allow-initial-development-versions: true
         force-bump-patch-version: true
+    - name: Tag Submodules
+      run:
+        set -xe
+        go tool mage -v tagSubModules "v${{ steps.semrel.outputs.version }}"
+        git push origin $(git tag -l '*/${{ steps.semrel.outputs.version }}')
 
     - name: Build & Publish svc1
       # TODO: use mage for this so it can pick up all the defined builds automatically

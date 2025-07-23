@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/magefile/mage/mg"
 )
@@ -48,7 +49,12 @@ func (c *cmd) Run() error {
 	if mg.Verbose() {
 		quoted := make([]string, 0, len(c.Args))
 		for _, a := range c.Args {
-			quoted = append(quoted, strconv.Quote(a))
+			q := strconv.Quote(a)
+			if len(q) == len(a)+2 && !strings.ContainsFunc(a, unicode.IsSpace) {
+				// don't use quotes if there was nothing to escape inside
+				q = a
+			}
+			quoted = append(quoted, q)
 		}
 		log.Println("exec:", c.Path, strings.Join(quoted, " "))
 	}
