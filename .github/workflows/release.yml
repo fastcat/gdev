@@ -56,7 +56,7 @@ jobs:
         ver="v${{ steps.semrel.outputs.version }}"
         # semrel-created tag will have only been created on the remote, fetch it
         git fetch origin "refs/tags/${ver}:refs/tags/${ver}"
-        go tool mage -v tagSubModules "v${ver}"
+        go tool mage -v tagSubModules "${ver}"
         git push origin $(git tag -l '*/${ver}')
 
     - name: Build & Publish svc1
