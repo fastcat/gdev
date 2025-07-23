@@ -53,8 +53,11 @@ jobs:
     - name: Tag Submodules
       run: |
         set -xe
-        go tool mage -v tagSubModules "v${{ steps.semrel.outputs.version }}"
-        git push origin $(git tag -l '*/${{ steps.semrel.outputs.version }}')
+        ver="v${{ steps.semrel.outputs.version }}"
+        # semrel-created tag will have only been created on the remote, fetch it
+        git fetch origin "refs/tags/${ver}:refs/tags/${ver}"
+        go tool mage -v tagSubModules "v${ver}"
+        git push origin $(git tag -l '*/${ver}')
 
     - name: Build & Publish svc1
       # TODO: use mage for this so it can pick up all the defined builds automatically
