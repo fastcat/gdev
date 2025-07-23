@@ -57,7 +57,7 @@ jobs:
         # semrel-created tag will have only been created on the remote, fetch it
         git fetch origin "refs/tags/${ver}:refs/tags/${ver}"
         go tool mage -v tagSubModules "${ver}"
-        git push origin $(git tag -l '*/${ver}')
+        git push origin $(git tag -l "*/${ver}")
 
     - name: Build & Publish svc1
       # TODO: use mage for this so it can pick up all the defined builds automatically
