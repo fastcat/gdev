@@ -119,9 +119,7 @@ func SyncSelf(ctx context.Context) error {
 			if r.Mod.Path == "fastcat.org/go/gdev" {
 				args = append(args, r.Mod.Path+"@latest")
 			} else if strings.HasPrefix(r.Mod.Path, "fastcat.org/go/gdev/") {
-				// TODO: get tags for sub-modules:
-				// https://github.com/fastcat/gdev/issues/2
-				args = append(args, r.Mod.Path+"@main")
+				args = append(args, r.Mod.Path+"@latest")
 			}
 		}
 		if len(args) < 2 {
