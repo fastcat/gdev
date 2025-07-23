@@ -28,8 +28,8 @@ func GenerateVanityFiles(ctx context.Context, root string) error {
 	if err != nil {
 		return err
 	}
-	const rootContent = `<meta name="go-import" content="fastcat.org/go/gdev git https://github.com/fastcat/gdev">` + "\n"
-	const template = `<meta name="go-import" content="fastcat.org/go/gdev/%[1]s git https://github.com/fastcat/gdev %[1]s">` + "\n"
+	const rootContent = `<meta name="go-import" content="fastcat.org/go/gdev git https://github.com/fastcat/gdev.git">` + "\n"
+	const template = `<meta name="go-import" content="fastcat.org/go/gdev/%[1]s git https://github.com/fastcat/gdev.git %[1]s">` + "\n"
 	for _, use := range w.Use {
 		var content string
 		if use.Path == "." {
