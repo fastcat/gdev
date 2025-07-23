@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/examples/stack
 go 1.25rc2
 
 require (
-	fastcat.org/go/gdev v0.2.4
-	fastcat.org/go/gdev/addons/docker v0.0.0-20250722051525-35228235966c
+	fastcat.org/go/gdev v0.2.9
+	fastcat.org/go/gdev/addons/docker v0.2.9
 )
 
 require (

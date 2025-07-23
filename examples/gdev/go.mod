@@ -3,17 +3,17 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.25rc2
 
 require (
-	fastcat.org/go/gdev v0.2.4
-	fastcat.org/go/gdev/addons/containerd v0.0.0-20250722051525-35228235966c
-	fastcat.org/go/gdev/addons/docker v0.0.0-20250722051525-35228235966c
-	fastcat.org/go/gdev/addons/gcs v0.0.0-20250722051525-35228235966c
-	fastcat.org/go/gdev/addons/gocache v0.0.0-20250722051525-35228235966c
-	fastcat.org/go/gdev/addons/gocache/gcs v0.0.0-20250722051525-35228235966c
-	fastcat.org/go/gdev/addons/gocache/s3 v0.0.0-20250722051525-35228235966c
-	fastcat.org/go/gdev/addons/k3s v0.0.0-20250722051525-35228235966c
-	fastcat.org/go/gdev/addons/k8s v0.0.0-20250722051525-35228235966c
-	fastcat.org/go/gdev/addons/postgres v0.0.0-20250722051525-35228235966c
-	fastcat.org/go/gdev/addons/valkey v0.0.0-20250722051525-35228235966c
+	fastcat.org/go/gdev v0.2.9
+	fastcat.org/go/gdev/addons/containerd v0.2.9
+	fastcat.org/go/gdev/addons/docker v0.2.9
+	fastcat.org/go/gdev/addons/gcs v0.2.9
+	fastcat.org/go/gdev/addons/gocache v0.2.9
+	fastcat.org/go/gdev/addons/gocache/gcs v0.2.9
+	fastcat.org/go/gdev/addons/gocache/s3 v0.2.9
+	fastcat.org/go/gdev/addons/k3s v0.2.9
+	fastcat.org/go/gdev/addons/k8s v0.2.9
+	fastcat.org/go/gdev/addons/postgres v0.2.9
+	fastcat.org/go/gdev/addons/valkey v0.2.9
 )
 
 require (
