@@ -51,7 +51,7 @@ jobs:
         allow-initial-development-versions: true
         force-bump-patch-version: true
     - name: Tag Submodules
-      run:
+      run: |
         set -xe
         go tool mage -v tagSubModules "v${{ steps.semrel.outputs.version }}"
         git push origin $(git tag -l '*/${{ steps.semrel.outputs.version }}')
