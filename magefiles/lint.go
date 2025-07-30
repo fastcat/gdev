@@ -116,9 +116,8 @@ func SyncSelf(ctx context.Context) error {
 		}
 		args := []string{"get"}
 		for _, r := range mf.Require {
-			if r.Mod.Path == "fastcat.org/go/gdev" {
-				args = append(args, r.Mod.Path+"@latest")
-			} else if strings.HasPrefix(r.Mod.Path, "fastcat.org/go/gdev/") {
+			if r.Mod.Path == "fastcat.org/go/gdev" ||
+				strings.HasPrefix(r.Mod.Path, "fastcat.org/go/gdev/") {
 				args = append(args, r.Mod.Path+"@latest")
 			}
 		}
