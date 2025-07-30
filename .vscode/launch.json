@@ -143,6 +143,22 @@
 				"k3s",
 				"uninstall"
 			]
+		},
+		{
+			"name": "Run current package",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"program": "${fileDirname}",
+			"console": "integratedTerminal"
+		},
+		{
+			"name": "Run current file",
+			"type": "go",
+			"request": "launch",
+			"mode": "auto",
+			"program": "${file}",
+			"console": "integratedTerminal"
 		}
 	],
 	"inputs": [
