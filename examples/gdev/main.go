@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/bootstrap/input"
 	"fastcat.org/go/gdev/addons/bootstrap/textedit"
 	"fastcat.org/go/gdev/addons/build"
 	"fastcat.org/go/gdev/addons/containerd"
@@ -34,9 +35,20 @@ func main() {
 
 	// enable all addons we can in the main build so everything gets compiled, etc.
 
+	unp := input.UserNamePrompt()
 	bootstrap.Configure(
 		bootstrap.WithAptPackages("Select Go packages for install", "golang"),
+		bootstrap.WithAptPackages("Select git packages for install", "git", "git-lfs", "git-crypt"),
 		bootstrap.WithSteps(shellRCSteps()...),
+		bootstrap.WithSteps(
+			bootstrap.NewStep(
+				"Get user name",
+				unp.Run,
+				bootstrap.WithSim(unp.Sim),
+				// need git to be installed
+				bootstrap.WithAfter(bootstrap.StepNameAptInstall),
+			),
+		),
 		// many things will add more options
 	)
 	pm.Configure()

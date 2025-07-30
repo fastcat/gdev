@@ -3,7 +3,6 @@ package internal
 import (
 	"context"
 	"fmt"
-	"reflect"
 )
 
 type Context struct {
@@ -16,25 +15,6 @@ func NewContext(ctx context.Context) *Context {
 		Context: ctx,
 		info:    map[infoKey]any{},
 	}
-}
-
-type InfoKey[T any] struct {
-	k string
-	_ [0]*T // make keys for different types non-convertible
-}
-
-func (k InfoKey[T]) key() string       { return k.k }
-func (k InfoKey[T]) typ() reflect.Type { return reflect.TypeFor[T]() }
-
-// infoKey is a non-generic interface implemented exclusively by [InfoKey[T]].
-// It exists so that InfoKeys can be map keys.
-type infoKey interface {
-	key() string
-	typ() reflect.Type
-}
-
-func NewKey[T any](name string) InfoKey[T] {
-	return InfoKey[T]{k: name}
 }
 
 func Save[T any](ctx *Context, k InfoKey[T], v T) {

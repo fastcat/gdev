@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"fmt"
+	"strings"
 
 	"fastcat.org/go/gdev/shx"
 )
@@ -58,6 +59,7 @@ func aptInstall() *Step {
 		StepNameAptInstall,
 		doAptInstall,
 		WithAfter(StepNameAptUpdate),
+		WithSim(simAptInstall),
 	)
 }
 
@@ -99,6 +101,20 @@ func doAptInstall(ctx *Context) error {
 	return nil
 }
 
+func simAptInstall(ctx *Context) error {
+	pkgSet, _ := Get(ctx, pendingPackages)
+	if len(pkgSet) == 0 {
+		return nil
+	}
+	packages := make([]string, 0, len(pkgSet))
+	for pkg := range pkgSet {
+		packages = append(packages, pkg)
+	}
+	fmt.Printf("Would install: %s\n", strings.Join(packages, ", "))
+	clear(pkgSet)
+	return nil
+}
+
 // AddAptPackages adds the given package names to the pending list of packages
 // to install. They will be installed by the next `apt install` step, either the
 // "main" one, or one registered by [WithExtraAptInstall].
@@ -121,14 +137,18 @@ func WithAptPackages(
 	stepName string,
 	packages ...string,
 ) option {
+	mark := func(ctx *Context) error {
+		AddAptPackages(ctx, packages...)
+		return nil
+	}
 	return WithSteps(NewStep(
 		stepName,
-		func(ctx *Context) error {
-			AddAptPackages(ctx, packages...)
-			return nil
-		},
+		mark,
 		// apt update will get added automatically
 		WithBefore(StepNameAptInstall),
+		// this just marks things in memory, so sim can be the same as run, so that
+		// the sim apt install step shows the real list
+		WithSim(mark),
 	))
 }
 

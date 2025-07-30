@@ -168,11 +168,11 @@ func WithValidator[T any](validator func(T) error) PrompterOpt[T] {
 func strIdent(s string) string           { return s }
 func strIdentP(s string) (string, error) { return s, nil }
 
-func (p *Prompter[T]) Run(ctx *internal.Context) error {
-	value, ok := internal.Get(ctx, p.key)
+func (p *Prompter[T]) init(ctx *internal.Context) (value T, ok, guessed bool, err error) {
+	value, ok = internal.Get(ctx, p.key)
 	if ok && p.validator != nil {
 		if p.validator(value) == nil {
-			return nil
+			return value, true, false, nil
 		} else {
 			ok = false
 		}
@@ -190,13 +190,13 @@ func (p *Prompter[T]) Run(ctx *internal.Context) error {
 						continue
 					}
 				}
-				// we have a valid value, save it and complete
-				internal.Save(ctx, p.key, lv)
-				return nil
+				// we have a valid value. caller is responsible for saving it if appropriate
+				return lv, true, false, nil
 			}
 		}
 		if len(errs) > 0 {
-			return fmt.Errorf("failed to load value: %v", errors.Join(errs...))
+			// value is ~ zero(T) here
+			return value, false, false, fmt.Errorf("failed to load value: %v", errors.Join(errs...))
 		}
 	}
 
@@ -215,14 +215,24 @@ func (p *Prompter[T]) Run(ctx *internal.Context) error {
 						continue
 					}
 				}
-				// we have a valid guessed value, continue confirming it with the user
-				value, ok = gv, true
-				break
+				// we have a valid guessed value
+				return gv, true, true, nil
 			}
 		}
 		if !ok && len(errs) > 0 {
-			return fmt.Errorf("failed to guess value: %v", errors.Join(errs...))
+			return value, false, true, fmt.Errorf("failed to guess value: %v", errors.Join(errs...))
 		}
+	}
+	return value, false, false, nil
+}
+
+func (p *Prompter[T]) Run(ctx *internal.Context) error {
+	value, ok, guessed, err := p.init(ctx)
+	if err != nil {
+		return err
+	} else if ok && !guessed {
+		internal.Save(ctx, p.key, value)
+		return nil
 	}
 
 	var str string
@@ -258,7 +268,6 @@ func (p *Prompter[T]) Run(ctx *internal.Context) error {
 	if err := f.RunWithContext(ctx); err != nil {
 		return err
 	}
-	var err error
 	if value, err = p.parser(str); err != nil {
 		// should be unreachable
 		return fmt.Errorf("invalid value: %w", err)
@@ -277,6 +286,24 @@ func (p *Prompter[T]) Run(ctx *internal.Context) error {
 		}
 	}
 	return errors.Join(errs...)
+}
+
+func (p *Prompter[T]) Sim(ctx *internal.Context) error {
+	value, ok, guessed, err := p.init(ctx)
+	if err != nil {
+		return err
+	} else if !ok {
+		fmt.Printf("Would prompt for %s\n", p.prompt)
+	}
+	// in a sim (dry run), assume the user would confirm the guess as far as the
+	// in-memory storage
+	internal.Save(ctx, p.key, value)
+	if guessed {
+		fmt.Printf("Would confirm guessed value for %s: %s\n", p.key, p.stringer(value))
+	} else {
+		fmt.Printf("Would use existing value for %s: %s\n", p.key, p.stringer(value))
+	}
+	return nil
 }
 
 func (p *Prompter[T]) validateString(help *bool) func(s string) error {

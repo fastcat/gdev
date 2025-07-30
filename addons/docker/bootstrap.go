@@ -25,7 +25,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 				} else if inGroup {
 					fmt.Printf("User %s is already in group %s\n", un, dockerGroupName)
 				} else {
-					fmt.Printf("Would add uesr %s to group %s\n", un, dockerGroupName)
+					fmt.Printf("Would add user %s to group %s\n", un, dockerGroupName)
 				}
 				return nil
 			}),
