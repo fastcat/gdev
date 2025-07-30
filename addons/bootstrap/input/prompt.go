@@ -16,6 +16,8 @@ import (
 
 type Provider[T any] func(context.Context) (T, bool, error)
 
+type Writer[T any] func(context.Context, T) error
+
 // A Prompter is used to ensure a value is set in the bootstrap context,
 // prompting the user if necessary.
 //
@@ -28,6 +30,8 @@ type Provider[T any] func(context.Context) (T, bool, error)
 //  5. If no guesser returned a valid value and any guesser returned an error,
 //     fail with all the errors joined
 //  6. Prompt the user to provide a value or confirm the guessed value
+//  7. If any writers are set, write the value out with each of them,
+//     returning any errors joined
 type Prompter[T any] struct {
 	key         internal.InfoKey[T]
 	prompt      string
@@ -38,6 +42,7 @@ type Prompter[T any] struct {
 
 	loaders  []Provider[T]
 	guessers []Provider[T]
+	writers  []Writer[T]
 
 	stringer  func(T) string
 	parser    func(string) (T, error)
@@ -133,6 +138,12 @@ func WithLoaders[T any](loaders ...Provider[T]) PrompterOpt[T] {
 func WithGuessers[T any](guessers ...Provider[T]) PrompterOpt[T] {
 	return func(p *Prompter[T]) {
 		p.guessers = append(p.guessers, guessers...)
+	}
+}
+
+func WithWriters[T any](writers ...Writer[T]) PrompterOpt[T] {
+	return func(p *Prompter[T]) {
+		p.writers = append(p.writers, writers...)
 	}
 }
 
@@ -249,15 +260,23 @@ func (p *Prompter[T]) Run(ctx *internal.Context) error {
 	}
 	var err error
 	if value, err = p.parser(str); err != nil {
+		// should be unreachable
 		return fmt.Errorf("invalid value: %w", err)
 	}
 	if p.validator != nil {
 		if err := p.validator(value); err != nil {
+			// should be unreachable
 			return fmt.Errorf("invalid value: %w", err)
 		}
 	}
 	internal.Save(ctx, p.key, value)
-	return nil
+	var errs []error
+	for _, writer := range p.writers {
+		if err := writer(ctx, value); err != nil {
+			errs = append(errs, fmt.Errorf("error writing value: %w", err))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 func (p *Prompter[T]) validateString(help *bool) func(s string) error {
