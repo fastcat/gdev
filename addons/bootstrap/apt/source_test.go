@@ -9,12 +9,12 @@ import (
 func TestAptSource_ToList(t *testing.T) {
 	tests := []struct {
 		name   string
-		source AptSource
+		source Source
 		want   string
 	}{
 		{
 			"bookworm with source",
-			AptSource{
+			Source{
 				Types:      []string{"deb", "deb-src"},
 				URIs:       []string{"https://deb.debian.org/debian/"},
 				Suites:     []string{"bookworm"},
@@ -35,12 +35,12 @@ func TestAptSource_ToList(t *testing.T) {
 func TestAptSource_ToDeb822(t *testing.T) {
 	tests := []struct {
 		name   string
-		source AptSource
+		source Source
 		want   map[string]string
 	}{
 		{
 			"trixie with source",
-			AptSource{
+			Source{
 				Types:      []string{"deb", "deb-src"},
 				URIs:       []string{"https://deb.debian.org/debian/"},
 				Suites:     []string{"trixie"},

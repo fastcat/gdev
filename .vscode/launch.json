@@ -51,9 +51,20 @@
 			"type": "go",
 			"request": "launch",
 			// "mode": "auto",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"bootstrap"
+			]
+		},
+		{
+			"name": "bootstrap dry-run",
+			"type": "go",
+			"request": "launch",
+			// "mode": "auto",
+			"program": "${workspaceFolder}/examples/gdev",
+			"args": [
+				"bootstrap",
+				"--dry-run"
 			]
 		},
 		{

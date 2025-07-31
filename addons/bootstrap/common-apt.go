@@ -15,7 +15,7 @@ const StepNameAptUpdate = "apt update"
 // will always run after the main `apt update` step. You may pass additional
 // ordering constraints in the options.
 func WithExtraAptUpdate(name string, opts ...StepOpt) option {
-	opts = append([]StepOpt{WithAfter(StepNameAptUpdate)}, opts...)
+	opts = append([]StepOpt{AfterSteps(StepNameAptUpdate)}, opts...)
 	return WithSteps(NewStep(name, doAptUpdate, opts...))
 }
 
@@ -58,8 +58,8 @@ func aptInstall() *Step {
 	return NewStep(
 		StepNameAptInstall,
 		doAptInstall,
-		WithAfter(StepNameAptUpdate),
-		WithSim(simAptInstall),
+		AfterSteps(StepNameAptUpdate),
+		SimFunc(simAptInstall),
 	)
 }
 
@@ -70,7 +70,7 @@ func aptInstall() *Step {
 // You likely want to pair this with [WithExtraAptUpdate], one or more steps to
 // add new apt sources that call [ChangedAptSources] and [AddAptPackages].
 func WithExtraAptInstall(name string, opts ...StepOpt) option {
-	opts = append([]StepOpt{WithAfter(StepNameAptInstall)}, opts...)
+	opts = append([]StepOpt{AfterSteps(StepNameAptInstall)}, opts...)
 	return WithSteps(NewStep(name, doAptUpdate, opts...))
 }
 
@@ -145,10 +145,10 @@ func WithAptPackages(
 		stepName,
 		mark,
 		// apt update will get added automatically
-		WithBefore(StepNameAptInstall),
+		BeforeSteps(StepNameAptInstall),
 		// this just marks things in memory, so sim can be the same as run, so that
 		// the sim apt install step shows the real list
-		WithSim(mark),
+		SimFunc(mark),
 	))
 }
 

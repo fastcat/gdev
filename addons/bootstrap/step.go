@@ -41,14 +41,14 @@ func (s *Step) With(opts ...StepOpt) *Step {
 	return s
 }
 
-// WithSim sets the simulation function that will be run instead of just
+// SimFunc sets the simulation function that will be run instead of just
 // printing the step name in [Sim] (dry run) invocations.
-func WithSim(f func(*Context) error) StepOpt {
+func SimFunc(f func(*Context) error) StepOpt {
 	return func(s *Step) { s.sim = f }
 }
 
-// WithBefore adds reverse dependencies to the step
-func WithBefore(names ...string) StepOpt {
+// BeforeSteps adds reverse dependencies to the step
+func BeforeSteps(names ...string) StepOpt {
 	return func(s *Step) {
 		for _, n := range names {
 			s.before[n] = struct{}{}
@@ -56,8 +56,8 @@ func WithBefore(names ...string) StepOpt {
 	}
 }
 
-// WithAfter adds normal dependencies to the step
-func WithAfter(names ...string) StepOpt {
+// AfterSteps adds normal dependencies to the step
+func AfterSteps(names ...string) StepOpt {
 	return func(s *Step) {
 		for _, n := range names {
 			s.after[n] = struct{}{}

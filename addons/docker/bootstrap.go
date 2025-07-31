@@ -19,7 +19,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 		bootstrap.WithSteps(bootstrap.NewStep(
 			"Add user to docker group",
 			addUserToDockerGroup,
-			bootstrap.WithSim(func(*bootstrap.Context) error {
+			bootstrap.SimFunc(func(*bootstrap.Context) error {
 				if inGroup, un, err := userInDockerGroup(); err != nil {
 					return err
 				} else if inGroup {
@@ -29,7 +29,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 				}
 				return nil
 			}),
-			bootstrap.WithAfter(bootstrap.StepNameAptInstall),
+			bootstrap.AfterSteps(bootstrap.StepNameAptInstall),
 		)),
 	)
 })

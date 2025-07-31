@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type AptSource struct {
+type Source struct {
 	// Optional. Will default to "deb" if unspecified.
 	Types []string
 	// Required. Usually only a single URI is given.
@@ -25,43 +25,43 @@ type AptSource struct {
 	// may be added if needed.
 }
 
-func (s *AptSource) WithType(types ...string) *AptSource {
+func (s *Source) WithType(types ...string) *Source {
 	s.Types = append(s.Types, types...)
 	return s
 }
 
-func (s *AptSource) WithURI(uris ...string) *AptSource {
+func (s *Source) WithURI(uris ...string) *Source {
 	s.URIs = append(s.URIs, uris...)
 	return s
 }
 
-func (s *AptSource) WithSuite(suites ...string) *AptSource {
+func (s *Source) WithSuite(suites ...string) *Source {
 	s.Suites = append(s.Suites, suites...)
 	return s
 }
 
-func (s *AptSource) WithComponent(components ...string) *AptSource {
+func (s *Source) WithComponent(components ...string) *Source {
 	s.Components = append(s.Components, components...)
 	return s
 }
 
-func (s *AptSource) WithArchitecture(architectures ...string) *AptSource {
+func (s *Source) WithArchitecture(architectures ...string) *Source {
 	s.Architectures = append(s.Architectures, architectures...)
 	return s
 }
 
-func (s *AptSource) WithSignedBy(signedBy string) *AptSource {
+func (s *Source) WithSignedBy(signedBy string) *Source {
 	s.SignedBy = signedBy
 	return s
 }
 
-func (s *AptSource) defaults() {
+func (s *Source) defaults() {
 	if len(s.Types) == 0 {
 		s.Types = []string{"deb"}
 	}
 }
 
-func (s *AptSource) ToDeb822() map[string]string {
+func (s *Source) ToDeb822() map[string]string {
 	s.defaults()
 	deb822 := make(map[string]string)
 	if len(s.Types) > 0 {
@@ -85,7 +85,7 @@ func (s *AptSource) ToDeb822() map[string]string {
 	return deb822
 }
 
-func (s *AptSource) ToList() []byte {
+func (s *Source) ToList() []byte {
 	s.defaults()
 	var b bytes.Buffer
 	for _, t := range s.Types {
@@ -122,7 +122,7 @@ func (s *AptSource) ToList() []byte {
 	return b.Bytes()
 }
 
-func (s *AptSource) validate() error {
+func (s *Source) validate() error {
 	var errs []error
 	if len(s.URIs) == 0 {
 		errs = append(errs, fmt.Errorf("no URIs specified"))

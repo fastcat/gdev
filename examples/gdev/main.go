@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/bootstrap/apt"
+	apt_common "fastcat.org/go/gdev/addons/bootstrap/apt/common"
 	"fastcat.org/go/gdev/addons/bootstrap/input"
 	"fastcat.org/go/gdev/addons/bootstrap/textedit"
 	"fastcat.org/go/gdev/addons/build"
@@ -39,7 +41,12 @@ func main() {
 		bootstrap.WithAptPackages("Select Go packages for install", "golang"),
 		bootstrap.WithAptPackages("Select git packages for install", "git", "git-lfs", "git-crypt"),
 		bootstrap.WithSteps(shellRCSteps()...),
-		bootstrap.WithSteps(input.UserInfoStep()),
+		bootstrap.WithSteps(
+			input.UserInfoStep(),
+			apt.SourceInstallStep(apt_common.GitHubCLIInstaller().AsDeb822()).With(
+				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
+			),
+		),
 		// many things will add more options
 	)
 	pm.Configure()

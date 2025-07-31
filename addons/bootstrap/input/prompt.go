@@ -373,6 +373,9 @@ func RunPrompts(
 			fields = append(fields, fld)
 		}
 	}
+	if len(fields) == 0 {
+		return nil
+	}
 	f := huh.NewForm(huh.NewGroup(fields...)).
 		WithProgramOptions(tea.WithAltScreen())
 	if err := f.RunWithContext(ctx); err != nil {
@@ -409,7 +412,7 @@ func PromptStep(
 		func(ctx *bootstrap.Context) error {
 			return RunPrompts(ctx, prompts...)
 		},
-		bootstrap.WithSim(func(ctx *bootstrap.Context) error {
+		bootstrap.SimFunc(func(ctx *bootstrap.Context) error {
 			return SimPrompts(ctx, prompts...)
 		}),
 	)

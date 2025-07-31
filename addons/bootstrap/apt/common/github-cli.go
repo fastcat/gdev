@@ -1,0 +1,24 @@
+package apt_common
+
+import (
+	_ "embed"
+
+	"fastcat.org/go/gdev/addons/bootstrap/apt"
+)
+
+//go:embed githubcli-archive-keyring.asc
+var GitHubCliArchiveKeyring []byte
+
+func GitHubCLIInstaller() *apt.SourceInstaller {
+	return &apt.SourceInstaller{
+		SourceName: "github-cli",
+		Source: &apt.Source{
+			Types:      []string{"deb"},
+			URIs:       []string{"https://cli.github.com/packages"},
+			Suites:     []string{"stable"},
+			Components: []string{"main"},
+			SignedBy:   "/usr/share/keyrings/githubcli-archive-keyring.asc",
+		},
+		SigningKey: GitHubCliArchiveKeyring,
+	}
+}

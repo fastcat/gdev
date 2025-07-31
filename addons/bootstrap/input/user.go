@@ -118,6 +118,6 @@ func UserInfoStep() *bootstrap.Step {
 		UserNamePrompt(),
 		GitHubUserPrompt(),
 	).With(
-		bootstrap.WithAfter(bootstrap.StepNameAptInstall),
+		bootstrap.AfterSteps(bootstrap.StepNameAptInstall),
 	)
 }
