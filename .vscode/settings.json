@@ -18,6 +18,7 @@
 		"pkill",
 		"stretchr",
 		"svcs",
+		"trixie",
 		"xdev"
 	],
 	"gopls": {
