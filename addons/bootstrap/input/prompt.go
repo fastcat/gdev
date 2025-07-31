@@ -171,6 +171,10 @@ func WithValidator[T any](validator func(T) error) PrompterOpt[T] {
 func strIdent(s string) string           { return s }
 func strIdentP(s string) (string, error) { return s, nil }
 
+func (p *Prompter[T]) _key() internal.AnyInfoKey {
+	return p.key
+}
+
 func (p *Prompter[T]) init(ctx *internal.Context) (value T, ok, guessed bool, err error) {
 	value, ok = internal.Get(ctx, p.key)
 	if ok && p.validator != nil {
@@ -276,12 +280,74 @@ func (p *Prompter[T]) field(ctx *internal.Context) (huh.Field, error) {
 	return i, nil
 }
 
+func (p *Prompter[T]) finishForm(
+	ctx *internal.Context,
+	fld huh.Field,
+) error {
+	str := fld.GetValue().(string)
+	value, err := p.parser(str)
+	if err != nil {
+		// should be unreachable
+		return fmt.Errorf("invalid value: %w", err)
+	}
+	if p.validator != nil {
+		if err := p.validator(value); err != nil {
+			// should be unreachable
+			return fmt.Errorf("invalid value: %w", err)
+		}
+	}
+	internal.Save(ctx, p.key, value)
+	var errs []error
+	for _, writer := range p.writers {
+		if err := writer(ctx, value); err != nil {
+			errs = append(errs, fmt.Errorf("error writing value: %w", err))
+		}
+	}
+	return errors.Join(errs...)
+}
+
+func (p *Prompter[T]) validateString(help *bool) func(s string) error {
+	return func(s string) error {
+		if s == "?" && p.help != "" {
+			*help = true
+			// this is a horrible hack to make it resize the display due to the description changing
+			time.AfterFunc(time.Millisecond, func() { _ = unix.Kill(os.Getpid(), unix.SIGWINCH) })
+			return errors.New("help provided")
+		}
+		v, err := p.parser(s)
+		if err != nil {
+			return err
+		}
+		if p.validator != nil {
+			if err := p.validator(v); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}
+
 func (p *Prompter[T]) Run(ctx *internal.Context) error {
 	return RunPrompts(ctx, p)
 }
 
-func (p *Prompter[T]) _key() internal.AnyInfoKey {
-	return p.key
+func (p *Prompter[T]) Sim(ctx *internal.Context) error {
+	value, ok, guessed, err := p.init(ctx)
+	if err != nil {
+		return err
+	} else if !ok {
+		fmt.Printf("Would prompt for %s\n", p.prompt)
+		return nil
+	}
+	// in a sim (dry run), assume the user would confirm the guess as far as the
+	// in-memory storage
+	internal.Save(ctx, p.key, value)
+	if guessed {
+		fmt.Printf("Would confirm guessed value for %s: %s\n", p.key, p.stringer(value))
+	} else {
+		fmt.Printf("Would use existing value for %s: %s\n", p.key, p.stringer(value))
+	}
+	return nil
 }
 
 type HuhPrompter interface {
@@ -322,6 +388,18 @@ func RunPrompts(
 	return errors.Join(errs...)
 }
 
+func SimPrompts(
+	ctx *internal.Context,
+	prompts ...HuhPrompter,
+) error {
+	for _, p := range prompts {
+		if err := p.Sim(ctx); err != nil {
+			return fmt.Errorf("error simulating prompt %s: %w", p._key(), err)
+		}
+	}
+	return nil
+}
+
 func PromptStep(
 	name string,
 	prompts ...HuhPrompter,
@@ -335,82 +413,4 @@ func PromptStep(
 			return SimPrompts(ctx, prompts...)
 		}),
 	)
-}
-
-func (p *Prompter[T]) finishForm(
-	ctx *internal.Context,
-	fld huh.Field,
-) error {
-	str := fld.GetValue().(string)
-	value, err := p.parser(str)
-	if err != nil {
-		// should be unreachable
-		return fmt.Errorf("invalid value: %w", err)
-	}
-	if p.validator != nil {
-		if err := p.validator(value); err != nil {
-			// should be unreachable
-			return fmt.Errorf("invalid value: %w", err)
-		}
-	}
-	internal.Save(ctx, p.key, value)
-	var errs []error
-	for _, writer := range p.writers {
-		if err := writer(ctx, value); err != nil {
-			errs = append(errs, fmt.Errorf("error writing value: %w", err))
-		}
-	}
-	return errors.Join(errs...)
-}
-
-func (p *Prompter[T]) Sim(ctx *internal.Context) error {
-	value, ok, guessed, err := p.init(ctx)
-	if err != nil {
-		return err
-	} else if !ok {
-		fmt.Printf("Would prompt for %s\n", p.prompt)
-		return nil
-	}
-	// in a sim (dry run), assume the user would confirm the guess as far as the
-	// in-memory storage
-	internal.Save(ctx, p.key, value)
-	if guessed {
-		fmt.Printf("Would confirm guessed value for %s: %s\n", p.key, p.stringer(value))
-	} else {
-		fmt.Printf("Would use existing value for %s: %s\n", p.key, p.stringer(value))
-	}
-	return nil
-}
-
-func SimPrompts(
-	ctx *internal.Context,
-	prompts ...HuhPrompter,
-) error {
-	for _, p := range prompts {
-		if err := p.Sim(ctx); err != nil {
-			return fmt.Errorf("error simulating prompt %s: %w", p._key(), err)
-		}
-	}
-	return nil
-}
-
-func (p *Prompter[T]) validateString(help *bool) func(s string) error {
-	return func(s string) error {
-		if s == "?" && p.help != "" {
-			*help = true
-			// this is a horrible hack to make it resize the display due to the description changing
-			time.AfterFunc(time.Millisecond, func() { _ = unix.Kill(os.Getpid(), unix.SIGWINCH) })
-			return errors.New("help provided")
-		}
-		v, err := p.parser(s)
-		if err != nil {
-			return err
-		}
-		if p.validator != nil {
-			if err := p.validator(v); err != nil {
-				return err
-			}
-		}
-		return nil
-	}
 }
