@@ -13,9 +13,9 @@ type InfoKey[T any] struct {
 func (k InfoKey[T]) key() string       { return k.k }
 func (k InfoKey[T]) typ() reflect.Type { return reflect.TypeFor[T]() }
 
-// infoKey is a non-generic interface implemented exclusively by [InfoKey[T]].
+// AnyInfoKey is a non-generic interface implemented exclusively by [InfoKey[T]].
 // It exists so that InfoKeys can be map keys.
-type infoKey interface {
+type AnyInfoKey interface {
 	key() string
 	typ() reflect.Type
 }

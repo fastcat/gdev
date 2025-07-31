@@ -18,7 +18,7 @@ type Step struct {
 func NewStep(
 	name string,
 	run func(*Context) error,
-	opts ...stepOpt,
+	opts ...StepOpt,
 ) *Step {
 	s := &Step{
 		name:   name,
@@ -32,16 +32,23 @@ func NewStep(
 	return s
 }
 
-type stepOpt func(*Step)
+type StepOpt func(*Step)
+
+func (s *Step) With(opts ...StepOpt) *Step {
+	for _, o := range opts {
+		o(s)
+	}
+	return s
+}
 
 // WithSim sets the simulation function that will be run instead of just
 // printing the step name in [Sim] (dry run) invocations.
-func WithSim(f func(*Context) error) stepOpt {
+func WithSim(f func(*Context) error) StepOpt {
 	return func(s *Step) { s.sim = f }
 }
 
 // WithBefore adds reverse dependencies to the step
-func WithBefore(names ...string) stepOpt {
+func WithBefore(names ...string) StepOpt {
 	return func(s *Step) {
 		for _, n := range names {
 			s.before[n] = struct{}{}
@@ -50,7 +57,7 @@ func WithBefore(names ...string) stepOpt {
 }
 
 // WithAfter adds normal dependencies to the step
-func WithAfter(names ...string) stepOpt {
+func WithAfter(names ...string) StepOpt {
 	return func(s *Step) {
 		for _, n := range names {
 			s.after[n] = struct{}{}

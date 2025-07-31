@@ -14,8 +14,8 @@ const StepNameAptUpdate = "apt update"
 // WithExtraAptUpdate adds a secondary `apt update` step with the given name. It
 // will always run after the main `apt update` step. You may pass additional
 // ordering constraints in the options.
-func WithExtraAptUpdate(name string, opts ...stepOpt) option {
-	opts = append([]stepOpt{WithAfter(StepNameAptUpdate)}, opts...)
+func WithExtraAptUpdate(name string, opts ...StepOpt) option {
+	opts = append([]StepOpt{WithAfter(StepNameAptUpdate)}, opts...)
 	return WithSteps(NewStep(name, doAptUpdate, opts...))
 }
 
@@ -69,8 +69,8 @@ func aptInstall() *Step {
 //
 // You likely want to pair this with [WithExtraAptUpdate], one or more steps to
 // add new apt sources that call [ChangedAptSources] and [AddAptPackages].
-func WithExtraAptInstall(name string, opts ...stepOpt) option {
-	opts = append([]stepOpt{WithAfter(StepNameAptInstall)}, opts...)
+func WithExtraAptInstall(name string, opts ...StepOpt) option {
+	opts = append([]StepOpt{WithAfter(StepNameAptInstall)}, opts...)
 	return WithSteps(NewStep(name, doAptUpdate, opts...))
 }
 

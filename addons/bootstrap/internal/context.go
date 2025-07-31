@@ -7,13 +7,13 @@ import (
 
 type Context struct {
 	context.Context
-	info map[infoKey]any
+	info map[AnyInfoKey]any
 }
 
 func NewContext(ctx context.Context) *Context {
 	return &Context{
 		Context: ctx,
-		info:    map[infoKey]any{},
+		info:    map[AnyInfoKey]any{},
 	}
 }
 
@@ -34,7 +34,7 @@ func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
 }
 
 func (ctx *Context) Value(key any) any {
-	if k, ok := key.(infoKey); ok {
+	if k, ok := key.(AnyInfoKey); ok {
 		return ctx.info[k]
 	}
 	return ctx.Context.Value(key)

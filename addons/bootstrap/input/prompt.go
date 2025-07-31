@@ -5,13 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"golang.org/x/sys/unix"
 
+	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/bootstrap/internal"
+	"fastcat.org/go/gdev/instance"
 )
 
 type Provider[T any] func(context.Context) (T, bool, error)
@@ -177,6 +180,12 @@ func (p *Prompter[T]) init(ctx *internal.Context) (value T, ok, guessed bool, er
 			ok = false
 		}
 	}
+	// if we are forcing prompts, then make all loaders into guessers
+	if os.Getenv(strings.ToUpper(instance.AppName())+"_FORCE_PROMPTS") == "true" {
+		p.guessers = append(p.loaders, p.guessers...)
+		p.loaders = nil
+	}
+
 	// if we don't have a valid value, try to load one from persistence
 	if !ok {
 		var errs []error
@@ -226,13 +235,13 @@ func (p *Prompter[T]) init(ctx *internal.Context) (value T, ok, guessed bool, er
 	return value, false, false, nil
 }
 
-func (p *Prompter[T]) Run(ctx *internal.Context) error {
+func (p *Prompter[T]) field(ctx *internal.Context) (huh.Field, error) {
 	value, ok, guessed, err := p.init(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	} else if ok && !guessed {
 		internal.Save(ctx, p.key, value)
-		return nil
+		return nil, nil
 	}
 
 	var str string
@@ -242,6 +251,7 @@ func (p *Prompter[T]) Run(ctx *internal.Context) error {
 
 	helpActive := false
 	i := huh.NewInput().
+		Key(fmt.Sprintf("%s", p.key)).
 		Title(p.prompt).
 		Value(&str).
 		DescriptionFunc(func() string {
@@ -263,12 +273,77 @@ func (p *Prompter[T]) Run(ctx *internal.Context) error {
 		// TODO: capture other guesses as suggestions?
 		i.Suggestions([]string{str})
 	}
-	f := huh.NewForm(huh.NewGroup(i)).
+	return i, nil
+}
+
+func (p *Prompter[T]) Run(ctx *internal.Context) error {
+	return RunPrompts(ctx, p)
+}
+
+func (p *Prompter[T]) _key() internal.AnyInfoKey {
+	return p.key
+}
+
+type HuhPrompter interface {
+	field(*internal.Context) (huh.Field, error)
+	finishForm(*internal.Context, huh.Field) error
+	Sim(*internal.Context) error
+	_key() internal.AnyInfoKey
+}
+
+func RunPrompts(
+	ctx *internal.Context,
+	prompts ...HuhPrompter,
+) error {
+	if len(prompts) == 0 {
+		return nil
+	}
+	fields := make([]huh.Field, 0, len(prompts))
+	for _, p := range prompts {
+		fld, err := p.field(ctx)
+		if err != nil {
+			return fmt.Errorf("error creating field: %w", err)
+		} else if fld != nil {
+			fields = append(fields, fld)
+		}
+	}
+	f := huh.NewForm(huh.NewGroup(fields...)).
 		WithProgramOptions(tea.WithAltScreen())
 	if err := f.RunWithContext(ctx); err != nil {
 		return err
 	}
-	if value, err = p.parser(str); err != nil {
+
+	var errs []error
+	for i, p := range prompts {
+		if err := p.finishForm(ctx, fields[i]); err != nil {
+			errs = append(errs, fmt.Errorf("error finishing form: %w", err))
+		}
+	}
+	return errors.Join(errs...)
+}
+
+func PromptStep(
+	name string,
+	prompts ...HuhPrompter,
+) *bootstrap.Step {
+	return bootstrap.NewStep(
+		name,
+		func(ctx *bootstrap.Context) error {
+			return RunPrompts(ctx, prompts...)
+		},
+		bootstrap.WithSim(func(ctx *bootstrap.Context) error {
+			return SimPrompts(ctx, prompts...)
+		}),
+	)
+}
+
+func (p *Prompter[T]) finishForm(
+	ctx *internal.Context,
+	fld huh.Field,
+) error {
+	str := fld.GetValue().(string)
+	value, err := p.parser(str)
+	if err != nil {
 		// should be unreachable
 		return fmt.Errorf("invalid value: %w", err)
 	}
@@ -294,6 +369,7 @@ func (p *Prompter[T]) Sim(ctx *internal.Context) error {
 		return err
 	} else if !ok {
 		fmt.Printf("Would prompt for %s\n", p.prompt)
+		return nil
 	}
 	// in a sim (dry run), assume the user would confirm the guess as far as the
 	// in-memory storage
@@ -302,6 +378,18 @@ func (p *Prompter[T]) Sim(ctx *internal.Context) error {
 		fmt.Printf("Would confirm guessed value for %s: %s\n", p.key, p.stringer(value))
 	} else {
 		fmt.Printf("Would use existing value for %s: %s\n", p.key, p.stringer(value))
+	}
+	return nil
+}
+
+func SimPrompts(
+	ctx *internal.Context,
+	prompts ...HuhPrompter,
+) error {
+	for _, p := range prompts {
+		if err := p.Sim(ctx); err != nil {
+			return fmt.Errorf("error simulating prompt %s: %w", p._key(), err)
+		}
 	}
 	return nil
 }
