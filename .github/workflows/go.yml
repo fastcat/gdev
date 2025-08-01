@@ -34,6 +34,11 @@ jobs:
     - name: Setup Mage
       run: go tool mage -l
 
+    - name: Check codegen
+      run: |
+        go generate -x ./...
+        git diff --exit-code
+
     - name: Build
       run: go tool mage -v compile
     - name: Golangci-lint
