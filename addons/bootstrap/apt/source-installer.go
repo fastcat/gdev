@@ -72,13 +72,17 @@ func (i *SourceInstaller) install(
 ) (bool, error) {
 	// check if the file already has the same content
 	listEq, keyEq := false, false
-	// TODO: make this a semantic comparison
 	if existing, err := os.ReadFile(filename); err != nil {
 		if !os.IsNotExist(err) {
 			return false, fmt.Errorf("failed to read existing source file %q: %w", filename, err)
 		}
 	} else if bytes.Equal(existing, content.Bytes()) {
 		listEq = true
+	} else if e822, err := ParseDeb822(bytes.NewReader(existing)); err == nil {
+		if existingSrc, err := FromDeb822(e822); err == nil && i.Source.Equal(existingSrc) {
+			// semantically equal, don't bother rewriting the file
+			listEq = true
+		}
 	}
 	if len(i.Source.SignedBy) > 0 {
 		if existing, err := os.ReadFile(i.Source.SignedBy); err != nil {

@@ -31,11 +31,12 @@ func VSCodeInstaller() *apt.SourceInstaller {
 	return &apt.SourceInstaller{
 		SourceName: "vscode",
 		Source: &apt.Source{
-			Types:      []string{"deb"},
-			URIs:       []string{"https://packages.microsoft.com/repos/vscode"},
-			Suites:     []string{"stable"},
-			Components: []string{"main"},
-			SignedBy:   "/usr/share/keyrings/microsoft.gpg",
+			Types:         []string{"deb"},
+			URIs:          []string{"https://packages.microsoft.com/repos/code"},
+			Suites:        []string{"stable"},
+			Components:    []string{"main"},
+			Architectures: []string{"amd64", "arm64", "armhf"},
+			SignedBy:      "/usr/share/keyrings/microsoft.gpg",
 		},
 		SigningKey: VSCodeArchiveKeyringBinary(),
 		Deb822:     true,

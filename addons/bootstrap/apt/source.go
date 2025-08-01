@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -77,12 +78,39 @@ func (s *Source) ToDeb822() map[string]string {
 		deb822["Components"] = strings.Join(s.Components, " ")
 	}
 	if len(s.Architectures) > 0 {
-		deb822["Architectures"] = strings.Join(s.Architectures, " ")
+		deb822["Architectures"] = strings.Join(s.Architectures, ",")
 	}
 	if s.SignedBy != "" {
 		deb822["Signed-By"] = s.SignedBy
 	}
 	return deb822
+}
+
+// FromDeb822 converts a deb822 formatted map to a Source.
+//
+// It does not check for logical validity of the result, it only parses the keys
+// it recognizes and errors on any it doesn't.
+func FromDeb822(deb822 map[string]string) (*Source, error) {
+	s := &Source{}
+	for k, v := range deb822 {
+		switch k {
+		case "Types":
+			s.Types = strings.Fields(v)
+		case "URIs":
+			s.URIs = strings.Fields(v)
+		case "Suites":
+			s.Suites = strings.Fields(v)
+		case "Components":
+			s.Components = strings.Fields(v)
+		case "Architectures":
+			s.Architectures = strings.Split(v, ",")
+		case "Signed-By":
+			s.SignedBy = v
+		default:
+			return nil, fmt.Errorf("unknown deb822 key %q", k)
+		}
+	}
+	return s, nil
 }
 
 func (s *Source) ToList() []byte {
@@ -134,4 +162,15 @@ func (s *Source) validate() error {
 		errs = append(errs, fmt.Errorf("no Components specified"))
 	}
 	return errors.Join(errs...)
+}
+
+func (s *Source) Equal(other *Source) bool {
+	// TODO: apply defaulting on Types to each before comparing?
+	// TODO: ignore order in lists
+	return slices.Equal(s.Types, other.Types) &&
+		slices.Equal(s.URIs, other.URIs) &&
+		slices.Equal(s.Suites, other.Suites) &&
+		slices.Equal(s.Components, other.Components) &&
+		slices.Equal(s.Architectures, other.Architectures) &&
+		s.SignedBy == other.SignedBy
 }
