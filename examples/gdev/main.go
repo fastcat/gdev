@@ -49,6 +49,9 @@ func main() {
 			apt.SourceInstallStep(apt_common.VSCodeInstaller()).With(
 				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
 			),
+			apt.SourceInstallStep(apt_common.GoogleCloudInstaller()).With(
+				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
+			),
 		),
 		// many things will add more options
 	)
