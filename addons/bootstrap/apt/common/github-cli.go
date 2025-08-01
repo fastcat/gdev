@@ -6,6 +6,7 @@ import (
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
 )
 
+//go:generate go tool getkey https://cli.github.com/packages/githubcli-archive-keyring.gpg github-cli.asc
 //go:embed github-cli.asc
 var GitHubCliArchiveKeyring []byte
 

@@ -3,7 +3,10 @@ package apt_common
 import (
 	"bytes"
 	_ "embed"
+	"io"
 	"sync"
+
+	"golang.org/x/crypto/openpgp/armor" //nolint:staticcheck // armor parsing is fine within deprecation
 
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
 )
@@ -13,6 +16,7 @@ import (
 //
 // See: [VSCodeArchiveKeyringBinary].
 //
+//go:generate go tool getkey https://packages.microsoft.com/keys/microsoft.asc vscode.asc
 //go:embed vscode.asc
 var VSCodeArchiveKeyring []byte
 
@@ -20,8 +24,12 @@ var VSCodeArchiveKeyring []byte
 //
 // See [VSCodeArchiveKeyring].
 var VSCodeArchiveKeyringBinary = sync.OnceValue(func() []byte {
+	block, err := armor.Decode(bytes.NewReader(VSCodeArchiveKeyring))
+	if err != nil {
+		panic(err) // should never happen
+	}
 	var buf bytes.Buffer
-	if err := apt.AscToGPG(bytes.NewReader(VSCodeArchiveKeyring), &buf); err != nil {
+	if _, err := io.Copy(&buf, block.Body); err != nil {
 		panic(err) // should never happen
 	}
 	return buf.Bytes()

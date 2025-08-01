@@ -6,6 +6,7 @@ import (
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
 )
 
+//go:generate go tool getkey https://packages.cloud.google.com/apt/doc/apt-key.gpg google-cloud.asc
 //go:embed google-cloud.asc
 var GoogleCloudArchiveKeyring []byte
 
