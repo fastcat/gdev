@@ -6,7 +6,7 @@ import (
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
 )
 
-//go:embed githubcli-archive-keyring.asc
+//go:embed github-cli.asc
 var GitHubCliArchiveKeyring []byte
 
 func GitHubCLIInstaller() *apt.SourceInstaller {

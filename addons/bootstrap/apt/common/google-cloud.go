@@ -6,7 +6,7 @@ import (
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
 )
 
-//go:embed cloud.google.asc
+//go:embed google-cloud.asc
 var GoogleCloudArchiveKeyring []byte
 
 func GoogleCloudInstaller() *apt.SourceInstaller {
