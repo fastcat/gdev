@@ -20,5 +20,7 @@ func GitHubCLIInstaller() *apt.SourceInstaller {
 			SignedBy:   "/usr/share/keyrings/githubcli-archive-keyring.asc",
 		},
 		SigningKey: GitHubCliArchiveKeyring,
+		// prefer the modernized format since GH doesn't ship anything specific in the package
+		Deb822: true,
 	}
 }

@@ -43,7 +43,10 @@ func main() {
 		bootstrap.WithSteps(shellRCSteps()...),
 		bootstrap.WithSteps(
 			input.UserInfoStep(),
-			apt.SourceInstallStep(apt_common.GitHubCLIInstaller().AsDeb822()).With(
+			apt.SourceInstallStep(apt_common.GitHubCLIInstaller()).With(
+				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
+			),
+			apt.SourceInstallStep(apt_common.VSCodeInstaller()).With(
 				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
 			),
 		),

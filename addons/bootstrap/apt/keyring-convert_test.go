@@ -29,17 +29,6 @@ var armoredLines = []string{
 	``,
 }
 
-func Test_unwrapArmor(t *testing.T) {
-	armored := strings.Join(armoredLines, "\n")
-	r := seqReader(unwrapArmor(strings.NewReader(armored)))
-	defer r.Close() //nolint:errcheck
-	var got bytes.Buffer
-	_, err := io.Copy(&got, r)
-	require.NoError(t, err)
-	want := strings.Join(armoredLines[2:len(armoredLines)-2], "\n") + "\n"
-	assert.Equal(t, want, got.String())
-}
-
 func TestAscToGPG(t *testing.T) {
 	armored := strings.Join(armoredLines, "\n")
 	var got bytes.Buffer
@@ -60,5 +49,5 @@ func TestAscToGPG(t *testing.T) {
 	_, err = io.Copy(&want, res.Stdout())
 	require.NoError(t, err)
 
-	assert.Equal(t, got.Bytes(), want.Bytes())
+	assert.DeepEqual(t, got.Bytes(), want.Bytes())
 }
