@@ -3,7 +3,7 @@ package apt
 import (
 	"testing"
 
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAptSource_ToList(t *testing.T) {
@@ -58,7 +58,7 @@ func TestAptSource_ToDeb822(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.DeepEqual(t, tt.want, tt.source.ToDeb822())
+			assert.Equal(t, tt.want, tt.source.ToDeb822())
 		})
 	}
 }

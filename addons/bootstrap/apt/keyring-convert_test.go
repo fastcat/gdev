@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gotest.tools/v3/assert"
 
 	"fastcat.org/go/gdev/shx"
 )
@@ -49,5 +49,5 @@ func TestAscToGPG(t *testing.T) {
 	_, err = io.Copy(&want, res.Stdout())
 	require.NoError(t, err)
 
-	assert.DeepEqual(t, got.Bytes(), want.Bytes())
+	assert.Equal(t, got.Bytes(), want.Bytes())
 }
