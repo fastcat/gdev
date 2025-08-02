@@ -41,23 +41,26 @@ func main() {
 		bootstrap.WithAptPackages("Select Go packages for install", "golang"),
 		bootstrap.WithAptPackages("Select git packages for install", "git", "git-lfs", "git-crypt"),
 		bootstrap.WithSteps(shellRCSteps()...),
-		bootstrap.WithSteps(
-			input.UserInfoStep(),
-			apt.SourceInstallStep(apt_common.GitHubCLIInstaller(),
-				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
-			),
-			apt.SourceInstallStep(apt_common.VSCodeInstaller(),
-				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
-			),
-			apt.SourceInstallStep(apt_common.GoogleCloudInstaller(),
-				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
-			),
-			apt.SourceInstallStep(apt_common.HashicorpInstaller(),
-				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
-			),
-			apt.SourceInstallStep(apt_common.MozillaInstaller(),
-				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
-			),
+		bootstrap.WithSteps(input.UserInfoStep()),
+		bootstrap.WithSteps(apt.PublicSourceInstallSteps(
+			apt_common.GitHubCLIInstaller(),
+			apt_common.VSCodeInstaller(),
+			apt_common.GoogleCloudInstaller(),
+			apt_common.HashicorpInstaller(),
+			apt_common.GoogleChromeInstaller(),
+			apt_common.MozillaInstaller(),
+			apt_common.SlackInstaller(),
+			apt_common.DBeaverInstaller(),
+		)...),
+		// TODO: decompose to an add... step with a filter function to skip it on
+		// headless systems (once the skip feature is available)
+		bootstrap.WithAptPackages(
+			"Select desktop tools",
+			"firefox",
+			"google-chrome-stable",
+			"code",
+			"slack-desktop",
+			"dbeaver-ce",
 		),
 		// many things will add more options
 	)

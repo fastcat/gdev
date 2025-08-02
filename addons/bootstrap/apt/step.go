@@ -32,3 +32,19 @@ func SourceInstallStep(
 		}),
 	).With(opts...)
 }
+
+// PublicSourceInstallSteps creates a slice of bootstrap steps that install the
+// given APT sources before the initial APT update step, when only (and all)
+// public sources are presumed available.
+func PublicSourceInstallSteps(
+	installers ...*SourceInstaller,
+) []*bootstrap.Step {
+	steps := make([]*bootstrap.Step, 0, len(installers))
+	for _, installer := range installers {
+		steps = append(steps, SourceInstallStep(
+			installer,
+			bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
+		))
+	}
+	return steps
+}

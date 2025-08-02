@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"fastcat.org/go/gdev/shx"
@@ -27,6 +28,8 @@ var sourcesDirty = NewKey[bool]("apt sources dirty")
 
 func doAptUpdate(ctx *Context) error {
 	dirty, ok := Get(ctx, sourcesDirty)
+	// TODO: heuristic if we can skip the update entirely, e.g. if no sources were
+	// changed and it ran within the last hour or something?
 	if ok && !dirty {
 		// we ran apt update once before, nothing has changed since, skip it
 		return nil
@@ -85,6 +88,9 @@ func doAptInstall(ctx *Context) error {
 	for pkg := range pkgSet {
 		cna = append(cna, pkg)
 	}
+	// make printing deterministic
+	slices.Sort(cna[3:])
+	fmt.Printf("Installing: %s\n", strings.Join(cna[3:], " "))
 	if _, err := shx.Run(
 		ctx,
 		cna,
@@ -132,17 +138,15 @@ func AddAptPackages(ctx *Context, names ...string) {
 	}
 }
 
-// WithAptPackages is an option for [Configure] that will register a step to
-// mark the given package(s) to be installed by the main `apt install` step.
-func WithAptPackages(
+func AddAptPackagesStep(
 	stepName string,
 	packages ...string,
-) option {
+) *Step {
 	mark := func(ctx *Context) error {
 		AddAptPackages(ctx, packages...)
 		return nil
 	}
-	return WithSteps(NewStep(
+	return NewStep(
 		stepName,
 		mark,
 		// apt update will get added automatically
@@ -150,7 +154,16 @@ func WithAptPackages(
 		// this just marks things in memory, so sim can be the same as run, so that
 		// the sim apt install step shows the real list
 		SimFunc(mark),
-	))
+	)
+}
+
+// WithAptPackages is an option for [Configure] that will register a step to
+// mark the given package(s) to be installed by the main `apt install` step.
+func WithAptPackages(
+	stepName string,
+	packages ...string,
+) option {
+	return WithSteps(AddAptPackagesStep(stepName, packages...))
 }
 
 func init() {
