@@ -43,13 +43,19 @@ func main() {
 		bootstrap.WithSteps(shellRCSteps()...),
 		bootstrap.WithSteps(
 			input.UserInfoStep(),
-			apt.SourceInstallStep(apt_common.GitHubCLIInstaller()).With(
+			apt.SourceInstallStep(apt_common.GitHubCLIInstaller(),
 				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
 			),
-			apt.SourceInstallStep(apt_common.VSCodeInstaller()).With(
+			apt.SourceInstallStep(apt_common.VSCodeInstaller(),
 				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
 			),
-			apt.SourceInstallStep(apt_common.GoogleCloudInstaller()).With(
+			apt.SourceInstallStep(apt_common.GoogleCloudInstaller(),
+				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
+			),
+			apt.SourceInstallStep(apt_common.HashicorpInstaller(),
+				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
+			),
+			apt.SourceInstallStep(apt_common.MozillaInstaller(),
 				bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
 			),
 		),

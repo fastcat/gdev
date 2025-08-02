@@ -1,6 +1,9 @@
 {
 	"cSpell.words": [
+		"armhf",
 		"dbus",
+		"distro",
+		"dpkg",
 		"gdev",
 		"GOBUILDCACHE",
 		"gocachesftp",

@@ -39,14 +39,14 @@ func doAptUpdate(ctx *Context) error {
 	); err != nil {
 		return err
 	}
-	Save(ctx, sourcesDirty, false)
+	Set(ctx, sourcesDirty, false)
 	return nil
 }
 
 // ChangedAptSources will mark the apt sources list as dirty, so a secondary
 // `apt update` step registered with [WithExtraAptUpdate] will actually run.
 func ChangedAptSources(ctx *Context) {
-	Save(ctx, sourcesDirty, true)
+	Set(ctx, sourcesDirty, true)
 }
 
 // Name of the step registered by [AddAptInstall]. This step will install
@@ -91,6 +91,7 @@ func doAptInstall(ctx *Context) error {
 		shx.WithSudo(fmt.Sprintf("install %d packages", len(pkgSet))),
 		// installation may prompt for things
 		shx.PassStdio(),
+		shx.WithCombinedError(),
 	); err != nil {
 		return err
 	}

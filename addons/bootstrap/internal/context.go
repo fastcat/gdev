@@ -17,10 +17,18 @@ func NewContext(ctx context.Context) *Context {
 	}
 }
 
+// Save stores a value, but only if it is not already set.
+//
+// If the value is already set, it panics.
 func Save[T any](ctx *Context, k InfoKey[T], v T) {
 	if _, ok := ctx.info[k]; ok {
 		panic(fmt.Errorf("already saved %s for %v", k.k, k.typ()))
 	}
+	ctx.info[k] = v
+}
+
+// Set is like save, but it will overwrite any existing value as well.
+func Set[T any](ctx *Context, k InfoKey[T], v T) {
 	ctx.info[k] = v
 }
 

@@ -11,6 +11,7 @@ import (
 // commonly [bootstrap.StepNameAptUpdate].
 func SourceInstallStep(
 	installer *SourceInstaller,
+	opts ...bootstrap.StepOpt,
 ) *bootstrap.Step {
 	return bootstrap.NewStep(
 		"Install APT source "+installer.SourceName,
@@ -18,6 +19,7 @@ func SourceInstallStep(
 			if _, err := installer.Install(ctx); err != nil {
 				return err
 			}
+			bootstrap.ChangedAptSources(ctx)
 			return nil
 		},
 	).With(
@@ -25,7 +27,8 @@ func SourceInstallStep(
 			if _, err := installer.Sim(ctx); err != nil {
 				return err
 			}
+			bootstrap.ChangedAptSources(ctx)
 			return nil
 		}),
-	)
+	).With(opts...)
 }

@@ -25,6 +25,10 @@ func Save[T any](ctx *Context, k InfoKey[T], v T) {
 	internal.Save(ctx, k, v)
 }
 
+func Set[T any](ctx *Context, k InfoKey[T], v T) {
+	internal.Set(ctx, k, v)
+}
+
 func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
 	return internal.Get(ctx, k)
 }

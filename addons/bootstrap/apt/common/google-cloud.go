@@ -6,7 +6,9 @@ import (
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
 )
 
-//go:generate go tool getkey https://packages.cloud.google.com/apt/doc/apt-key.gpg google-cloud.asc
+// use a fragment to trick the code because while the url says .gpg, it returns an .asc file
+//
+//go:generate go tool getkey https://packages.cloud.google.com/apt/doc/apt-key.gpg#.asc google-cloud.asc
 //go:embed google-cloud.asc
 var GoogleCloudArchiveKeyring []byte
 
