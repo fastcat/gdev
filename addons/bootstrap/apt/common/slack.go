@@ -25,7 +25,7 @@ func SlackInstaller() *apt.SourceInstaller {
 			SignedBy: "/usr/share/keyrings/slack-desktop.asc",
 		},
 		SigningKey: SlackArchiveKeyring,
-		// be close to what upstream configures
-		Deb822: false,
+		// upstream does a bad key install, we want to be sure to use the good one
+		Deb822: true,
 	}
 }
