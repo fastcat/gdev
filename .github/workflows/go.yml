@@ -47,7 +47,7 @@ jobs:
         # needed to build it from source so it uses 1.25rc
         install-mode: goinstall
         # https://github.com/golangci/golangci-lint/pull/5872
-        version: a58d35d24ee8eb836d15bb8247996fcc4a09a8b5
+        version: a59d4588f0729971606614c7991ad7ad3ca8218f
     - name: Other Lint
       run: go tool mage -v lint:other
     - name: Test
