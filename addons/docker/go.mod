@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev/addons/docker
 
-go 1.25rc3
+go 1.25
 
 require (
 	fastcat.org/go/gdev v0.2.9

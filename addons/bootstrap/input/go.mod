@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev/addons/bootstrap/input
 
-go 1.25rc3
+go 1.25
 
 require (
 	fastcat.org/go/gdev v0.2.10-0.20250730070753-904aba810a90
