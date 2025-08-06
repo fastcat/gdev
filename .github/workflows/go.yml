@@ -29,7 +29,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '~1.25.0-rc.2'
+        go-version: '~1.25.0-rc.3'
 
     - name: Setup Mage
       run: go tool mage -l
@@ -47,7 +47,7 @@ jobs:
         # needed to build it from source so it uses 1.25rc
         install-mode: goinstall
         # https://github.com/golangci/golangci-lint/pull/5872
-        version: 5971d1c3110cef16b9b24a37878240e835047229
+        version: a58d35d24ee8eb836d15bb8247996fcc4a09a8b5
     - name: Other Lint
       run: go tool mage -v lint:other
     - name: Test

@@ -1,6 +1,6 @@
-go 1.25rc2
+go 1.25rc3
 
-toolchain go1.25rc2
+toolchain go1.25rc3
 
 use (
 	.
