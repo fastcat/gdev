@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/k8s
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.2.9
+	fastcat.org/go/gdev v0.3.0
 	k8s.io/api v0.33.2
 	k8s.io/apimachinery v0.33.2
 	k8s.io/client-go v0.33.2

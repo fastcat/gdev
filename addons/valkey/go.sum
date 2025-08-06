@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.2.9 h1:Ir+gXnimOCUqgf92U+PQkpXN3eUSXWQSK9jMfnWjoTA=
-fastcat.org/go/gdev v0.2.9/go.mod h1:horCmG2dSCsXkoga3AVPoUGnr8gKvlYWNWNyW4c48Qs=
-fastcat.org/go/gdev/addons/k8s v0.2.9 h1:WHeJ3JFU3Op52mg3snI9UK4uLRUo8euiz90oNzFljqQ=
-fastcat.org/go/gdev/addons/k8s v0.2.9/go.mod h1:WYl2CQSmzqozcnZmTi0Wn9VmOnGf1sYTQC+g4QraRBA=
+fastcat.org/go/gdev v0.3.0 h1:/vd/ySLqBrPAwZivF9R6WEv07GH1K7IsmXoiaFYIXa8=
+fastcat.org/go/gdev v0.3.0/go.mod h1:l8y/vB5L12RFbB9ZEp4Slmsl3ULGJo3rQx+isZHxh00=
+fastcat.org/go/gdev/addons/k8s v0.3.0 h1:tyH2+zzwAckD7NNeXBB+b7S1Y+YWOURjXKZOeibnDYM=
+fastcat.org/go/gdev/addons/k8s v0.3.0/go.mod h1:fZwNNPF7XUY8BV00Sqic9oUL4f8IGybtMeV6jvs6AEM=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

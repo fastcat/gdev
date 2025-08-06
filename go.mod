@@ -33,6 +33,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-tool (
-	fastcat.org/go/gdev/addons/bootstrap/apt/getkey
-)
+tool fastcat.org/go/gdev/addons/bootstrap/apt/getkey

@@ -4,8 +4,8 @@ go 1.25
 
 require (
 	cloud.google.com/go/storage v1.55.0
-	fastcat.org/go/gdev v0.2.9
-	fastcat.org/go/gdev/addons/gocache v0.2.9
+	fastcat.org/go/gdev v0.3.0
+	fastcat.org/go/gdev/addons/gocache v0.3.0
 )
 
 require (
