@@ -11,6 +11,7 @@ import (
 	"fastcat.org/go/gdev/addons/bootstrap/textedit"
 	"fastcat.org/go/gdev/addons/build"
 	"fastcat.org/go/gdev/addons/containerd"
+	"fastcat.org/go/gdev/addons/diags"
 	"fastcat.org/go/gdev/addons/docker"
 	"fastcat.org/go/gdev/addons/gcs"
 	gcs_k8s "fastcat.org/go/gdev/addons/gcs/k8s"
@@ -106,6 +107,11 @@ func main() {
 		),
 	)
 	gcs.Configure(gcs_k8s.WithK8SService())
+
+	diags.Configure(
+		diags.WithDefaultFileCollector(),
+		diags.WithDefaultSources(),
+	)
 
 	cmd.Main()
 }
