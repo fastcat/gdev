@@ -4,6 +4,7 @@ import (
 	"context"
 
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
+	applyBatchV1 "k8s.io/client-go/applyconfigurations/batch/v1"
 
 	"fastcat.org/go/gdev/addons/containers"
 )
@@ -26,7 +27,7 @@ func newPodder[
 	apply Apply,
 ) *podder[Client, Resource, Apply] {
 	// TODO: add standard annotations and labels
-	return &podder[Client, Resource, Apply]{newApply(acc, apply)}
+	return &podder[Client, Resource, Apply]{newAppliable(acc, apply)}
 }
 
 // ContainerImages implements resource.ContainerResource.
@@ -68,3 +69,27 @@ func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) ContainerResour
 		WithAnnotations(l)
 	return newPodder(accDeployment, apply)
 }
+
+func CronJob(apply *applyBatchV1.CronJobApplyConfiguration) ContainerResource {
+	l := containers.DefaultLabels()
+	apply.
+		WithLabels(l).
+		WithAnnotations(l)
+	apply.Spec.JobTemplate.Spec.Template.
+		WithLabels(l).
+		WithAnnotations(l)
+	return newPodder(accCronJob, apply)
+}
+
+func BatchJob(apply *applyBatchV1.JobApplyConfiguration) ContainerResource {
+	l := containers.DefaultLabels()
+	apply.
+		WithLabels(l).
+		WithAnnotations(l)
+	apply.Spec.Template.
+		WithLabels(l).
+		WithAnnotations(l)
+	return newPodder(accBatchJob, apply)
+}
+
+// NOTE: Direct Pod manipulation is intentionally left out because it's a Bad Idea

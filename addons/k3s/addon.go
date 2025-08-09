@@ -346,6 +346,7 @@ func mergeKubeConfig(ctx context.Context) (clientConfigMarker, error) {
 	context := k3sCfg.Contexts["default"]
 	context.AuthInfo = name
 	context.Cluster = name
+	context.Namespace = string(addon.Config.namespace)
 	if !reflect.DeepEqual(userCfg.Contexts[name], context) {
 		dirty = true
 		userCfg.Contexts[name] = context

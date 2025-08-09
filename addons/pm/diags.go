@@ -8,7 +8,7 @@ import (
 	"fastcat.org/go/gdev/addons/pm/client"
 )
 
-func DiagsSource() diags.SourceProvider {
+func DiagsSources() diags.SourceProvider {
 	return func(ctx context.Context) ([]diags.Source, error) {
 		return []diags.Source{
 			diags.SourceFunc(collectPMStatus),

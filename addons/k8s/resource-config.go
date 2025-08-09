@@ -21,5 +21,21 @@ func ConfigMap(apply *applyCoreV1.ConfigMapApplyConfiguration) Resource {
 	apply.
 		WithLabels(l).
 		WithAnnotations(l)
-	return &configMap{newApply(accConfigMap, apply)}
+	return &configMap{newAppliable(accConfigMap, apply)}
+}
+
+type secret struct {
+	appliable[
+		clientCoreV1.SecretInterface,
+		apiCoreV1.Secret,
+		*applyCoreV1.SecretApplyConfiguration,
+	]
+}
+
+func Secret(apply *applyCoreV1.SecretApplyConfiguration) Resource {
+	l := containers.DefaultLabels()
+	apply.
+		WithLabels(l).
+		WithAnnotations(l)
+	return &secret{newAppliable(accSecret, apply)}
 }

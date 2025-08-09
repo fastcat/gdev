@@ -4,13 +4,16 @@ import (
 	"context"
 
 	apiAppsV1 "k8s.io/api/apps/v1"
+	apiBatchV1 "k8s.io/api/batch/v1"
 	apiCoreV1 "k8s.io/api/core/v1"
 	apiMetaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
+	applyBatchV1 "k8s.io/client-go/applyconfigurations/batch/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
 	applyMetaV1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	clientAppsV1 "k8s.io/client-go/kubernetes/typed/apps/v1"
+	clientBatchV1 "k8s.io/client-go/kubernetes/typed/batch/v1" // for cronjob
 	clientCoreV1 "k8s.io/client-go/kubernetes/typed/core/v1"
 
 	"fastcat.org/go/gdev/instance"
@@ -41,6 +44,7 @@ type accessor[
 	Resource any,
 	Apply apply[Apply],
 ] struct {
+	typ       apiMetaV1.TypeMeta
 	getClient func(c kubernetes.Interface, ns Namespace) Client
 	// list wraps the native List method on Client to avoid extra generics on the
 	// <Resource>List type
@@ -51,11 +55,19 @@ type accessor[
 	ready        func(ctx context.Context, r *Resource) (bool, error)
 }
 
+func applyToAPITypeMeta(tm applyMetaV1.TypeMetaApplyConfiguration) apiMetaV1.TypeMeta {
+	return apiMetaV1.TypeMeta{
+		Kind:       *tm.Kind,
+		APIVersion: *tm.APIVersion,
+	}
+}
+
 var accStatefulSet = accessor[
 	clientAppsV1.StatefulSetInterface,
 	apiAppsV1.StatefulSet,
 	*applyAppsV1.StatefulSetApplyConfiguration,
 ]{
+	typ: applyToAPITypeMeta(applyAppsV1.StatefulSet("", "").TypeMetaApplyConfiguration),
 	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.StatefulSetInterface {
 		return c.AppsV1().StatefulSets(string(ns))
 	},
@@ -96,6 +108,7 @@ var accDeployment = accessor[
 	apiAppsV1.Deployment,
 	*applyAppsV1.DeploymentApplyConfiguration,
 ]{
+	typ: applyToAPITypeMeta(applyAppsV1.Deployment("", "").TypeMetaApplyConfiguration),
 	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.DeploymentInterface {
 		return c.AppsV1().Deployments(string(ns))
 	},
@@ -135,6 +148,7 @@ var accService = accessor[
 	apiCoreV1.Service,
 	*applyCoreV1.ServiceApplyConfiguration,
 ]{
+	typ: applyToAPITypeMeta(applyCoreV1.Service("", "").TypeMetaApplyConfiguration),
 	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.ServiceInterface {
 		return c.CoreV1().Services(string(ns))
 	},
@@ -164,6 +178,7 @@ var accConfigMap = accessor[
 	apiCoreV1.ConfigMap,
 	*applyCoreV1.ConfigMapApplyConfiguration,
 ]{
+	typ: applyToAPITypeMeta(applyCoreV1.ConfigMap("", "").TypeMetaApplyConfiguration),
 	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.ConfigMapInterface {
 		return c.CoreV1().ConfigMaps(string(ns))
 	},
@@ -193,6 +208,7 @@ var accPVC = accessor[
 	apiCoreV1.PersistentVolumeClaim,
 	*applyCoreV1.PersistentVolumeClaimApplyConfiguration,
 ]{
+	typ: applyToAPITypeMeta(applyCoreV1.PersistentVolumeClaim("", "").TypeMetaApplyConfiguration),
 	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.PersistentVolumeClaimInterface {
 		return c.CoreV1().PersistentVolumeClaims(string(ns))
 	},
@@ -242,6 +258,7 @@ var accPV = accessor[
 	apiCoreV1.PersistentVolume,
 	*applyCoreV1.PersistentVolumeApplyConfiguration,
 ]{
+	typ: applyToAPITypeMeta(applyCoreV1.PersistentVolume("").TypeMetaApplyConfiguration),
 	getClient: func(c kubernetes.Interface, _ Namespace) clientCoreV1.PersistentVolumeInterface {
 		return c.CoreV1().PersistentVolumes()
 	},
@@ -262,8 +279,193 @@ var accPV = accessor[
 	},
 }
 
+var accCronJob = accessor[
+	clientBatchV1.CronJobInterface,
+	apiBatchV1.CronJob,
+	*applyBatchV1.CronJobApplyConfiguration,
+]{
+	typ: applyToAPITypeMeta(applyBatchV1.CronJob("", "").TypeMetaApplyConfiguration),
+	getClient: func(c kubernetes.Interface, ns Namespace) clientBatchV1.CronJobInterface {
+		return c.BatchV1().CronJobs(string(ns))
+	},
+	list: func(ctx context.Context, c clientBatchV1.CronJobInterface, opts apiMetaV1.ListOptions) ([]apiBatchV1.CronJob, error) {
+		l, err := c.List(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+		return l.Items, nil
+	},
+	applyMeta: func(a *applyBatchV1.CronJobApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+		// this will ensure the ObjectMeta... is populated
+		a.GetName()
+		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
+	},
+	resourceMeta: func(r *apiBatchV1.CronJob) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
+		return &r.TypeMeta, &r.ObjectMeta
+	},
+	podTemplate: func(a *applyBatchV1.CronJobApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
+		return a.Spec.JobTemplate.Spec.Template.Spec
+	},
+	ready: func(ctx context.Context, r *apiBatchV1.CronJob) (bool, error) {
+		// TODO: check if it has run, and if the last run was successful?
+		return true, nil
+	},
+}
+
+var accBatchJob = accessor[
+	clientBatchV1.JobInterface,
+	apiBatchV1.Job,
+	*applyBatchV1.JobApplyConfiguration,
+]{
+	typ: applyToAPITypeMeta(applyBatchV1.Job("", "").TypeMetaApplyConfiguration),
+	getClient: func(c kubernetes.Interface, ns Namespace) clientBatchV1.JobInterface {
+		return c.BatchV1().Jobs(string(ns))
+	},
+	list: func(ctx context.Context, c clientBatchV1.JobInterface, opts apiMetaV1.ListOptions) ([]apiBatchV1.Job, error) {
+		l, err := c.List(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+		return l.Items, nil
+	},
+	applyMeta: func(a *applyBatchV1.JobApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+		// this will ensure the ObjectMeta... is populated
+		a.GetName()
+		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
+	},
+	resourceMeta: func(r *apiBatchV1.Job) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
+		return &r.TypeMeta, &r.ObjectMeta
+	},
+	podTemplate: func(a *applyBatchV1.JobApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
+		return a.Spec.Template.Spec
+	},
+	ready: func(ctx context.Context, r *apiBatchV1.Job) (bool, error) {
+		// batch jobs have a ready status for when they are running, but we want to
+		// wait for them to finish given how this readiness gate is used.
+		s := r.Status
+		// TODO: is there an ObservedGeneration for jobs?
+		// don't muck with trying to replicate all the counting, just check for a
+		// success condition
+		for _, c := range s.Conditions {
+			if c.Type == apiBatchV1.JobComplete && c.Status == apiCoreV1.ConditionTrue {
+				return true, nil
+			} else if c.Type == apiBatchV1.JobSuccessCriteriaMet && c.Status == apiCoreV1.ConditionTrue {
+				return true, nil
+			}
+		}
+		return false, nil
+	},
+}
+
+var accPod = accessor[
+	clientCoreV1.PodInterface,
+	apiCoreV1.Pod,
+	*applyCoreV1.PodApplyConfiguration,
+]{
+	typ: applyToAPITypeMeta(applyCoreV1.Pod("", "").TypeMetaApplyConfiguration),
+	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.PodInterface {
+		return c.CoreV1().Pods(string(ns))
+	},
+	list: func(ctx context.Context, c clientCoreV1.PodInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.Pod, error) {
+		l, err := c.List(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+		return l.Items, nil
+	},
+	applyMeta: func(a *applyCoreV1.PodApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+		// this will ensure the ObjectMeta... is populated
+		a.GetName()
+		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
+	},
+	resourceMeta: func(r *apiCoreV1.Pod) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
+		return &r.TypeMeta, &r.ObjectMeta
+	},
+	ready: func(ctx context.Context, r *apiCoreV1.Pod) (bool, error) {
+		// use the pod conditions to determine readiness
+		for _, c := range r.Status.Conditions {
+			if c.Type == apiCoreV1.PodReady {
+				return c.Status == apiCoreV1.ConditionTrue, nil
+			}
+		}
+		// TODO: check all the container statuses too?
+		return false, nil
+	},
+}
+
+var accSecret = accessor[
+	clientCoreV1.SecretInterface,
+	apiCoreV1.Secret,
+	*applyCoreV1.SecretApplyConfiguration,
+]{
+	typ: applyToAPITypeMeta(applyCoreV1.Secret("", "").TypeMetaApplyConfiguration),
+	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.SecretInterface {
+		return c.CoreV1().Secrets(string(ns))
+	},
+	list: func(ctx context.Context, c clientCoreV1.SecretInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.Secret, error) {
+		l, err := c.List(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+		return l.Items, nil
+	},
+	applyMeta: func(a *applyCoreV1.SecretApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+		// this will ensure the ObjectMeta... is populated
+		a.GetName()
+		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
+	},
+	resourceMeta: func(r *apiCoreV1.Secret) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
+		return &r.TypeMeta, &r.ObjectMeta
+	},
+	ready: func(context.Context, *apiCoreV1.Secret) (bool, error) {
+		// secrets have no readiness gates
+		return true, nil
+	},
+}
+
+var accNode = accessor[
+	clientCoreV1.NodeInterface,
+	apiCoreV1.Node,
+	*applyCoreV1.NodeApplyConfiguration,
+]{
+	typ: applyToAPITypeMeta(applyCoreV1.Node("").TypeMetaApplyConfiguration),
+	getClient: func(c kubernetes.Interface, _ Namespace) clientCoreV1.NodeInterface {
+		return c.CoreV1().Nodes()
+	},
+	list: func(ctx context.Context, c clientCoreV1.NodeInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.Node, error) {
+		l, err := c.List(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+		return l.Items, nil
+	},
+	applyMeta: func(a *applyCoreV1.NodeApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+		// this will ensure the ObjectMeta... is populated
+		a.GetName()
+		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
+	},
+	resourceMeta: func(r *apiCoreV1.Node) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
+		return &r.TypeMeta, &r.ObjectMeta
+	},
+	ready: func(ctx context.Context, r *apiCoreV1.Node) (bool, error) {
+		// use the node conditions to determine readiness
+		for _, c := range r.Status.Conditions {
+			if c.Type == apiCoreV1.NodeReady {
+				return c.Status == apiCoreV1.ConditionTrue, nil
+			}
+		}
+		return false, nil
+	},
+}
+
 func getOpts(context.Context) apiMetaV1.GetOptions {
 	return apiMetaV1.GetOptions{
+		// nothing here for now
+	}
+}
+
+func listOpts(context.Context) apiMetaV1.ListOptions {
+	return apiMetaV1.ListOptions{
 		// nothing here for now
 	}
 }

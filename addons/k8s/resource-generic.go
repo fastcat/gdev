@@ -23,7 +23,7 @@ type appliable[
 	apply Apply
 }
 
-func newApply[
+func newAppliable[
 	Client client[Resource, Apply],
 	Resource any,
 	Apply apply[Apply],

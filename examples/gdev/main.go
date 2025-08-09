@@ -117,7 +117,8 @@ func main() {
 			// just test the error recording
 			return coll.AddError(ctx, "test-error", errors.New("this is a test error"))
 		}),
-		diags.WithSourceProvider(pm.DiagsSource()),
+		diags.WithSourceProvider(pm.DiagsSources()),
+		diags.WithSourceProvider(k8s.DiagsSources()),
 	)
 
 	cmd.Main()

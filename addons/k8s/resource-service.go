@@ -21,5 +21,5 @@ func Service(apply *applyCoreV1.ServiceApplyConfiguration) Resource {
 	apply.
 		WithLabels(l).
 		WithAnnotations(l)
-	return &service{newApply(accService, apply)}
+	return &service{newAppliable(accService, apply)}
 }
