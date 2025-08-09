@@ -6,6 +6,7 @@ import (
 	"maps"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/goccy/go-yaml"
 
@@ -15,9 +16,13 @@ import (
 
 var loadedComments yaml.CommentMap
 
+var FileName = sync.OnceValue(func() string {
+	return os.ExpandEnv("${HOME}/.config/" + instance.AppName() + ".yaml")
+})
+
 func load() error {
 	internal.CheckLockedDown()
-	fn := os.ExpandEnv("${HOME}/.config/" + instance.AppName() + ".yaml")
+	fn := FileName()
 	f, err := os.Open(fn)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {

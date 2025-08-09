@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"os"
 	"path/filepath"
 
@@ -111,6 +113,11 @@ func main() {
 	diags.Configure(
 		diags.WithDefaultFileCollector(),
 		diags.WithDefaultSources(),
+		diags.WithSourceFuncs(func(ctx context.Context, coll diags.Collector) error {
+			// just test the error recording
+			return coll.AddError(ctx, "test-error", errors.New("this is a test error"))
+		}),
+		diags.WithSourceProvider(pm.DiagsSource()),
 	)
 
 	cmd.Main()

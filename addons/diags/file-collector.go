@@ -2,8 +2,10 @@ package diags
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -16,22 +18,41 @@ import (
 	"fastcat.org/go/gdev/instance"
 )
 
-type fileOpener func(context.Context) (*os.File, io.WriteCloser, error)
+type fileOpener func(context.Context) (dest DestWriter, out io.WriteCloser, err error)
+
+// DestWriter provides the required operations for the underlying destination of
+// a tar collector.
+//
+// Most of it is implemented by [os.File], but Remove() requires [fileWrap] to
+// forward to [os.Remove].
+type DestWriter interface {
+	io.WriteCloser
+	Name() string
+	Remove() error
+}
 
 type TarFileCollector struct {
 	// Opener is a required function that opens the underlying destination file.
 	//
-	// It returns the destination as two pieces, one as the actual underlying
-	// file, and the other as the writer to write to, which may be a different
-	// object such as a gzip compressor.
+	// It returns the destination as two pieces, one as the actual underlying file
+	// (which might be a remote stream in a storage bucket or similar), and the
+	// other as the writer to write to, which may be either the same object, or
+	// else a wrapper that e.g. applies gzip compression, encryption, or other
+	// pass-through transformations.
+	//
+	// If out != dest, out will be closed before dest.
+	//
+	// If dest implements Sync(), it will be called before Close().
 	Opener fileOpener
 	mu     sync.Mutex
-	dest   *os.File
+	dest   DestWriter
 	out    io.WriteCloser
 	tw     *tar.Writer
 	// set true if we get an error writing to the tar that indicates we can't
 	// usefully write any more entries to it.
 	twFatal bool
+
+	errors map[string]string
 }
 
 // Begin implements Collector.
@@ -49,11 +70,12 @@ func (f *TarFileCollector) Begin(ctx context.Context) error {
 		}
 		if f.dest != nil {
 			_ = f.dest.Close()
-			_ = os.Remove(f.dest.Name())
+			_ = f.dest.Remove()
 		}
 		return err
 	}
 	f.tw = tar.NewWriter(f.out)
+	f.errors = make(map[string]string)
 	return nil
 }
 
@@ -103,6 +125,29 @@ func fillTarHeader(th *tar.Header, contents io.Reader) (bool, error) {
 
 // Collect implements Collector.
 func (f *TarFileCollector) Collect(ctx context.Context, name string, contents io.Reader) error {
+	th, err := f.prepareHeader(ctx, name, contents)
+	if err != nil {
+		return err
+	}
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	return f.writeLocked(ctx, th, contents)
+}
+
+func (*TarFileCollector) prepareHeader(
+	ctx context.Context,
+	name string,
+	contents io.Reader,
+) (*tar.Header, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+		// continue
+	}
+
 	th := &tar.Header{
 		Name:     name,
 		Mode:     0o644,
@@ -110,49 +155,64 @@ func (f *TarFileCollector) Collect(ctx context.Context, name string, contents io
 		ModTime:  time.Now(),
 	}
 	if ok, err := fillTarHeader(th, contents); err != nil {
-		return err
+		return nil, err
 	} else if !ok {
 		// TODO: support bytes.Buffer via Len()
 		// stream to a temp file and then use that for the collection
 		tf, err := os.CreateTemp("", instance.AppName()+"-diags-coll-*")
 		if err != nil {
-			return fmt.Errorf("error creating temp file for contents for %s: %w", name, err)
+			return nil, fmt.Errorf("error creating temp file for contents for %s: %w", name, err)
 		}
 		// pre-delete the file, avoids more complex error handling later, and
 		// reduces secrets exposure. this only works on unix-y platforms.
 		if err := os.Remove(tf.Name()); err != nil {
 			_ = tf.Close()
-			return fmt.Errorf("error removing temp file %s for collecting %s: %w", tf.Name(), name, err)
+			return nil, fmt.Errorf("error removing temp file %s for collecting %s: %w", tf.Name(), name, err)
 		}
 		defer tf.Close() //nolint:errcheck
 		if _, err := io.Copy(tf, contents); err != nil {
-			return fmt.Errorf("cannot determine size of contents, not seekable")
+			return nil, fmt.Errorf("cannot determine size of contents, not seekable")
 		} else if _, err := tf.Seek(0, io.SeekStart); err != nil {
-			return fmt.Errorf("error seeking to start of temp file %s for collecting %s: %w", tf.Name(), name, err)
+			return nil, fmt.Errorf("error seeking to start of temp file %s for collecting %s: %w", tf.Name(), name, err)
 		}
 		if ok, err := fillTarHeader(th, tf); err != nil {
-			return fmt.Errorf("error filling tar header for %s: %w", name, err)
+			return nil, fmt.Errorf("error filling tar header for %s: %w", name, err)
 		} else if !ok {
 			// TODO: bug detection, should we panic?
-			return fmt.Errorf("probable bug: cannot get tar header info for temp file %s for collecting %s", tf.Name(), name)
+			return nil, fmt.Errorf("probable bug: cannot get tar header info for temp file %s for collecting %s", tf.Name(), name)
 		}
 	}
+	return th, nil
+}
 
-	f.mu.Lock()
-	defer f.mu.Unlock()
+func (f *TarFileCollector) writeLocked(ctx context.Context, th *tar.Header, contents io.Reader) error {
 	if f.dest == nil || f.out == nil {
 		return fmt.Errorf("collector not begun")
+	}
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+		// continue
 	}
 
 	if err := f.tw.WriteHeader(th); err != nil {
 		f.twFatal = true
-		return fmt.Errorf("error writing tar header for %s: %w", name, err)
+		return fmt.Errorf("error writing tar header for %s: %w", th.Name, err)
 	} else if _, err := io.Copy(f.tw, contents); err != nil {
 		f.twFatal = true
-		return fmt.Errorf("error writing contents for %s to tar: %w", name, err)
+		return fmt.Errorf("error writing contents for %s to tar: %w", th.Name, err)
 	}
 
 	return nil
+}
+
+func (f *TarFileCollector) collectLocked(ctx context.Context, name string, contents io.Reader) error {
+	th, err := f.prepareHeader(ctx, name, contents)
+	if err != nil {
+		return err
+	}
+	return f.writeLocked(ctx, th, contents)
 }
 
 // Destination implements Collector.
@@ -163,6 +223,16 @@ func (f *TarFileCollector) Destination() string {
 		return "(not started)"
 	}
 	return f.dest.Name()
+}
+
+func (f *TarFileCollector) AddError(ctx context.Context, item string, err error) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.errors == nil {
+		return fmt.Errorf("collector not begun")
+	}
+	f.errors[item] = err.Error()
+	return nil
 }
 
 // Finalize implements Collector.
@@ -177,6 +247,15 @@ func (f *TarFileCollector) Finalize(ctx context.Context, collectErr error) error
 	// errors we hit along the way.
 	var errs []error
 
+	// write out the error annotations
+	if len(f.errors) > 0 && !f.twFatal {
+		if errData, err := json.MarshalIndent(f.errors, "", " "); err != nil {
+			errs = append(errs, fmt.Errorf("error marshalling errors: %w", err))
+		} else if err := f.collectLocked(ctx, "errors.json", bytes.NewReader(append(errData, '\n'))); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
 	if err := f.tw.Close(); err != nil {
 		errs = append(errs, err)
 	}
@@ -185,8 +264,10 @@ func (f *TarFileCollector) Finalize(ctx context.Context, collectErr error) error
 			errs = append(errs, err)
 		}
 	}
-	if err := f.dest.Sync(); err != nil {
-		errs = append(errs, err)
+	if s, ok := f.dest.(interface{ Sync() error }); ok {
+		if err := s.Sync(); err != nil {
+			errs = append(errs, err)
+		}
 	}
 	if err := f.dest.Close(); err != nil {
 		errs = append(errs, err)
@@ -208,12 +289,28 @@ var _ Collector = (*TarFileCollector)(nil)
 //
 // The resulting filename will usually be along the lines of `/tmp/xdev-diags-XXX.tgz`,
 // where `XXX` is a random string of indeterminate length.
-func OpenTempDiagsFile(context.Context) (*os.File, io.WriteCloser, error) {
+func OpenTempDiagsFile(context.Context) (dest DestWriter, out io.WriteCloser, err error) {
 	// TODO: add a timestamp to the filename?
-	f, err := os.CreateTemp(os.TempDir(), instance.AppName()+"-diags-*.tgz")
+	var fh *os.File
+	fh, err = os.CreateTemp(os.TempDir(), instance.AppName()+"-diags-*.tgz")
 	if err != nil {
 		return nil, nil, err
 	}
-	w := gzip.NewWriter(f)
-	return f, w, nil
+	dest = &fileWrap{fh}
+	out = gzip.NewWriter(dest)
+	return
+}
+
+type fileWrap struct {
+	*os.File
+}
+
+var (
+	_ DestWriter                = (*fileWrap)(nil)
+	_ interface{ Sync() error } = (*fileWrap)(nil)
+)
+
+// Remove implements DestWriter.
+func (f *fileWrap) Remove() error {
+	return os.Remove(f.Name())
 }

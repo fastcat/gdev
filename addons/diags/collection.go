@@ -8,32 +8,32 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type collection struct {
-	sources []Source
-	dest    Collector
+type Collection struct {
+	Sources []Source
+	Dest    Collector
 }
 
-func (c *collection) run(ctx context.Context) error {
+func (c *Collection) Run(ctx context.Context) error {
 	ctx, stop := context.WithCancel(ctx)
 	defer stop()
 
-	if err := c.dest.Begin(ctx); err != nil {
+	if err := c.Dest.Begin(ctx); err != nil {
 		return fmt.Errorf("error beginning collector: %w", err)
 	}
-	fmt.Printf("Collecting diagnostics to %s\n", c.dest.Destination())
+	fmt.Printf("Collecting diagnostics to %s\n", c.Dest.Destination())
 
 	srcCtx, stopSrc := context.WithCancel(ctx)
 	defer stopSrc()
 	eg, srcCtx := errgroup.WithContext(srcCtx)
-	for _, s := range c.sources {
+	for _, s := range c.Sources {
 		eg.Go(func() error {
-			return s.Collect(srcCtx, c.dest)
+			return s.Collect(srcCtx, c.Dest)
 		})
 	}
 
 	err := eg.Wait()
 	stopSrc()
-	if err2 := c.dest.Finalize(ctx, err); err2 != nil {
+	if err2 := c.Dest.Finalize(ctx, err); err2 != nil {
 		err = errors.Join(err, err2)
 	}
 	return err
@@ -62,12 +62,12 @@ func CollectDefault(ctx context.Context) error {
 		return fmt.Errorf("error initializing collector: %w", err)
 	}
 
-	c := &collection{
-		sources: sources,
-		dest:    collector,
+	c := &Collection{
+		Sources: sources,
+		Dest:    collector,
 	}
-	if len(c.sources) == 0 {
+	if len(c.Sources) == 0 {
 		return errors.New("no sources configured for diags addon")
 	}
-	return c.run(ctx)
+	return c.Run(ctx)
 }

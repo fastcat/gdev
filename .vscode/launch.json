@@ -9,7 +9,7 @@
 			"type": "go",
 			"request": "launch",
 			// "mode": "auto",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"--help"
 			]
@@ -19,7 +19,7 @@
 			"type": "go",
 			"request": "launch",
 			// "mode": "auto",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"pm"
 			]
@@ -29,7 +29,7 @@
 			"type": "go",
 			"request": "launch",
 			// "mode": "auto",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"pm",
 				"status"
@@ -40,7 +40,7 @@
 			"type": "go",
 			"request": "launch",
 			// "mode": "auto",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"pm",
 				"daemon"
@@ -72,7 +72,7 @@
 			"type": "go",
 			"request": "launch",
 			// "mode": "auto",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"bootstrap",
 				"-h"
@@ -83,7 +83,7 @@
 			"type": "go",
 			"request": "launch",
 			// "mode": "auto",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"bootstrap",
 				"k3s",
@@ -95,7 +95,7 @@
 			"type": "go",
 			"request": "launch",
 			// "mode": "auto",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"start"
 			]
@@ -105,7 +105,7 @@
 			"type": "go",
 			"request": "launch",
 			// "mode": "auto",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"build",
 				"-v",
@@ -120,6 +120,16 @@
 			"program": "${workspaceFolder}/_example/stack",
 			"args": [
 				"start"
+			]
+		},
+		{
+			"name": "diags",
+			"type": "go",
+			"request": "launch",
+			// "mode": "auto",
+			"program": "${workspaceFolder}/examples/gdev",
+			"args": [
+				"diags"
 			]
 		},
 		{
@@ -148,7 +158,7 @@
 			"name": "uninstall k3s",
 			"type": "go",
 			"request": "launch",
-			"program": "${workspaceFolder}",
+			"program": "${workspaceFolder}/examples/gdev",
 			"args": [
 				"bootstrap",
 				"k3s",

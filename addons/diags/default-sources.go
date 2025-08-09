@@ -1,10 +1,12 @@
 package diags
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
+	"errors"
+	"os"
+	"path/filepath"
 
+	appConfig "fastcat.org/go/gdev/config"
 	"fastcat.org/go/gdev/instance"
 )
 
@@ -16,10 +18,19 @@ func CollectAppInfo(ctx context.Context, coll Collector) error {
 		instance.AppName(),
 		instance.Version(),
 	}
-	contents, err := json.Marshal(appInfo)
+	return CollectJSON(ctx, coll, "app-info.json", appInfo)
+}
+
+func CollectAppConfig(ctx context.Context, coll Collector) error {
+	fn := appConfig.FileName()
+	f, err := os.Open(fn)
 	if err != nil {
-		// should be unreachable
-		return err
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return coll.AddError(ctx, filepath.Base(fn), err)
 	}
-	return coll.Collect(ctx, "app-info.json", bytes.NewReader(contents))
+	defer f.Close() //nolint:errcheck
+
+	return coll.Collect(ctx, filepath.Base(fn), f)
 }

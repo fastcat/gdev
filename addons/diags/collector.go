@@ -22,6 +22,23 @@ type Collector interface {
 		contents io.Reader,
 	) error
 
+	// AddError may be used by Sources to note non-fatal collection errors. The
+	// collector should accumulate these and store them in the output. It may do
+	// so immediately, or defer that storage until the end when Finalize is
+	// called.
+	//
+	// Any error returned from AddError is considered fatal.
+	//
+	// The item identifies what the Source was trying to collect when it
+	// encountered the error. Typically it would be the name it would have passed
+	// to Collect if there was no error, but it may be any non-empty string,
+	// including strings not valid as filenames.
+	AddError(
+		ctx context.Context,
+		item string,
+		err error,
+	) error
+
 	// Finalize is called once all sources have completed.
 	//
 	// If any error was encountered during collection, it will be provided and the
