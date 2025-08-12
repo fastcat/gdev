@@ -169,7 +169,7 @@ func (p *PM) Ready(ctx context.Context) (bool, error) {
 	return p.isReady(child, cur), nil
 }
 
-func (p *PM) isReady(child *api.Child, cur *api.ChildWithStatus) bool {
+func (p *PM) isReady(_ *api.Child, cur *api.ChildWithStatus) bool {
 	if cur.Status.State != api.ChildRunning {
 		// TODO: Done state for one-shot jobs
 		// TODO: say why it's unhealthy

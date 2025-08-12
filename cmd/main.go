@@ -32,7 +32,7 @@ func Main() {
 		if errors.As(err, &ece) {
 			ec = ece.ExitCode()
 		}
-		os.Exit(ec)
+		os.Exit(ec) //nolint:forbidigo // entrypoint
 	}
 }
 

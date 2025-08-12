@@ -25,7 +25,10 @@ func Start(ctx context.Context, opts ...any) error {
 		case resource.ContextOption:
 			rcOpts = append(rcOpts, o)
 		default:
-			return fmt.Errorf("unexpected option type %T, expected service.ContextOption or resource.ContextOption", o)
+			return fmt.Errorf(
+				"unexpected option type %T, expected service.ContextOption or resource.ContextOption",
+				o,
+			)
 		}
 	}
 	// TODO: don't double-layer if input already has resource/service context layers

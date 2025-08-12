@@ -149,6 +149,10 @@ func (h *HTTP) url(p string) string {
 	return u.String()
 }
 
-func withPathValue(match, name, value string) string {
+func withPathValue(
+	match string,
+	name string, //nolint:unparam // important for future use
+	value string,
+) string {
 	return strings.Replace(match, "{"+name+"}", value, 1)
 }

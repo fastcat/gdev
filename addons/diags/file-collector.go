@@ -173,13 +173,19 @@ func (*TarFileCollector) prepareHeader(
 		if _, err := io.Copy(tf, contents); err != nil {
 			return nil, fmt.Errorf("cannot determine size of contents, not seekable")
 		} else if _, err := tf.Seek(0, io.SeekStart); err != nil {
-			return nil, fmt.Errorf("error seeking to start of temp file %s for collecting %s: %w", tf.Name(), name, err)
+			return nil, fmt.Errorf(
+				"error seeking to start of temp file %s for collecting %s: %w",
+				tf.Name(), name, err,
+			)
 		}
 		if ok, err := fillTarHeader(th, tf); err != nil {
 			return nil, fmt.Errorf("error filling tar header for %s: %w", name, err)
 		} else if !ok {
 			// TODO: bug detection, should we panic?
-			return nil, fmt.Errorf("probable bug: cannot get tar header info for temp file %s for collecting %s", tf.Name(), name)
+			return nil, fmt.Errorf(
+				"probable bug: cannot get tar header info for temp file %s for collecting %s",
+				tf.Name(), name,
+			)
 		}
 	}
 	return th, nil

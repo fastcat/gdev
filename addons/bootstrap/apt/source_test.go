@@ -7,6 +7,7 @@ import (
 )
 
 func TestAptSource_ToList(t *testing.T) {
+	const debKeyring = "/usr/share/keyrings/debian-archive-keyring.gpg"
 	tests := []struct {
 		name   string
 		source Source
@@ -19,10 +20,12 @@ func TestAptSource_ToList(t *testing.T) {
 				URIs:       []string{"https://deb.debian.org/debian/"},
 				Suites:     []string{"bookworm"},
 				Components: []string{"main", "non-free", "non-free-firmware", "contrib"},
-				SignedBy:   "/usr/share/keyrings/debian-archive-keyring.gpg",
+				SignedBy:   debKeyring,
 			},
-			"deb [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] https://deb.debian.org/debian/ bookworm main non-free non-free-firmware contrib\n" +
-				"deb-src [signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] https://deb.debian.org/debian/ bookworm main non-free non-free-firmware contrib\n",
+			"deb [signed-by=" + debKeyring + "] https://deb.debian.org/debian/ " +
+				"bookworm main non-free non-free-firmware contrib\n" +
+				"deb-src [signed-by=" + debKeyring + "] https://deb.debian.org/debian/ " +
+				"bookworm main non-free non-free-firmware contrib\n",
 		},
 	}
 	for _, tt := range tests {

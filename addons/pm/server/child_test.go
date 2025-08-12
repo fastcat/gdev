@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"fastcat.org/go/gdev/addons/pm/api"
 )
@@ -134,11 +135,11 @@ func TestChildFails(t *testing.T) {
 	// we expect the init process to fail, wait for that and then "touch" the file
 	// that will allow it to succeed
 	waitState(api.ChildInitError, api.ChildInitRunning)
-	assert.NoError(t, os.WriteFile(filepath.Join(td, "init1"), nil, 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(td, "init1"), nil, 0o644))
 	// wait for it to restart and move on to the main process failing
 	waitState(api.ChildError, api.ChildInitError, api.ChildInitRunning, api.ChildRunning)
 	// let the main process move forwards
-	assert.NoError(t, os.WriteFile(filepath.Join(td, "main"), nil, 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(td, "main"), nil, 0o644))
 	waitState(api.ChildRunning, api.ChildError)
 	// TODO: make sure it stays there
 	c.cmds <- childStop
