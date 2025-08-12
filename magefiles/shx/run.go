@@ -56,7 +56,12 @@ func (c *cmd) Run() error {
 			}
 			quoted = append(quoted, q)
 		}
-		log.Println("exec:", c.Path, strings.Join(quoted, " "))
+		if c.Args[0] == c.Path || c.Args[0] == filepath.Base(c.Path) {
+			// don't repeat the command if it was already in Args[0]
+			log.Println("exec:", c.Path, strings.Join(quoted[1:], " "))
+		} else {
+			log.Println("exec:", c.Path, "("+quoted[0]+")"+strings.Join(quoted[1:], " "))
+		}
 	}
 	err := (*exec.Cmd)(c).Run()
 	if err != nil {
