@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path"
-	"strings"
 
 	"golang.org/x/mod/semver"
 
@@ -27,9 +26,6 @@ func TagSubModules(ctx context.Context, newVersion string) error {
 			continue
 		} else if p == "magefiles" {
 			// magefiles is not "published"
-			continue
-		} else if strings.HasPrefix(p, "examples/") {
-			// examples are not "published"
 			continue
 		}
 		// copy the root tag to the submodule. force lightweight tags so that local
