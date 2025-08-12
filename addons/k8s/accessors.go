@@ -48,8 +48,11 @@ type accessor[
 	getClient func(c kubernetes.Interface, ns Namespace) Client
 	// list wraps the native List method on Client to avoid extra generics on the
 	// <Resource>List type
-	list         func(ctx context.Context, c Client, opts apiMetaV1.ListOptions) ([]Resource, error)
-	applyMeta    func(a Apply) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration)
+	list      func(ctx context.Context, c Client, opts apiMetaV1.ListOptions) ([]Resource, error)
+	applyMeta func(a Apply) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	)
 	resourceMeta func(r *Resource) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta)
 	podTemplate  func(a Apply) *applyCoreV1.PodSpecApplyConfiguration
 	ready        func(ctx context.Context, r *Resource) (bool, error)
@@ -71,14 +74,21 @@ var accStatefulSet = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.StatefulSetInterface {
 		return c.AppsV1().StatefulSets(string(ns))
 	},
-	list: func(ctx context.Context, c clientAppsV1.StatefulSetInterface, opts apiMetaV1.ListOptions) ([]apiAppsV1.StatefulSet, error) {
+	list: func(
+		ctx context.Context,
+		c clientAppsV1.StatefulSetInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiAppsV1.StatefulSet, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyAppsV1.StatefulSetApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyAppsV1.StatefulSetApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -112,14 +122,21 @@ var accDeployment = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.DeploymentInterface {
 		return c.AppsV1().Deployments(string(ns))
 	},
-	list: func(ctx context.Context, c clientAppsV1.DeploymentInterface, opts apiMetaV1.ListOptions) ([]apiAppsV1.Deployment, error) {
+	list: func(
+		ctx context.Context,
+		c clientAppsV1.DeploymentInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiAppsV1.Deployment, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyAppsV1.DeploymentApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyAppsV1.DeploymentApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -152,14 +169,21 @@ var accService = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.ServiceInterface {
 		return c.CoreV1().Services(string(ns))
 	},
-	list: func(ctx context.Context, c clientCoreV1.ServiceInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.Service, error) {
+	list: func(
+		ctx context.Context,
+		c clientCoreV1.ServiceInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiCoreV1.Service, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyCoreV1.ServiceApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyCoreV1.ServiceApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -182,14 +206,21 @@ var accConfigMap = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.ConfigMapInterface {
 		return c.CoreV1().ConfigMaps(string(ns))
 	},
-	list: func(ctx context.Context, c clientCoreV1.ConfigMapInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.ConfigMap, error) {
+	list: func(
+		ctx context.Context,
+		c clientCoreV1.ConfigMapInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiCoreV1.ConfigMap, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyCoreV1.ConfigMapApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyCoreV1.ConfigMapApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -212,14 +243,21 @@ var accPVC = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.PersistentVolumeClaimInterface {
 		return c.CoreV1().PersistentVolumeClaims(string(ns))
 	},
-	list: func(ctx context.Context, c clientCoreV1.PersistentVolumeClaimInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.PersistentVolumeClaim, error) {
+	list: func(
+		ctx context.Context,
+		c clientCoreV1.PersistentVolumeClaimInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiCoreV1.PersistentVolumeClaim, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyCoreV1.PersistentVolumeClaimApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyCoreV1.PersistentVolumeClaimApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -262,14 +300,21 @@ var accPV = accessor[
 	getClient: func(c kubernetes.Interface, _ Namespace) clientCoreV1.PersistentVolumeInterface {
 		return c.CoreV1().PersistentVolumes()
 	},
-	list: func(ctx context.Context, c clientCoreV1.PersistentVolumeInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.PersistentVolume, error) {
+	list: func(
+		ctx context.Context,
+		c clientCoreV1.PersistentVolumeInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiCoreV1.PersistentVolume, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyCoreV1.PersistentVolumeApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyCoreV1.PersistentVolumeApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -288,14 +333,21 @@ var accCronJob = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientBatchV1.CronJobInterface {
 		return c.BatchV1().CronJobs(string(ns))
 	},
-	list: func(ctx context.Context, c clientBatchV1.CronJobInterface, opts apiMetaV1.ListOptions) ([]apiBatchV1.CronJob, error) {
+	list: func(
+		ctx context.Context,
+		c clientBatchV1.CronJobInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiBatchV1.CronJob, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyBatchV1.CronJobApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyBatchV1.CronJobApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -321,14 +373,21 @@ var accBatchJob = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientBatchV1.JobInterface {
 		return c.BatchV1().Jobs(string(ns))
 	},
-	list: func(ctx context.Context, c clientBatchV1.JobInterface, opts apiMetaV1.ListOptions) ([]apiBatchV1.Job, error) {
+	list: func(
+		ctx context.Context,
+		c clientBatchV1.JobInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiBatchV1.Job, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyBatchV1.JobApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyBatchV1.JobApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -366,14 +425,21 @@ var accPod = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.PodInterface {
 		return c.CoreV1().Pods(string(ns))
 	},
-	list: func(ctx context.Context, c clientCoreV1.PodInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.Pod, error) {
+	list: func(
+		ctx context.Context,
+		c clientCoreV1.PodInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiCoreV1.Pod, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyCoreV1.PodApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyCoreV1.PodApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -402,14 +468,21 @@ var accSecret = accessor[
 	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.SecretInterface {
 		return c.CoreV1().Secrets(string(ns))
 	},
-	list: func(ctx context.Context, c clientCoreV1.SecretInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.Secret, error) {
+	list: func(
+		ctx context.Context,
+		c clientCoreV1.SecretInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiCoreV1.Secret, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyCoreV1.SecretApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyCoreV1.SecretApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
@@ -432,14 +505,21 @@ var accNode = accessor[
 	getClient: func(c kubernetes.Interface, _ Namespace) clientCoreV1.NodeInterface {
 		return c.CoreV1().Nodes()
 	},
-	list: func(ctx context.Context, c clientCoreV1.NodeInterface, opts apiMetaV1.ListOptions) ([]apiCoreV1.Node, error) {
+	list: func(
+		ctx context.Context,
+		c clientCoreV1.NodeInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiCoreV1.Node, error) {
 		l, err := c.List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
 		return l.Items, nil
 	},
-	applyMeta: func(a *applyCoreV1.NodeApplyConfiguration) (*applyMetaV1.TypeMetaApplyConfiguration, *applyMetaV1.ObjectMetaApplyConfiguration) {
+	applyMeta: func(a *applyCoreV1.NodeApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
 		// this will ensure the ObjectMeta... is populated
 		a.GetName()
 		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration

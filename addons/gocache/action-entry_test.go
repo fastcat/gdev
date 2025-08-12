@@ -17,7 +17,9 @@ func TestParseActionEntry(t *testing.T) {
 		err   error
 	}{
 		{
-			input: `v1 d405b479e410c7a2bc276897d858fb8ee480eb4e2ca089845ddd3d5e1cad195c 8a3bc0f228cc3894fa61d1c181043e1b2cec92c4ef8ac1f4445d082c3cd37132               797818  1750435547055716553` + "\n",
+			input: `v1 d405b479e410c7a2bc276897d858fb8ee480eb4e2ca089845ddd3d5e1cad195c ` +
+				`8a3bc0f228cc3894fa61d1c181043e1b2cec92c4ef8ac1f4445d082c3cd37132               797818  ` +
+				`1750435547055716553` + "\n",
 			want: ActionEntry{
 				ID: []byte{
 					0xd4, 0x05, 0xb4, 0x79, 0xe4, 0x10, 0xc7, 0xa2, 0xbc, 0x27, 0x68, 0x97, 0xd8, 0x58, 0xfb, 0x8e,
@@ -39,10 +41,8 @@ func TestParseActionEntry(t *testing.T) {
 				assert.ErrorIs(t, err, tt.err)
 				return
 			}
-			if !assert.NoError(t, err) ||
-				!assert.NotNil(t, got) {
-				return
-			}
+			require.NoError(t, err)
+			require.NotNil(t, got)
 			require.Equal(t, tt.want, *got)
 
 			// test loop back to string, technically tests a different function

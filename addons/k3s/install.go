@@ -117,7 +117,8 @@ func InstallSudoers(ctx context.Context, path string) error {
 		"# THIS FILE IS GENERATED, DO NOT EDIT\n"+
 			"%[2]s ALL=(ALL:ALL) NOPASSWD: %[1]s\n"+
 			"%[2]s ALL=(ALL:ALL) NOPASSWD: /usr/bin/pkill -TERM k3s, /bin/pkill -TERM k3s\n"+
-			"%[2]s ALL=(ALL:ALL) NOPASSWD: /usr/bin/cat /etc/rancher/k3s/k3s.yaml, /bin/cat /etc/rancher/k3s/k3s.yaml\n",
+			"%[2]s ALL=(ALL:ALL) NOPASSWD: /usr/bin/cat /etc/rancher/k3s/k3s.yaml, "+
+			"/bin/cat /etc/rancher/k3s/k3s.yaml\n",
 		path,
 		u.Username,
 	)

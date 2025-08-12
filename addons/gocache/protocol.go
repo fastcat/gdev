@@ -112,10 +112,11 @@ type Response struct {
 
 	// For "get" requests.
 
-	Miss     bool       `json:",omitempty"` // cache miss
-	OutputID []byte     `json:",omitempty"` // the ObjectID stored with the body
-	Size     int64      `json:",omitempty"` // body size in bytes
-	Time     *time.Time `json:",omitempty"` // when the object was put in the cache (optional; used for cache expiration)
+	Miss     bool   `json:",omitempty"` // cache miss
+	OutputID []byte `json:",omitempty"` // the ObjectID stored with the body
+	Size     int64  `json:",omitempty"` // body size in bytes
+	// when the object was put in the cache (optional; used for cache expiration)
+	Time *time.Time `json:",omitempty"`
 
 	// For "get" and "put" requests.
 

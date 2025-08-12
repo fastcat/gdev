@@ -84,7 +84,8 @@ func (d *diskStorageBackend) GoFileName(id []byte, typ rune) string {
 }
 
 const (
-	// action entry file is "v1 <hex id> <hex out> <decimal size space-padded to 20 bytes> <unixnano space-padded to 20 bytes>\n"
+	// action entry file is "v1 <hex id> <hex out> <decimal size space-padded to
+	// 20 bytes> <unixnano space-padded to 20 bytes>\n"
 	idHashHexSize   = sha256.Size * 2
 	actionEntrySize = 2 + 1 + idHashHexSize + 1 + idHashHexSize + 1 + 20 + 1 + 20 + 1
 )

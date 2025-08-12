@@ -22,7 +22,7 @@ import (
 // repetition of the resource pattern.
 func myGoService(
 	name string,
-	repo, subDir string,
+	_repo, subDir string,
 	imageName string,
 	opts ...service.BasicOpt,
 ) service.Service {
@@ -48,7 +48,7 @@ func myGoService(
 
 func myNodeService(
 	name string,
-	repo, subDir string,
+	_repo, _subDir string,
 	imageName string,
 	opts ...service.BasicOpt,
 ) service.Service {
