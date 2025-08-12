@@ -1,5 +1,5 @@
-fastcat.org/go/gdev v0.3.0 h1:/vd/ySLqBrPAwZivF9R6WEv07GH1K7IsmXoiaFYIXa8=
-fastcat.org/go/gdev v0.3.0/go.mod h1:l8y/vB5L12RFbB9ZEp4Slmsl3ULGJo3rQx+isZHxh00=
+fastcat.org/go/gdev v0.4.0 h1:Ja/5O+fekbx+VpqZGcMvuflT4TeHK9Yhg4Wzc873HhY=
+fastcat.org/go/gdev v0.4.0/go.mod h1:lk4PPiH9W118HLmjFckJhE0VVlyqrX1pCNsfav/Bf2M=
 github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c h1:udKWzYgxTojEKWjV8V+WSxDXJ4NFATAsZjh8iIbsQIg=
 github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=

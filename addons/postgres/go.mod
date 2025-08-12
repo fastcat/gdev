@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/postgres
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.3.0
-	fastcat.org/go/gdev/addons/k8s v0.3.0
+	fastcat.org/go/gdev v0.4.0
+	fastcat.org/go/gdev/addons/k8s v0.4.0
 	k8s.io/api v0.33.2
 	k8s.io/apimachinery v0.33.2
 	k8s.io/client-go v0.33.2
@@ -36,6 +36,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/term v0.33.0 // indirect
 	golang.org/x/text v0.27.0 // indirect

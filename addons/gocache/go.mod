@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/gocache
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.3.0
+	fastcat.org/go/gdev v0.4.0
 	github.com/pkg/sftp v1.13.9
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0

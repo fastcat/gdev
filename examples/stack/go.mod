@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/examples/stack
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.3.0
-	fastcat.org/go/gdev/addons/docker v0.3.0
+	fastcat.org/go/gdev v0.4.0
+	fastcat.org/go/gdev/addons/docker v0.4.0
 )
 
 require (
@@ -47,6 +47,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
 )

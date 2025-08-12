@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.3.0 h1:/vd/ySLqBrPAwZivF9R6WEv07GH1K7IsmXoiaFYIXa8=
-fastcat.org/go/gdev v0.3.0/go.mod h1:l8y/vB5L12RFbB9ZEp4Slmsl3ULGJo3rQx+isZHxh00=
-fastcat.org/go/gdev/addons/k8s v0.3.0 h1:tyH2+zzwAckD7NNeXBB+b7S1Y+YWOURjXKZOeibnDYM=
-fastcat.org/go/gdev/addons/k8s v0.3.0/go.mod h1:fZwNNPF7XUY8BV00Sqic9oUL4f8IGybtMeV6jvs6AEM=
+fastcat.org/go/gdev v0.4.0 h1:Ja/5O+fekbx+VpqZGcMvuflT4TeHK9Yhg4Wzc873HhY=
+fastcat.org/go/gdev v0.4.0/go.mod h1:lk4PPiH9W118HLmjFckJhE0VVlyqrX1pCNsfav/Bf2M=
+fastcat.org/go/gdev/addons/k8s v0.4.0 h1:06PNzFJObCA5sHdaf359XQGiSlFORlIOoJJ+Un07DWE=
+fastcat.org/go/gdev/addons/k8s v0.4.0/go.mod h1:Q5Y3+rJaKlzUUqgXnEteP5GSDRqp93Y5hPWDHOwp1iw=
 github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=

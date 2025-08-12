@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.3.0 h1:/vd/ySLqBrPAwZivF9R6WEv07GH1K7IsmXoiaFYIXa8=
-fastcat.org/go/gdev v0.3.0/go.mod h1:l8y/vB5L12RFbB9ZEp4Slmsl3ULGJo3rQx+isZHxh00=
-fastcat.org/go/gdev/addons/k8s v0.3.0 h1:tyH2+zzwAckD7NNeXBB+b7S1Y+YWOURjXKZOeibnDYM=
-fastcat.org/go/gdev/addons/k8s v0.3.0/go.mod h1:fZwNNPF7XUY8BV00Sqic9oUL4f8IGybtMeV6jvs6AEM=
+fastcat.org/go/gdev v0.4.0 h1:Ja/5O+fekbx+VpqZGcMvuflT4TeHK9Yhg4Wzc873HhY=
+fastcat.org/go/gdev v0.4.0/go.mod h1:lk4PPiH9W118HLmjFckJhE0VVlyqrX1pCNsfav/Bf2M=
+fastcat.org/go/gdev/addons/k8s v0.4.0 h1:06PNzFJObCA5sHdaf359XQGiSlFORlIOoJJ+Un07DWE=
+fastcat.org/go/gdev/addons/k8s v0.4.0/go.mod h1:Q5Y3+rJaKlzUUqgXnEteP5GSDRqp93Y5hPWDHOwp1iw=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -110,6 +110,8 @@ golang.org/x/oauth2 v0.30.0/go.mod h1:B++QgG3ZKulg6sRPGD/mqlHQs5rB3Ml9erfeDY7xKl
 golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sync v0.16.0 h1:ycBJEhp9p4vXvUZNszeOq0kGTPghopOL8q0fq3vstxw=
+golang.org/x/sync v0.16.0/go.mod h1:1dzgHSNfp02xaA81J2MS99Qcpr2w7fw1gpm99rleRqA=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
