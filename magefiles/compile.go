@@ -29,14 +29,14 @@ func Compile(ctx context.Context) error {
 
 type Build mg.Namespace
 
-func (Build) Debug(ctx context.Context) error {
+func (Build) Debug(ctx context.Context) /* error */ {
 	mg.CtxDeps(ctx, mg.F(Build{}.debug, "./examples/gdev", "./gdev.debug"))
-	return nil
+	// return nil
 }
 
-func (Build) Release(ctx context.Context) error {
+func (Build) Release(ctx context.Context) /* error */ {
 	mg.CtxDeps(ctx, mg.F(Build{}.release, "./examples/gdev", "./gdev"))
-	return nil
+	// return nil
 }
 
 func (Build) debug(ctx context.Context, pkg, name string) error {
@@ -60,11 +60,11 @@ func (Build) release(ctx context.Context, pkg, name string) error {
 }
 
 // Build release binaries for each example app
-func (Build) Examples(ctx context.Context) error {
+func (Build) Examples(ctx context.Context) /* error */ {
 	mg.CtxDeps(ctx,
 		mg.F(Build{}.release, "./examples/gdev", "./gdev"),
 		mg.F(Build{}.release, "./examples/custom-commands", "./example-custom-commands"),
 		mg.F(Build{}.release, "./examples/stack", "./example-stack"),
 	)
-	return nil
+	// return nil
 }

@@ -53,9 +53,9 @@ var findGCI = sync.OnceValue(func() string {
 	return "golangci-lint"
 })
 
-func (Lint) Other(ctx context.Context) error {
+func (Lint) Other(ctx context.Context) /* error */ {
 	mg.CtxDeps(ctx, lintOther...)
-	return nil
+	// return nil
 }
 
 func (Lint) Golangci(ctx context.Context) error {

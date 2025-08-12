@@ -23,13 +23,14 @@ var workFile = sync.OnceValues(func() (*modfile.WorkFile, error) {
 	}
 })
 
-func GenerateVanityFiles(ctx context.Context, root string) error {
+func GenerateVanityFiles(_ context.Context, root string) error {
 	w, err := workFile()
 	if err != nil {
 		return err
 	}
-	const rootContent = `<meta name="go-import" content="fastcat.org/go/gdev git https://github.com/fastcat/gdev.git">` + "\n"
-	const template = `<meta name="go-import" content="fastcat.org/go/gdev/%[1]s git https://github.com/fastcat/gdev.git %[1]s">` + "\n"
+	const rootStart = `<meta name="go-import" content="fastcat.org/go/gdev`
+	const rootContent = rootStart + ` git https://github.com/fastcat/gdev.git">` + "\n"
+	const template = rootStart + `/%[1]s git https://github.com/fastcat/gdev.git %[1]s">` + "\n"
 	for _, use := range w.Use {
 		var content string
 		if use.Path == "." {
@@ -48,7 +49,7 @@ func GenerateVanityFiles(ctx context.Context, root string) error {
 	return nil
 }
 
-func UpdateDependabotConfig(ctx context.Context) error {
+func UpdateDependabotConfig(_ context.Context) error {
 	content, err := os.ReadFile(".github/dependabot.yaml")
 	if err != nil {
 		return err
