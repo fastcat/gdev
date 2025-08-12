@@ -23,6 +23,21 @@ var workFile = sync.OnceValues(func() (*modfile.WorkFile, error) {
 	}
 })
 
+func modSpreads(exclude ...string) []string {
+	w, err := workFile()
+	if err != nil {
+		panic(err)
+	}
+	spreads := make([]string, 0, len(w.Use))
+	for _, m := range w.Use {
+		if slices.Contains(exclude, m.Path) {
+			continue
+		}
+		spreads = append(spreads, m.Path+"/...")
+	}
+	return spreads
+}
+
 func GenerateVanityFiles(_ context.Context, root string) error {
 	w, err := workFile()
 	if err != nil {
