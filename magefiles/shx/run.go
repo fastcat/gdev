@@ -66,8 +66,8 @@ func (c *cmd) Run() error {
 	err := (*exec.Cmd)(c).Run()
 	if err != nil {
 		name := filepath.Base(c.Path)
-		if name == "go" && len(c.Args) > 0 {
-			name += " " + c.Args[0]
+		if name == "go" && len(c.Args) > 1 {
+			name += " " + c.Args[1]
 		}
 		return fmt.Errorf("%s: %w", name, err)
 	}
