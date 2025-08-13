@@ -15,6 +15,10 @@ var configureBootstrap = sync.OnceFunc(func() {
 		bootstrap.WithAptPackages(
 			"Select Docker packages",
 			"docker.io",
+			// TODO: use docker-compose-v2 where available (newer systems the base package _is_ v2)
+			"docker-compose",
+			"docker-buildx",
+			// TODO: docker-cli where available, missing on ubuntu 24.04, debian 12 (bookworm)
 		),
 		bootstrap.WithSteps(bootstrap.NewStep(
 			"Add user to docker group",
