@@ -18,9 +18,6 @@ import (
 	"fastcat.org/go/gdev/shx"
 )
 
-// addon describes the addon provided by this package.
-//
-// Do NOT export this variable.
 var addon = addons.Addon[config]{
 	Definition: addons.Definition{
 		Name: "asdf",
@@ -201,6 +198,7 @@ func installAsdf(ctx *bootstrap.Context) error {
 	// ~/.local/bin might not be in the PATH because most bashrc setups only add
 	// it if it exists. Make sure it's there now so we can run the just-installed
 	// copy.
+	// TODO: put this in shx or something
 	if slices.Index(filepath.SplitList(os.Getenv("PATH")), destDir) < 0 {
 		if err := os.Setenv("PATH", destDir+string(os.PathListSeparator)+os.Getenv("PATH")); err != nil {
 			return fmt.Errorf("failed to add %s to PATH: %w", destDir, err)
