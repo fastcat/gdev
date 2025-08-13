@@ -22,6 +22,9 @@ type versionInfo struct {
 	MainRev     string
 
 	GDevVersion string
+
+	IsDebugBuild bool
+	CGOEnabled   bool
 }
 
 func loadVersionInfo() versionInfo {
@@ -40,6 +43,13 @@ func loadVersionInfo() versionInfo {
 		case "vcs.revision":
 			ret.MainRev = s.Value
 			// vcs.modified not needed, go will include the +dirty for us
+		case "-gcflags":
+			// typically contains `all=-N -l`, possibly in the other order
+			ret.IsDebugBuild = strings.Contains(s.Value, "-N") && strings.Contains(s.Value, "-l")
+		case "CGO_ENABLED":
+			// unsure if "true" ever appears
+			ret.CGOEnabled = s.Value == "1" || s.Value == "true"
+			// could do "cgo debug enabled" based on "CGO_CFLAGS"
 		}
 	}
 

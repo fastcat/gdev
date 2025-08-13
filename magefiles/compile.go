@@ -34,7 +34,7 @@ func (Build) debug(ctx context.Context, pkg, name string) error {
 	fmt.Printf("Build %s debug binary\n", filepath.Base(pkg))
 	return shx.Cmd(
 		ctx,
-		"go", "build", "-gcflags=-N -l", "-v", "-o", name, pkg,
+		"go", "build", "-gcflags=all=-N -l", "-v", "-o", name, pkg,
 	).Run()
 }
 
