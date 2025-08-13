@@ -4,7 +4,6 @@ import (
 	"context"
 
 	apiCoreV1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/instance"
@@ -49,7 +48,7 @@ func describe() string {
 func initialize() error {
 	addon.CheckNotInitialized()
 	// register addon components
-	resource.AddContextEntry(func(context.Context) (kubernetes.Interface, error) {
+	resource.AddContextEntry(func(context.Context) (Interface, error) {
 		return NewClient()
 	})
 	resource.AddContextEntry(func(ctx context.Context) (Namespace, error) {

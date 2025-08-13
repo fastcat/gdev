@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/client-go/kubernetes"
 
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/resource"
@@ -97,7 +96,7 @@ func (r *appliable[Client, Resource, Apply]) K8SNamespace() string {
 
 func (r *appliable[Client, Resource, Apply]) client(ctx context.Context) Client {
 	return r.acc.getClient(
-		resource.ContextValue[kubernetes.Interface](ctx),
+		resource.ContextValue[Interface](ctx),
 		resource.ContextValue[Namespace](ctx),
 	)
 }

@@ -3,11 +3,10 @@ package k8s
 import (
 	"fmt"
 
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func NewClient() (kubernetes.Interface, error) {
+func NewClient() (Interface, error) {
 	addon.CheckInitialized()
 	ctxName := addon.Config.ContextName()
 	clientConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
@@ -20,7 +19,7 @@ func NewClient() (kubernetes.Interface, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed loading k8s config for %s: %w", ctxName, err)
 	}
-	client, err := kubernetes.NewForConfig(restConfig)
+	client, err := NewForConfig(restConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed creating k8s client for %s: %w", ctxName, err)
 	}

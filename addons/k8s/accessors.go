@@ -11,7 +11,6 @@ import (
 	applyBatchV1 "k8s.io/client-go/applyconfigurations/batch/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
 	applyMetaV1 "k8s.io/client-go/applyconfigurations/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	clientAppsV1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 	clientBatchV1 "k8s.io/client-go/kubernetes/typed/batch/v1" // for cronjob
 	clientCoreV1 "k8s.io/client-go/kubernetes/typed/core/v1"
@@ -45,7 +44,7 @@ type accessor[
 	Apply apply[Apply],
 ] struct {
 	typ       apiMetaV1.TypeMeta
-	getClient func(c kubernetes.Interface, ns Namespace) Client
+	getClient func(c Interface, ns Namespace) Client
 	// list wraps the native List method on Client to avoid extra generics on the
 	// <Resource>List type
 	list      func(ctx context.Context, c Client, opts apiMetaV1.ListOptions) ([]Resource, error)
@@ -71,7 +70,7 @@ var accStatefulSet = accessor[
 	*applyAppsV1.StatefulSetApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyAppsV1.StatefulSet("", "").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.StatefulSetInterface {
+	getClient: func(c Interface, ns Namespace) clientAppsV1.StatefulSetInterface {
 		return c.AppsV1().StatefulSets(string(ns))
 	},
 	list: func(
@@ -119,7 +118,7 @@ var accDeployment = accessor[
 	*applyAppsV1.DeploymentApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyAppsV1.Deployment("", "").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, ns Namespace) clientAppsV1.DeploymentInterface {
+	getClient: func(c Interface, ns Namespace) clientAppsV1.DeploymentInterface {
 		return c.AppsV1().Deployments(string(ns))
 	},
 	list: func(
@@ -166,7 +165,7 @@ var accService = accessor[
 	*applyCoreV1.ServiceApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyCoreV1.Service("", "").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.ServiceInterface {
+	getClient: func(c Interface, ns Namespace) clientCoreV1.ServiceInterface {
 		return c.CoreV1().Services(string(ns))
 	},
 	list: func(
@@ -203,7 +202,7 @@ var accConfigMap = accessor[
 	*applyCoreV1.ConfigMapApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyCoreV1.ConfigMap("", "").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.ConfigMapInterface {
+	getClient: func(c Interface, ns Namespace) clientCoreV1.ConfigMapInterface {
 		return c.CoreV1().ConfigMaps(string(ns))
 	},
 	list: func(
@@ -240,7 +239,7 @@ var accPVC = accessor[
 	*applyCoreV1.PersistentVolumeClaimApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyCoreV1.PersistentVolumeClaim("", "").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.PersistentVolumeClaimInterface {
+	getClient: func(c Interface, ns Namespace) clientCoreV1.PersistentVolumeClaimInterface {
 		return c.CoreV1().PersistentVolumeClaims(string(ns))
 	},
 	list: func(
@@ -276,7 +275,7 @@ var accPVC = accessor[
 			return false, nil
 		}
 		pvClient := accPV.getClient(
-			resource.ContextValue[kubernetes.Interface](ctx),
+			resource.ContextValue[Interface](ctx),
 			resource.ContextValue[Namespace](ctx),
 		)
 		pv, err := pvClient.Get(ctx, vn, getOpts(ctx))
@@ -297,7 +296,7 @@ var accPV = accessor[
 	*applyCoreV1.PersistentVolumeApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyCoreV1.PersistentVolume("").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, _ Namespace) clientCoreV1.PersistentVolumeInterface {
+	getClient: func(c Interface, _ Namespace) clientCoreV1.PersistentVolumeInterface {
 		return c.CoreV1().PersistentVolumes()
 	},
 	list: func(
@@ -330,7 +329,7 @@ var accCronJob = accessor[
 	*applyBatchV1.CronJobApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyBatchV1.CronJob("", "").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, ns Namespace) clientBatchV1.CronJobInterface {
+	getClient: func(c Interface, ns Namespace) clientBatchV1.CronJobInterface {
 		return c.BatchV1().CronJobs(string(ns))
 	},
 	list: func(
@@ -370,7 +369,7 @@ var accBatchJob = accessor[
 	*applyBatchV1.JobApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyBatchV1.Job("", "").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, ns Namespace) clientBatchV1.JobInterface {
+	getClient: func(c Interface, ns Namespace) clientBatchV1.JobInterface {
 		return c.BatchV1().Jobs(string(ns))
 	},
 	list: func(
@@ -422,7 +421,7 @@ var accPod = accessor[
 	*applyCoreV1.PodApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyCoreV1.Pod("", "").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.PodInterface {
+	getClient: func(c Interface, ns Namespace) clientCoreV1.PodInterface {
 		return c.CoreV1().Pods(string(ns))
 	},
 	list: func(
@@ -465,7 +464,7 @@ var accSecret = accessor[
 	*applyCoreV1.SecretApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyCoreV1.Secret("", "").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, ns Namespace) clientCoreV1.SecretInterface {
+	getClient: func(c Interface, ns Namespace) clientCoreV1.SecretInterface {
 		return c.CoreV1().Secrets(string(ns))
 	},
 	list: func(
@@ -502,7 +501,7 @@ var accNode = accessor[
 	*applyCoreV1.NodeApplyConfiguration,
 ]{
 	typ: applyToAPITypeMeta(applyCoreV1.Node("").TypeMetaApplyConfiguration),
-	getClient: func(c kubernetes.Interface, _ Namespace) clientCoreV1.NodeInterface {
+	getClient: func(c Interface, _ Namespace) clientCoreV1.NodeInterface {
 		return c.CoreV1().Nodes()
 	},
 	list: func(

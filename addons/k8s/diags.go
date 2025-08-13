@@ -4,8 +4,6 @@ import (
 	"context"
 	"path"
 
-	"k8s.io/client-go/kubernetes"
-
 	"fastcat.org/go/gdev/addons/diags"
 )
 
@@ -45,7 +43,7 @@ func accessorSource[
 	Apply apply[Apply],
 ](
 	acc accessor[Client, Resource, Apply],
-	kc kubernetes.Interface,
+	kc Interface,
 	namespace Namespace,
 ) diags.SourceFunc {
 	client := acc.getClient(kc, Namespace(namespace))
