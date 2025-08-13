@@ -68,6 +68,9 @@ func (c *cmd) Run() error {
 		name := filepath.Base(c.Path)
 		if name == "go" && len(c.Args) > 1 {
 			name += " " + c.Args[1]
+			if c.Args[1] == "tool" && len(c.Args) > 2 {
+				name += " " + c.Args[2]
+			}
 		}
 		return fmt.Errorf("%s: %w", name, err)
 	}
