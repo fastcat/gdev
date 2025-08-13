@@ -84,13 +84,14 @@ func doAptInstall(ctx *Context) error {
 	if len(pkgSet) == 0 {
 		return nil
 	}
-	cna := []string{"apt", "install", "--no-install-recommends"}
+	cna := []string{"apt", "install", "--no-install-recommends", "--yes"}
+	offset := len(cna)
 	for pkg := range pkgSet {
 		cna = append(cna, pkg)
 	}
 	// make printing deterministic
 	slices.Sort(cna[3:])
-	fmt.Printf("Installing: %s\n", strings.Join(cna[3:], " "))
+	fmt.Printf("Installing: %s\n", strings.Join(cna[offset:], " "))
 	if _, err := shx.Run(
 		ctx,
 		cna,

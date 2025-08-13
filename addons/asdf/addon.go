@@ -100,7 +100,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 	const pluginsName = "Install asdf plugins"
 	const toolsName = "Install asdf tools"
 	const configsName = "Configure asdf tool defaults"
-	bootstrap.WithSteps(
+	bootstrap.Configure(bootstrap.WithSteps(
 		bootstrap.NewStep(
 			installName,
 			installAsdf,
@@ -108,7 +108,8 @@ var configureBootstrap = sync.OnceFunc(func() {
 		bootstrap.NewStep(
 			pluginsName,
 			installPlugins,
-			bootstrap.AfterSteps(installName),
+			// plugin install needs git
+			bootstrap.AfterSteps(installName, bootstrap.StepNameAptInstall),
 		),
 		bootstrap.NewStep(
 			toolsName,
@@ -120,7 +121,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			configureTools,
 			bootstrap.AfterSteps(toolsName),
 		),
-	)
+	))
 })
 
 func installAsdf(ctx *bootstrap.Context) error {
@@ -195,6 +196,15 @@ func installAsdf(ctx *bootstrap.Context) error {
 	}
 	if err := os.Rename(tfn, filepath.Join(destDir, "asdf")); err != nil {
 		return fmt.Errorf("failed to install asdf binary to %s: %w", destDir, err)
+	}
+
+	// ~/.local/bin might not be in the PATH because most bashrc setups only add
+	// it if it exists. Make sure it's there now so we can run the just-installed
+	// copy.
+	if slices.Index(filepath.SplitList(os.Getenv("PATH")), destDir) < 0 {
+		if err := os.Setenv("PATH", destDir+string(os.PathListSeparator)+os.Getenv("PATH")); err != nil {
+			return fmt.Errorf("failed to add %s to PATH: %w", destDir, err)
+		}
 	}
 
 	return nil
