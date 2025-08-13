@@ -64,9 +64,16 @@ func (c *GitHubClient) DoAndParse(req *http.Request, respData any) error {
 }
 
 func (c *GitHubClient) Release(ctx context.Context, owner, repo, tag string) (*GitHubRelease, error) {
-	// /repos/{owner}/{repo}/releases/tags/{tag}
+	var urlPath string
+	if tag == "latest" {
+		// https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#get-the-latest-release
+		urlPath = path.Join("/repos", owner, repo, "releases", "latest")
+	} else {
+		// https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#get-a-release-by-tag-name
+		urlPath = path.Join("/repos", owner, repo, "releases", "tags", tag)
+	}
 	var resp GitHubRelease
-	if err := c.Get(ctx, path.Join("/repos", owner, repo, "releases", "tags", tag), &resp); err != nil {
+	if err := c.Get(ctx, urlPath, &resp); err != nil {
 		return nil, err
 	}
 	return &resp, nil
@@ -83,7 +90,8 @@ func (c *GitHubClient) Download(ctx context.Context, url string) (*http.Response
 }
 
 type GitHubRelease struct {
-	Assets []GitHubReleaseAsset `json:"assets"`
+	TagName string               `json:"tag_name"`
+	Assets  []GitHubReleaseAsset `json:"assets"`
 	// very incomplete
 }
 type GitHubReleaseAsset struct {
