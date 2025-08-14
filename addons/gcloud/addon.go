@@ -121,7 +121,7 @@ func LoginUser(ctx context.Context, allowedDomains []string) error {
 		if acct.Status != "ACTIVE" {
 			continue
 		}
-		if len(addon.Config.allowedDomains) == 0 {
+		if len(allowedDomains) == 0 {
 			loggedIn = true
 			break
 		}
@@ -129,7 +129,7 @@ func LoginUser(ctx context.Context, allowedDomains []string) error {
 		if !ok {
 			return fmt.Errorf("invalid account email, no @: %q", acct.Account)
 		}
-		if slices.Contains(addon.Config.allowedDomains, domain) {
+		if slices.Contains(allowedDomains, domain) {
 			loggedIn = true
 			break
 		}
