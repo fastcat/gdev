@@ -5,15 +5,18 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strings"
 	"sync"
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
+	"fastcat.org/go/gdev/addons/bootstrap/textedit"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/shx"
@@ -39,6 +42,15 @@ func init() {
 type config struct {
 	plugins []string
 	tools   []Tool
+
+	// alternate files in which to place the snippet to add the asdf shims to PATH
+	// and what type of snippet to put there. If unset, will put a posix snippet
+	// in `~/.profile`.
+	shimsFiles map[string]string
+	// alternate files in which to place the snippet to add the asdf shell
+	// completion. If unset, will put bash completion in `~/.bashrc`. Keys are
+	// filenames, values are the completion type.
+	completionFiles map[string]string
 }
 
 type Tool struct {
@@ -93,11 +105,72 @@ func WithTools(tools ...Tool) option {
 	}
 }
 
+// Changes the shell files where the asdf shims path snippet is added.
+//
+// By default, the posix shell snippet is added to `~/.profile`. If this option
+// is used, it overrides that, so if you want to add it to additional places you
+// must add an entry for `~/.profile` of type "sh".
+//
+// A leading `~/` is expanded to the user's home directory.
+//
+// Otherwise all paths must be absolute.
+func WithShimsFile(file, syntax string) option {
+	if strings.HasPrefix(file, "~/") {
+		file = filepath.Join(shx.HomeDir(), file[2:])
+	}
+	if !filepath.IsAbs(file) {
+		panic(fmt.Errorf("asdf shims file paths must be absolute: %q", file))
+	}
+	switch syntax {
+	case "bash", "zsh":
+		syntax = "sh"
+	case "sh", "fish", "elvish", "powershell", "nushell":
+		// ok
+	default:
+		panic(fmt.Errorf("unsupported asdf shims file syntax: %q", syntax))
+	}
+	return func(c *config) {
+		c.shimsFiles[file] = syntax
+	}
+}
+
+// Changes the shell files where the asdf completion snippet is added.
+//
+// By default, bash completion is added to `~/.bashrc`. If this option is used,
+// it overrides that, so if you want to add it to additional places without
+// removing the bashrc one, you must make a call to re-add the bashrc entry.
+//
+// A leading `~/` is expanded to the user's home directory.
+//
+// Otherwise all paths must be absolute.
+func WithCompletionFile(file, completionType string) option {
+	if strings.HasPrefix(file, "~/") {
+		file = filepath.Join(shx.HomeDir(), file[2:])
+	}
+	if !filepath.IsAbs(file) {
+		panic(fmt.Errorf("asdf completion file paths must be absolute: %q", file))
+	}
+	switch completionType {
+	// supported completions taken from asdf v0.18.0:
+	case "bash", "elvish", "fish", "nushell", "zsh":
+	default:
+		panic(fmt.Errorf("unsupported asdf completion type: %q", completionType))
+	}
+	return func(c *config) {
+		if c.completionFiles == nil {
+			c.completionFiles = make(map[string]string)
+		}
+		c.completionFiles[file] = completionType
+	}
+}
+
 var configureBootstrap = sync.OnceFunc(func() {
 	const installName = "Install asdf"
 	const pluginsName = "Install asdf plugins"
 	const toolsName = "Install asdf tools"
 	const configsName = "Configure asdf tool defaults"
+	const shimsName = "Configure asdf in shell"
+	const depsName = "Select asdf completion dependencies"
 	bootstrap.Configure(bootstrap.WithSteps(
 		bootstrap.NewStep(
 			installName,
@@ -118,6 +191,22 @@ var configureBootstrap = sync.OnceFunc(func() {
 			configsName,
 			configureTools,
 			bootstrap.AfterSteps(toolsName),
+		),
+		bootstrap.NewStep(
+			shimsName,
+			configureShell,
+			bootstrap.AfterSteps(installName),
+		),
+		bootstrap.NewStep(
+			depsName,
+			func(ctx *bootstrap.Context) error {
+				if len(addon.Config.completionFiles) == 0 ||
+					internal.SeqContains(maps.Values(addon.Config.completionFiles), "bash") {
+					apt.AddPackages(ctx, "bash-completion")
+				}
+				return nil
+			},
+			bootstrap.BeforeSteps(apt.StepNameInstall),
 		),
 	))
 })
@@ -269,6 +358,80 @@ func configureTools(ctx *bootstrap.Context) error {
 				"failed to configure asdf tool %s version %s as default: %w",
 				tool.Name, tool.Version, err,
 			)
+		}
+	}
+	return nil
+}
+
+func configureShell(ctx *bootstrap.Context) error {
+	if err := configureShims(ctx); err != nil {
+		return err
+	}
+	if err := configureCompletion(ctx); err != nil {
+		return err
+	}
+	return nil
+}
+
+func configureShims(_ *bootstrap.Context) error {
+	files := addon.Config.shimsFiles
+	if len(files) == 0 {
+		files = map[string]string{filepath.Join(shx.HomeDir(), ".profile"): "sh"}
+	}
+	for file, syntax := range files {
+		var editor textedit.Editor
+		switch syntax {
+		case "sh":
+			editor = textedit.SpliceRange(
+				fmt.Sprintf("# %s: setup asdf shims in PATH", instance.AppName()),
+				// NOTE: this is sourced via dash, so must be _strictly_ POSIX sh, no bashisms!
+				// this is a fancier snippet than the asdf docs provide
+				`_asdfshims() {`, //cspell:ignore asdfshims
+				`	local shims="${ASDF_DATA_DIR:-$HOME/.asdf}/shims"`,
+				`	case "$PATH" in`,
+				`		"$shims":*|*:"$shims":*|*:"$shims") ;;`,
+				`		*) export PATH="$shims:$PATH"`,
+				`	esac`, //cspell:ignore esac
+				`}`,
+				`_asdfshims`,
+				`unset -f _asdfshims`,
+				fmt.Sprintf("# %s end asdf shims setup", instance.AppName()),
+			)
+		default:
+			return fmt.Errorf("asdf shims file syntax %s not yet implemented", syntax)
+		}
+		fmt.Printf("Configuring asdf shims in %s...\n", file)
+		if err := textedit.EditFile(file, editor); err != nil {
+			return fmt.Errorf("failed to configure asdf shims in %s: %w", file, err)
+		}
+	}
+	return nil
+}
+
+func configureCompletion(_ *bootstrap.Context) error {
+	filesMap := addon.Config.completionFiles
+	if len(filesMap) == 0 {
+		filesMap = map[string]string{filepath.Join(shx.HomeDir(), ".bashrc"): "bash"}
+	}
+	for f, completionType := range filesMap {
+		var editor textedit.Editor
+		switch completionType {
+		case "bash":
+			// bashrc is often sourced before ~/.local/bin is added to PATH, so we
+			// include the full path here. While the snippet is just a single line, we
+			// use the range markers in case we change the format of this path hack.
+			asdfPath := filepath.Join(shx.HomeDir(), ".local", "bin", "asdf")
+			editor = textedit.SpliceRange(
+				fmt.Sprintf("# %s: setup asdf completion", instance.AppName()),
+				fmt.Sprintf(". <(%s completion bash)", asdfPath),
+				fmt.Sprintf("# %s end asdf completion setup", instance.AppName()),
+			)
+		default:
+			return fmt.Errorf("asdf %s completion not yet implemented", completionType)
+		}
+		fmt.Printf("Configuring asdf %s completion in %s...\n", completionType, f)
+		if err := textedit.EditFile(f, editor); err != nil {
+			return fmt.Errorf("failed to configure asdf %s completion in %s: %w", completionType, f, err)
 		}
 	}
 	return nil

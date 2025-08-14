@@ -74,3 +74,12 @@ func (r *pullReader) Close() error {
 	r.next = nil
 	return nil
 }
+
+func SeqContains[T comparable](src iter.Seq[T], v T) bool {
+	for item := range src {
+		if item == v {
+			return true
+		}
+	}
+	return false
+}
