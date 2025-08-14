@@ -27,7 +27,15 @@ func NameFromOS() Provider[string] {
 }
 
 func readGitConfigString(ctx context.Context, name string) (string, error) {
-	res, err := shx.Run(ctx, []string{"git", "config", "--global", "--includes", name},
+	// use the legacy `--get` option to avoid any possible ambiguity
+	res, err := shx.Run(ctx, []string{
+		"git",
+		"config",
+		"--global",
+		"--includes",
+		"--get",
+		name,
+	},
 		shx.CaptureOutput(),
 	)
 	if err != nil {
@@ -77,8 +85,12 @@ func WriteGitConfigString(name string) Writer[string] {
 			// no change, don't write
 			return nil
 		}
-		if _, err := shx.Run(ctx, []string{"git", "config", "set", "--global", name, value},
+		// modern git supports `config set --global name value`, but older versions
+		// are still common, e.g. Ubuntu 24.04, so use the legacy syntax that omits
+		// the `set` verb.
+		if _, err := shx.Run(ctx, []string{"git", "config", "--global", name, value},
 			shx.PassOutput(),
+			shx.WithCombinedError(),
 		); err != nil {
 			return err
 		}
