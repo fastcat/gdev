@@ -34,7 +34,7 @@ func GHLoginStep(opts GHLoginOpts) *bootstrap.Step {
 		loginCmd = append(loginCmd, "--scopes", strings.Join(opts.Scopes, ","))
 	}
 	return bootstrap.NewStep(
-		AuthLoginStepName,
+		StepNameAuthLogin,
 		func(ctx *bootstrap.Context) error {
 			// check if it's already logged in
 			if res, err := shx.Run(ctx, checkCmd, shx.CaptureCombined()); err != nil {
@@ -70,4 +70,4 @@ func GHLoginStep(opts GHLoginOpts) *bootstrap.Step {
 	)
 }
 
-const AuthLoginStepName = "gh auth login"
+const StepNameAuthLogin = "gh auth login"
