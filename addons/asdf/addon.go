@@ -13,6 +13,7 @@ import (
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/bootstrap/apt"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/shx"
@@ -106,7 +107,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			pluginsName,
 			installPlugins,
 			// plugin install needs git
-			bootstrap.AfterSteps(installName, bootstrap.StepNameAptInstall),
+			bootstrap.AfterSteps(installName, apt.StepNameInstall),
 		),
 		bootstrap.NewStep(
 			toolsName,

@@ -41,8 +41,8 @@ func main() {
 	// enable all addons we can in the main build so everything gets compiled, etc.
 
 	bootstrap.Configure(
-		bootstrap.WithAptPackages("Select Go packages for install", "golang"),
-		bootstrap.WithAptPackages("Select git packages for install", "git", "git-lfs", "git-crypt"),
+		apt.WithPackages("Select Go packages for install", "golang"),
+		apt.WithPackages("Select git packages for install", "git", "git-lfs", "git-crypt"),
 		bootstrap.WithSteps(shellRCSteps()...),
 		bootstrap.WithSteps(input.UserInfoStep()),
 		bootstrap.WithSteps(apt.PublicSourceInstallSteps(
@@ -57,7 +57,7 @@ func main() {
 		)...),
 		// TODO: decompose to an add... step with a filter function to skip it on
 		// headless systems (once the skip feature is available)
-		bootstrap.WithAptPackages(
+		apt.WithPackages(
 			"Select desktop tools",
 			"firefox",
 			"google-chrome-stable",

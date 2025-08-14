@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/bootstrap/apt"
 	"fastcat.org/go/gdev/addons/bootstrap/internal"
 	"fastcat.org/go/gdev/shx"
 )
@@ -118,6 +119,6 @@ func UserInfoStep() *bootstrap.Step {
 		UserNamePrompt(),
 		GitHubUserPrompt(),
 	).With(
-		bootstrap.AfterSteps(bootstrap.StepNameAptInstall),
+		bootstrap.AfterSteps(apt.StepNameInstall),
 	)
 }

@@ -16,7 +16,7 @@ func AddPackageIfAvailable(stepName, packageName string) *bootstrap.Step {
 		if avail, err := AptAvailable(ctx); err != nil {
 			return err
 		} else if _, ok := avail[packageName]; ok {
-			bootstrap.AddAptPackages(ctx, packageName)
+			AddPackages(ctx, packageName)
 		} else {
 			fmt.Printf("Package %s is not available, skipping\n", packageName)
 		}
@@ -28,8 +28,8 @@ func AddPackageIfAvailable(stepName, packageName string) *bootstrap.Step {
 		// won't be entirely accurate if run in sim due to maybe not having all the
 		// apt data, but better than nothing
 		bootstrap.SimFunc(mark),
-		bootstrap.BeforeSteps(bootstrap.StepNameAptInstall),
-		bootstrap.AfterSteps(bootstrap.StepNameAptUpdate),
+		bootstrap.BeforeSteps(StepNameInstall),
+		bootstrap.AfterSteps(StepNameUpdate),
 	)
 }
 
@@ -48,7 +48,7 @@ func AddFirstAvailable(
 		for _, pkg := range candidates {
 			if _, ok := avail[pkg]; ok {
 				// this will print a message, we don't need to
-				bootstrap.AddAptPackages(ctx, pkg)
+				AddPackages(ctx, pkg)
 				return nil
 			}
 		}
@@ -62,7 +62,7 @@ func AddFirstAvailable(
 		mark,
 		// same sim accuracy caveat as [AddPackageIfAvailable]
 		bootstrap.SimFunc(mark),
-		bootstrap.BeforeSteps(bootstrap.StepNameAptInstall),
-		bootstrap.AfterSteps(bootstrap.StepNameAptUpdate),
+		bootstrap.BeforeSteps(StepNameInstall),
+		bootstrap.AfterSteps(StepNameUpdate),
 	)
 }

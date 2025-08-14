@@ -29,7 +29,7 @@ type config struct {
 	plan         *plan
 }
 
-func Configure(opts ...option) {
+func Configure(opts ...Option) {
 	addon.CheckNotInitialized()
 	for _, o := range opts {
 		o(&addon.Config)
@@ -61,7 +61,7 @@ func initialize() error {
 	return nil
 }
 
-type option func(*config)
+type Option func(*config)
 
 type cmdBuilder interface {
 	Build() *cobra.Command
@@ -73,7 +73,7 @@ func (f cmdFunc) Build() *cobra.Command { return f() }
 type staticCmd cobra.Command
 
 func (c *staticCmd) Build() *cobra.Command { return (*cobra.Command)(c) }
-func WithChildCmdBuilders(fns ...func() *cobra.Command) option {
+func WithChildCmdBuilders(fns ...func() *cobra.Command) Option {
 	return func(c *config) {
 		for _, fn := range fns {
 			c.cmdFactories = append(c.cmdFactories, cmdFunc(fn))
@@ -81,7 +81,7 @@ func WithChildCmdBuilders(fns ...func() *cobra.Command) option {
 	}
 }
 
-func WithChildCmds(cmds ...*cobra.Command) option {
+func WithChildCmds(cmds ...*cobra.Command) Option {
 	return func(c *config) {
 		for _, cmd := range cmds {
 			c.cmdFactories = append(c.cmdFactories, (*staticCmd)(cmd))
@@ -89,7 +89,7 @@ func WithChildCmds(cmds ...*cobra.Command) option {
 	}
 }
 
-func WithSteps(steps ...*Step) option {
+func WithSteps(steps ...*Step) Option {
 	return func(c *config) {
 		c.plan.AddSteps(steps...)
 	}

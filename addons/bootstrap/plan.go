@@ -172,3 +172,19 @@ func (p *plan) AddDefaultSteps() {
 }
 
 var defaultStepFactories = map[string]func() *Step{}
+
+// WithDefaultStepFactory registers a function that will be called to create a
+// default step with the given name. This is used to register steps that are
+// referenced in existing step dependencies but not already added to the plan.
+//
+// These steps essentially will be run if and only if some other step depends on
+// them.
+//
+// Normally this should only be used by bootstrap internals.
+func WithDefaultStepFactory(name string, f func() *Step) {
+	addon.CheckNotInitialized()
+	if _, ok := defaultStepFactories[name]; ok {
+		panic(fmt.Errorf("default step factory %s already registered", name))
+	}
+	defaultStepFactories[name] = f
+}

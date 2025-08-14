@@ -13,7 +13,7 @@ import (
 
 var configureBootstrap = sync.OnceFunc(func() {
 	bootstrap.Configure(
-		bootstrap.WithAptPackages(
+		apt.WithPackages(
 			"Select common Docker packages",
 			"docker.io",
 			"docker-buildx",
@@ -46,7 +46,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 				}
 				return nil
 			}),
-			bootstrap.AfterSteps(bootstrap.StepNameAptInstall),
+			bootstrap.AfterSteps(apt.StepNameInstall),
 		)),
 	)
 })

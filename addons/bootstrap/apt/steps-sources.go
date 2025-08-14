@@ -19,7 +19,7 @@ func SourceInstallStep(
 			if _, err := installer.Install(ctx); err != nil {
 				return err
 			}
-			bootstrap.ChangedAptSources(ctx)
+			ChangedSources(ctx)
 			return nil
 		},
 	).With(
@@ -27,7 +27,7 @@ func SourceInstallStep(
 			if _, err := installer.Sim(ctx); err != nil {
 				return err
 			}
-			bootstrap.ChangedAptSources(ctx)
+			ChangedSources(ctx)
 			return nil
 		}),
 	).With(opts...)
@@ -43,7 +43,7 @@ func PublicSourceInstallSteps(
 	for _, installer := range installers {
 		steps = append(steps, SourceInstallStep(
 			installer,
-			bootstrap.BeforeSteps(bootstrap.StepNameAptUpdate),
+			bootstrap.BeforeSteps(StepNameUpdate),
 		))
 	}
 	return steps

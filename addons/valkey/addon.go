@@ -5,6 +5,7 @@ import (
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/bootstrap/apt"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/stack"
 )
@@ -54,7 +55,7 @@ func WithService(opts ...valkeySvcOpt) option {
 }
 
 var configureBootstrap = sync.OnceFunc(func() {
-	bootstrap.Configure(bootstrap.WithAptPackages(
+	bootstrap.Configure(apt.WithPackages(
 		"Select Valkey client packages",
 		"valkey-tools",
 	))
