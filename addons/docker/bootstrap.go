@@ -7,18 +7,31 @@ import (
 	"sync"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/bootstrap/apt"
 	"fastcat.org/go/gdev/shx"
 )
 
 var configureBootstrap = sync.OnceFunc(func() {
 	bootstrap.Configure(
 		bootstrap.WithAptPackages(
-			"Select Docker packages",
+			"Select common Docker packages",
 			"docker.io",
-			// TODO: use docker-compose-v2 where available (newer systems the base package _is_ v2)
-			"docker-compose",
 			"docker-buildx",
-			// TODO: docker-cli where available, missing on ubuntu 24.04, debian 12 (bookworm)
+		),
+		bootstrap.WithSteps(
+			apt.AddPackageIfAvailable(
+				"Select docker-cli if needed",
+				// this is only on Ubuntu 25.04+ and Debian 13+
+				"docker-cli",
+			),
+			apt.AddFirstAvailable(
+				"Select docker-compose",
+				// Older Ubuntu has compose v2 in a separate package.
+				// Older Debian doesn't have it at all.
+				// Newer Ubuntu and Debian have it in the base package.
+				"docker-compose-v2",
+				"docker-compose",
+			),
 		),
 		bootstrap.WithSteps(bootstrap.NewStep(
 			"Add user to docker group",

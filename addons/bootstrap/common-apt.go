@@ -134,8 +134,15 @@ func AddAptPackages(ctx *Context, names ...string) {
 		pkgSet = map[string]struct{}{}
 		Save(ctx, pendingPackages, pkgSet)
 	}
+	added := []string{}
 	for _, name := range names {
-		pkgSet[name] = struct{}{}
+		if _, ok := pkgSet[name]; !ok {
+			added = append(added, name)
+			pkgSet[name] = struct{}{}
+		}
+	}
+	if len(added) > 0 {
+		fmt.Printf("Queued packages to install: %s\n", strings.Join(added, " "))
 	}
 }
 

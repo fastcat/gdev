@@ -32,3 +32,7 @@ func Set[T any](ctx *Context, k InfoKey[T], v T) {
 func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
 	return internal.Get(ctx, k)
 }
+
+func Clear[T any](ctx *Context, k InfoKey[T]) {
+	internal.Clear(ctx, k)
+}

@@ -36,7 +36,7 @@ func TestFormatDeb822(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := &bytes.Buffer{}
-			require.NoError(t, FormatDeb822(tt.content, got))
+			require.NoError(t, FormatDeb822Stanza(tt.content, deb822SourcesFirstKeys, got))
 			gotLines := strings.Split(strings.TrimSpace(got.String()), "\n")
 			assert.ElementsMatch(t, tt.want, gotLines)
 		})

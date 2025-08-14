@@ -41,6 +41,13 @@ func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
 	return v.(T), ok
 }
 
+func Clear[T any](ctx *Context, k InfoKey[T]) {
+	if _, ok := ctx.info[k]; !ok {
+		panic(fmt.Errorf("not saved %s for %v", k.k, k.typ()))
+	}
+	delete(ctx.info, k)
+}
+
 func (ctx *Context) Value(key any) any {
 	if k, ok := key.(AnyInfoKey); ok {
 		return ctx.info[k]

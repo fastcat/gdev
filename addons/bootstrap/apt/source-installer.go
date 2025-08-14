@@ -52,7 +52,7 @@ func (i *SourceInstaller) prepare() (filename string, content *bytes.Buffer, err
 	var ext string
 	if i.Deb822 {
 		content = &bytes.Buffer{}
-		if err := FormatDeb822(i.Source.ToDeb822(), content); err != nil {
+		if err := FormatDeb822Stanza(i.Source.ToDeb822(), deb822SourcesFirstKeys, content); err != nil {
 			return "", nil, fmt.Errorf("failed to format deb822 for %q: %w", i.SourceName, err)
 		}
 		ext = ".sources"
@@ -78,7 +78,7 @@ func (i *SourceInstaller) install(
 		}
 	} else if bytes.Equal(existing, content.Bytes()) {
 		listEq = true
-	} else if e822, err := ParseDeb822(bytes.NewReader(existing)); err == nil {
+	} else if e822, err := ParseDeb822Stanza(bytes.NewReader(existing)); err == nil {
 		if existingSrc, err := FromDeb822(e822); err == nil && i.Source.Equal(existingSrc) {
 			// semantically equal, don't bother rewriting the file
 			listEq = true
