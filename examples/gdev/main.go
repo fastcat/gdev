@@ -17,6 +17,7 @@ import (
 	"fastcat.org/go/gdev/addons/docker"
 	"fastcat.org/go/gdev/addons/gcs"
 	gcs_k8s "fastcat.org/go/gdev/addons/gcs/k8s"
+	"fastcat.org/go/gdev/addons/github"
 	"fastcat.org/go/gdev/addons/gocache"
 	gocache_gcs "fastcat.org/go/gdev/addons/gocache/gcs"
 	gocache_http "fastcat.org/go/gdev/addons/gocache/http"
@@ -42,7 +43,10 @@ func main() {
 
 	bootstrap.Configure(
 		apt.WithPackages("Select Go packages for install", "golang"),
-		apt.WithPackages("Select git packages for install", "git", "git-lfs", "git-crypt"),
+		apt.WithPackages("Select git packages for install",
+			"git", "git-lfs", "git-crypt",
+			"gh",
+		),
 		bootstrap.WithSteps(shellRCSteps()...),
 		bootstrap.WithSteps(input.UserInfoStep()),
 		bootstrap.WithSteps(apt.PublicSourceInstallSteps(
@@ -65,6 +69,7 @@ func main() {
 			"slack-desktop",
 			"dbeaver-ce",
 		),
+		bootstrap.WithSteps(github.GHLoginStep(github.GHLoginOpts{})),
 		// many things will add more options
 	)
 	pm.Configure()
