@@ -171,3 +171,15 @@ func WithSudo(purpose string) Option {
 		)
 	})
 }
+
+func WithSudoUser(user, purpose string) Option {
+	return optionCmdFunc(func(c *Cmd) {
+		c.cmdAndArgs = append([]string{"sudo", "-u", user}, c.cmdAndArgs...)
+		c.env["SUDO_ASKPASS"] = "1"
+		c.env["SUDO_PROMPT"] = fmt.Sprintf(
+			"%s needs the password for %%p to %s: ",
+			internal.AppName(),
+			purpose,
+		)
+	})
+}
