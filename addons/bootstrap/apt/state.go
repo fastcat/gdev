@@ -122,11 +122,18 @@ func AptAvailable(ctx *bootstrap.Context) (map[string]string, error) {
 
 	s := bufio.NewScanner(res.Stdout())
 	s.Split(Deb822SplitStanza)
+	// some stanzas are big! empirical testing finds ~70KiB, but there's little
+	// reason not to allow it to get bigger
+	s.Buffer(nil, 1024*1024)
 	for s.Scan() {
 		stanza := s.Bytes()
 		parsed, err := ParseDeb822Stanza(bytes.NewReader(stanza))
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse apt-cache dumpavail stanza: %w", err)
+		}
+		lines := len(bytes.Split(stanza, []byte{'\n'}))
+		if lines > 50 {
+			return nil, fmt.Errorf("apt-cache dumpavail stanza too long (%d lines), expected at most 50", lines)
 		}
 		pkg, ok := parsed["Package"]
 		if !ok {
@@ -137,6 +144,9 @@ func AptAvailable(ctx *bootstrap.Context) (map[string]string, error) {
 			return nil, fmt.Errorf("missing Version field for package %s in apt-cache dumpavail stanza", pkg)
 		}
 		data.data[pkg] = ver
+	}
+	if err := s.Err(); err != nil {
+		return nil, fmt.Errorf("error reading apt-cache dumpavail: %w", err)
 	}
 	bootstrap.Save(ctx, availableKey, data)
 	return data.data, nil
