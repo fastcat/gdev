@@ -1,8 +1,8 @@
-package internal
+package httpx
 
 import "net/http"
 
-func withBearer(base http.RoundTripper, token string) http.RoundTripper {
+func WithBearer(base http.RoundTripper, token string) http.RoundTripper {
 	return &withHeaders{base, map[string]string{"authorization": "Bearer " + token}}
 }
 

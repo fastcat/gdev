@@ -14,8 +14,8 @@ import (
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/github"
 	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/shx"
 )
 
@@ -67,8 +67,8 @@ var configureBootstrap = sync.OnceFunc(func() {
 func installUV(ctx *bootstrap.Context) error {
 	fmt.Println("Installing uv python environment manager...")
 
-	ghc := internal.NewGitHubClient()
-	rel, err := ghc.Release(ctx, "astral-sh", "uv", "latest")
+	ghc := github.NewClient()
+	rel, err := ghc.GetRelease(ctx, "astral-sh", "uv", "latest")
 	if err != nil {
 		return fmt.Errorf("failed to fetch uv release: %w", err)
 	}
@@ -84,7 +84,7 @@ func installUV(ctx *bootstrap.Context) error {
 	}
 	baseName := "uv-" + arch + "-unknown-" + runtime.GOOS + "-gnu"
 	assetName := baseName + ".tar.gz"
-	i := slices.IndexFunc(rel.Assets, func(a internal.GitHubReleaseAsset) bool { return a.Name == assetName })
+	i := slices.IndexFunc(rel.Assets, func(a github.ReleaseAsset) bool { return a.Name == assetName })
 	if i < 0 {
 		return fmt.Errorf("uv release %s has no asset %s", rel.TagName, assetName)
 	}

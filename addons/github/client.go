@@ -1,4 +1,4 @@
-package internal
+package github
 
 import (
 	"context"
@@ -10,32 +10,32 @@ import (
 	"fastcat.org/go/gdev/lib/httpx"
 )
 
-// GitHubClient provides a rudimentary client for acccessing GitHub resources
+// Client provides a rudimentary client for acccessing GitHub resources
 // over its REST api, without pulling in large dependencies.
-type GitHubClient struct {
+type Client struct {
 	c *http.Client
 }
 
-func NewGitHubClient(opts ...ghClientOpt) *GitHubClient {
-	c := &GitHubClient{c: http.DefaultClient}
+func NewClient(opts ...ClientOpt) *Client {
+	c := &Client{c: http.DefaultClient}
 	for _, o := range opts {
 		o(c)
 	}
 	return c
 }
 
-type ghClientOpt func(*GitHubClient)
+type ClientOpt func(*Client)
 
-func WithToken(token string) ghClientOpt {
-	return func(c *GitHubClient) {
+func WithToken(token string) ClientOpt {
+	return func(c *Client) {
 		if c.c == http.DefaultClient {
 			c.c = &http.Client{Transport: http.DefaultTransport}
 		}
-		c.c.Transport = withBearer(c.c.Transport, token)
+		c.c.Transport = httpx.WithBearer(c.c.Transport, token)
 	}
 }
 
-func (c *GitHubClient) Get(ctx context.Context, path string, respData any) error {
+func (c *Client) Get(ctx context.Context, path string, respData any) error {
 	if req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
@@ -49,11 +49,11 @@ func (c *GitHubClient) Get(ctx context.Context, path string, respData any) error
 	return nil
 }
 
-func (c *GitHubClient) Do(req *http.Request) (*http.Response, error) {
+func (c *Client) Do(req *http.Request) (*http.Response, error) {
 	return c.c.Do(req)
 }
 
-func (c *GitHubClient) DoAndParse(req *http.Request, respData any) error {
+func (c *Client) DoAndParse(req *http.Request, respData any) error {
 	resp, err := c.Do(req)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (c *GitHubClient) DoAndParse(req *http.Request, respData any) error {
 	return d.Decode(respData)
 }
 
-func (c *GitHubClient) Release(ctx context.Context, owner, repo, tag string) (*GitHubRelease, error) {
+func (c *Client) GetRelease(ctx context.Context, owner, repo, tag string) (*Release, error) {
 	var urlPath string
 	if tag == "latest" {
 		// https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#get-the-latest-release
@@ -74,14 +74,14 @@ func (c *GitHubClient) Release(ctx context.Context, owner, repo, tag string) (*G
 		// https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#get-a-release-by-tag-name
 		urlPath = path.Join("/repos", owner, repo, "releases", "tags", tag)
 	}
-	var resp GitHubRelease
+	var resp Release
 	if err := c.Get(ctx, urlPath, &resp); err != nil {
 		return nil, err
 	}
 	return &resp, nil
 }
 
-func (c *GitHubClient) Download(ctx context.Context, url string) (*http.Response, error) {
+func (c *Client) Download(ctx context.Context, url string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -91,12 +91,12 @@ func (c *GitHubClient) Download(ctx context.Context, url string) (*http.Response
 	return c.Do(req)
 }
 
-type GitHubRelease struct {
-	TagName string               `json:"tag_name"`
-	Assets  []GitHubReleaseAsset `json:"assets"`
+type Release struct {
+	TagName string         `json:"tag_name"`
+	Assets  []ReleaseAsset `json:"assets"`
 	// very incomplete
 }
-type GitHubReleaseAsset struct {
+type ReleaseAsset struct {
 	URL string `json:"url"`
 	// BrowserDownloadURL string `json:"browser_download_url"`
 

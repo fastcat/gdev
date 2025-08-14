@@ -11,8 +11,8 @@ import (
 	"slices"
 	"strings"
 
+	"fastcat.org/go/gdev/addons/github"
 	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/shx"
 	"fastcat.org/go/gdev/sys"
 )
@@ -38,8 +38,8 @@ func InstallStable(ctx context.Context, path string) error {
 		return nil
 	}
 
-	ghc := internal.NewGitHubClient()
-	rel, err := ghc.Release(ctx, "k3s-io", "k3s", ver)
+	ghc := github.NewClient()
+	rel, err := ghc.GetRelease(ctx, "k3s-io", "k3s", ver)
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func InstallStable(ctx context.Context, path string) error {
 	if runtime.GOARCH != "amd64" {
 		assetName += "-" + runtime.GOARCH
 	}
-	i := slices.IndexFunc(rel.Assets, func(a internal.GitHubReleaseAsset) bool { return a.Name == assetName })
+	i := slices.IndexFunc(rel.Assets, func(a github.ReleaseAsset) bool { return a.Name == assetName })
 	if i < 0 {
 		return fmt.Errorf("k3s release %s has no asset %s", ver, assetName)
 	}

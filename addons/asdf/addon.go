@@ -17,6 +17,7 @@ import (
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
 	"fastcat.org/go/gdev/addons/bootstrap/textedit"
+	"fastcat.org/go/gdev/addons/github"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/shx"
@@ -217,14 +218,14 @@ func installAsdf(ctx *bootstrap.Context) error {
 	// TODO: check installed version and at least print some info, maybe skip
 	// upgrade if latest version is already installed.
 
-	ghc := internal.NewGitHubClient()
-	rel, err := ghc.Release(ctx, "asdf-vm", "asdf", "latest")
+	ghc := github.NewClient()
+	rel, err := ghc.GetRelease(ctx, "asdf-vm", "asdf", "latest")
 	if err != nil {
 		return fmt.Errorf("failed to fetch asdf release: %w", err)
 	}
 	// e.g. asdf-v0.18.0-linux-amd64.tar.gz
 	assetName := "asdf-" + rel.TagName + "-" + runtime.GOOS + "-" + runtime.GOARCH + ".tar.gz"
-	i := slices.IndexFunc(rel.Assets, func(a internal.GitHubReleaseAsset) bool { return a.Name == assetName })
+	i := slices.IndexFunc(rel.Assets, func(a github.ReleaseAsset) bool { return a.Name == assetName })
 	if i < 0 {
 		return fmt.Errorf("asdf release %s has no asset %s", rel.TagName, assetName)
 	}
