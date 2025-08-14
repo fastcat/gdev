@@ -12,11 +12,11 @@ import (
 	"fastcat.org/go/gdev/shx"
 )
 
-// NameFromPasswd guesses the user's name from the system's passwd file.
+// NameFromOS guesses the user's name from the system user info.
 //
 // This should not be trusted to use as a Loader, since container and other
 // environments often have nonsense here.
-func NameFromPasswd() Provider[string] {
+func NameFromOS() Provider[string] {
 	return func(ctx context.Context) (string, bool, error) {
 		u, err := user.Current()
 		if err != nil {
@@ -91,16 +91,33 @@ var (
 	GitHubUserKey = internal.NewKey[string]("github user")
 )
 
+// UserNamePrompt prompts for the `user.name` git setting, guessing it from the
+// OS username.
 func UserNamePrompt() *Prompter[string] {
 	return TextPrompt(
 		UserNameKey,
 		"What's your full name?",
 		WithLoaders(ReadGitConfigString("user.name")),
-		WithGuessers(NameFromPasswd()),
+		WithGuessers(NameFromOS()),
 		WithWriters(WriteGitConfigString("user.name")),
 	)
 }
 
+// UserEmailPrompt prompts for the `user.email` git setting, with no guessing.
+//
+// TODO: allow providing a custom guesser for this, since most companies will
+// have predictable emails from the person's name.
+func UserEmailPrompt() *Prompter[string] {
+	return TextPrompt(
+		internal.NewKey[string]("user email"),
+		"What's your email address (for git)?",
+		WithLoaders(ReadGitConfigString("user.email")),
+		// no good guessing rule here sadly
+		WithWriters(WriteGitConfigString("user.email")),
+	)
+}
+
+// GitHubUserPrompt prompts for the `github.user` git setting, with no guessing.
 func GitHubUserPrompt() *Prompter[string] {
 	return TextPrompt(
 		GitHubUserKey,
@@ -113,10 +130,15 @@ func GitHubUserPrompt() *Prompter[string] {
 
 const StepNameUserInfo = "Get user info"
 
+// UserInfoStep returns a bootstrap step that prompts for the user's name,
+// email, and GitHub username.
+//
+// TODO: add a way to customize the email guessing, see [UserEmailPrompt].
 func UserInfoStep() *bootstrap.Step {
 	return PromptStep(
 		StepNameUserInfo,
 		UserNamePrompt(),
+		UserEmailPrompt(),
 		GitHubUserPrompt(),
 	).With(
 		bootstrap.AfterSteps(apt.StepNameInstall),
