@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/lib/httpx"
 )
 
 // partial structure for parsing https://update.k3s.io/v1-release/channels
@@ -42,8 +42,8 @@ func getK3SChannels(
 		return nil, err
 	}
 	defer resp.Body.Close() //nolint:errcheck
-	if !internal.IsHTTPOk(resp) {
-		return nil, internal.HTTPResponseErr(resp, "failed to query k3s release channels")
+	if !httpx.IsHTTPOk(resp) {
+		return nil, httpx.HTTPResponseErr(resp, "failed to query k3s release channels")
 	}
 
 	d := json.NewDecoder(resp.Body)

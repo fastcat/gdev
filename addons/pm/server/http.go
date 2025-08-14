@@ -15,6 +15,7 @@ import (
 
 	"fastcat.org/go/gdev/addons/pm/api"
 	"fastcat.org/go/gdev/addons/pm/internal"
+	"fastcat.org/go/gdev/lib/httpx"
 )
 
 type HTTP struct {
@@ -187,7 +188,7 @@ func (h *httpWrapper) Terminate(w http.ResponseWriter, r *http.Request) {
 
 func (h *httpWrapper) error(w http.ResponseWriter, err error) {
 	w.Header().Set("content-type", "text/plain")
-	var sce api.StatusCodeErr
+	var sce httpx.StatusCodeErr
 	sc := http.StatusInternalServerError
 	if errors.As(err, &sce) {
 		sc = sce.StatusCode()

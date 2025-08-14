@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"fastcat.org/go/gdev/addons/pm/api"
+	"fastcat.org/go/gdev/lib/httpx"
 	"fastcat.org/go/gdev/resource"
 )
 
@@ -57,7 +58,7 @@ func (p *PM) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to get child config: %w", err)
 	}
 	cur, err := client.Child(ctx, child.Name)
-	if err != nil && !api.IsNotFound(err) {
+	if err != nil && !httpx.IsNotFound(err) {
 		return fmt.Errorf("failed checking child %s status: %w", child.Name, err)
 	}
 	// decide if we should stop & delete the child before recreating it
@@ -128,7 +129,7 @@ func (p *PM) Stop(ctx context.Context) error {
 	defer retry.Stop()
 	for {
 		if err != nil {
-			if api.IsNotFound(err) {
+			if httpx.IsNotFound(err) {
 				// not defined => definitely stopped
 				return nil
 			}

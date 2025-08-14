@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"path"
 	"strings"
+
+	"fastcat.org/go/gdev/lib/httpx"
 )
 
 // GitHubClient provides a rudimentary client for acccessing GitHub resources
@@ -55,8 +57,8 @@ func (c *GitHubClient) DoAndParse(req *http.Request, respData any) error {
 	resp, err := c.Do(req)
 	if err != nil {
 		return err
-	} else if !IsHTTPOk(resp) {
-		return HTTPResponseErr(resp, req.URL.Path) // TODO: contextual base message
+	} else if !httpx.IsHTTPOk(resp) {
+		return httpx.HTTPResponseErr(resp, req.URL.Path) // TODO: contextual base message
 	}
 	defer resp.Body.Close() // nolint:errcheck
 	d := json.NewDecoder(resp.Body)

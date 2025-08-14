@@ -13,6 +13,7 @@ import (
 
 	"fastcat.org/go/gdev/addons/pm/api"
 	"fastcat.org/go/gdev/addons/pm/internal"
+	"fastcat.org/go/gdev/lib/httpx"
 )
 
 func NewHTTP() *HTTP {
@@ -121,7 +122,7 @@ func (h *HTTP) do(
 		return nil, err
 	}
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
-		return nil, heFromResp(res, path)
+		return nil, httpx.HTTPResponseErr(res, path)
 	}
 	return res, nil
 }
