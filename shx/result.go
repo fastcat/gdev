@@ -18,6 +18,9 @@ func (r *Result) Err() error {
 	return r.exitErr
 }
 
+// Close releases any resources associated with the result of running a command.
+//
+// If no output capture was enabled, it is safe to skip calling this.
 func (r *Result) Close() error {
 	if r == nil {
 		return nil
