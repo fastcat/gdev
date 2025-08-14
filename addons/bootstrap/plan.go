@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-type plan struct {
+type Plan struct {
 	byName map[string]*Step
 	// steps to run in an order that will satisfy their dependencies.
 	ordered []*Step
@@ -17,11 +17,11 @@ type plan struct {
 	pending []*Step
 }
 
-func NewPlan() *plan {
-	return &plan{byName: map[string]*Step{}}
+func NewPlan() *Plan {
+	return &Plan{byName: map[string]*Step{}}
 }
 
-func (p *plan) AddSteps(steps ...*Step) {
+func (p *Plan) AddSteps(steps ...*Step) {
 	for _, s := range steps {
 		if p.byName[s.name] != nil {
 			panic(fmt.Errorf("already have step named %s", s.name))
@@ -37,7 +37,7 @@ func (p *plan) AddSteps(steps ...*Step) {
 	}
 }
 
-func (p *plan) tryResolveAll() {
+func (p *Plan) tryResolveAll() {
 	progress := true
 	for progress {
 		progress = false
@@ -51,7 +51,7 @@ func (p *plan) tryResolveAll() {
 	}
 }
 
-func (p *plan) resolveOne(s *Step) bool {
+func (p *Plan) resolveOne(s *Step) bool {
 	unsatisfied := maps.Clone(s.after)
 	for _, s2 := range p.ordered {
 		delete(unsatisfied, s2.name)
@@ -73,12 +73,12 @@ func (p *plan) resolveOne(s *Step) bool {
 	return true
 }
 
-func (p *plan) Ready() bool {
+func (p *Plan) Ready() bool {
 	p.tryResolveAll()
 	return len(p.pending) == 0
 }
 
-func (p *plan) Run(ctx context.Context) error {
+func (p *Plan) Run(ctx context.Context) error {
 	bc, err := p.prepare(ctx)
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (p *plan) Run(ctx context.Context) error {
 	return nil
 }
 
-func (p *plan) prepare(ctx context.Context) (*Context, error) {
+func (p *Plan) prepare(ctx context.Context) (*Context, error) {
 	bc, ok := ctx.(*Context)
 	if !ok {
 		bc = NewContext(ctx)
@@ -113,7 +113,7 @@ func (p *plan) prepare(ctx context.Context) (*Context, error) {
 	return bc, nil
 }
 
-func (p *plan) Sim(ctx context.Context) error {
+func (p *Plan) Sim(ctx context.Context) error {
 	bc, err := p.prepare(ctx)
 	if err != nil {
 		return err
@@ -135,7 +135,7 @@ func (p *plan) Sim(ctx context.Context) error {
 
 // Add any of the known "Default" steps that are referenced in existing step
 // dependencies but not already added to the plan.
-func (p *plan) AddDefaultSteps() {
+func (p *Plan) AddDefaultSteps() {
 	fill := func(names map[string]struct{}) bool {
 		changed := false
 		for name := range names {

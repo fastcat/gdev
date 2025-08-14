@@ -1,10 +1,13 @@
 package bootstrap
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/instance"
+	"fastcat.org/go/gdev/internal"
 )
 
 var addon = addons.Addon[config]{
@@ -26,7 +29,7 @@ func init() {
 
 type config struct {
 	cmdFactories []cmdBuilder
-	plan         *plan
+	plan         *Plan
 }
 
 func Configure(opts ...Option) {
@@ -39,19 +42,8 @@ func Configure(opts ...Option) {
 }
 
 func initialize() error {
-	dryRun := false
-	cmd := &cobra.Command{
-		Use:   "bootstrap",
-		Args:  cobra.NoArgs,
-		Short: "install & configure system dependencies",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if dryRun {
-				return Sim(cmd.Context())
-			}
-			return Run(cmd.Context())
-		},
-	}
-	cmd.Flags().BoolVarP(&dryRun, "dry-run", "n", dryRun, "don't actually change anything")
+	cmd := runnerCmd(addon.Config.plan)
+	cmd.Use = "bootstrap"
 	instance.AddCommands(cmd)
 
 	for _, f := range addon.Config.cmdFactories {
@@ -93,4 +85,69 @@ func WithSteps(steps ...*Step) Option {
 	return func(c *config) {
 		c.plan.AddSteps(steps...)
 	}
+}
+
+// NewDerivedPlan creates a new plan that is derived from the main plan, i.e. it
+// has all of the steps copied to it, and you can then add more custom steps to
+// it.
+//
+// You can pass exceptions, steps you want to exclude from the copy, if you want
+// to create a plan that has most but not all of the normal steps. It is up to
+// you to ensure this doesn't create a plan with missing dependencies that can't
+// be run.
+//
+// Excluding a step that has a default factory may simply cause it to be
+// re-added if other steps depend on it.
+func NewDerivedPlan(exceptions ...string) *Plan {
+	p := NewPlan()
+	exSet := make(map[string]bool, len(exceptions))
+	for _, e := range exceptions {
+		exSet[e] = true
+	}
+	all := make([]*Step, 0, len(addon.Config.plan.ordered)+len(addon.Config.plan.pending))
+	all = append(all, addon.Config.plan.ordered...)
+	all = append(all, addon.Config.plan.pending...)
+	all = internal.FilterSlice(all, func(s *Step) bool { return !exSet[s.name] })
+	p.AddSteps(all...)
+	return p
+}
+
+// WithAlternatePlanCmd registers a command that will run an alternate bootstrap
+// plan from the given factory function.
+//
+// The customize parameter is optional, if given it will be called and can
+// customize the command to e.g. override the short help or add long help or
+// other settings.
+func WithAlternatePlanCmd(
+	name string,
+	pf func() *Plan,
+	customize func(*cobra.Command),
+) Option {
+	return WithChildCmdBuilders(func() *cobra.Command {
+		cmd := runnerCmd(pf())
+		cmd.Use = name
+		cmd.Short = fmt.Sprintf("%s for %s", defaultCmdShort, name)
+		if customize != nil {
+			customize(cmd)
+		}
+		return cmd
+	})
+}
+
+const defaultCmdShort = "install & configure system dependencies"
+
+func runnerCmd(plan *Plan) *cobra.Command {
+	dryRun := false
+	cmd := &cobra.Command{
+		Args:  cobra.NoArgs,
+		Short: defaultCmdShort,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if dryRun {
+				return SimPlan(cmd.Context(), plan)
+			}
+			return RunPlan(cmd.Context(), plan)
+		},
+	}
+	cmd.Flags().BoolVarP(&dryRun, "dry-run", "n", dryRun, "don't actually change anything")
+	return cmd
 }

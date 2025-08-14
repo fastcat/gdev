@@ -2,12 +2,12 @@ package bootstrap
 
 import "context"
 
-func Run(ctx context.Context) error {
-	addon.Config.plan.AddDefaultSteps()
-	return addon.Config.plan.Run(ctx)
+func RunPlan(ctx context.Context, plan *Plan) error {
+	plan.AddDefaultSteps()
+	return plan.Run(ctx)
 }
 
-func Sim(ctx context.Context) error {
-	addon.Config.plan.AddDefaultSteps()
-	return addon.Config.plan.Sim(ctx)
+func SimPlan(ctx context.Context, plan *Plan) error {
+	plan.AddDefaultSteps()
+	return plan.Sim(ctx)
 }

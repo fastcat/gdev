@@ -1,6 +1,7 @@
 package gcloud
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"slices"
@@ -33,6 +34,7 @@ func init() {
 }
 
 type config struct {
+	skipLogin      bool
 	allowedDomains []string
 }
 
@@ -53,6 +55,13 @@ func initialize() error {
 	return nil
 }
 
+// WithSkipLogin causes the bootstrap sequence to no-op the login step.
+func WithSkipLogin() option {
+	return func(c *config) {
+		c.skipLogin = true
+	}
+}
+
 func WithAllowedDomains(domains ...string) option {
 	return func(c *config) {
 		c.allowedDomains = domains
@@ -66,16 +75,32 @@ var configureBootstrap = sync.OnceFunc(func() {
 		bootstrap.WithSteps(apt.PublicSourceInstallSteps(apt_common.GoogleCloudInstaller())...),
 		apt.WithPackages("Select gcloud packages", "google-cloud-cli"),
 		bootstrap.WithSteps(bootstrap.NewStep(
-			configureGcloudStepName,
+			ConfigureStepName,
 			configureGcloud,
 			bootstrap.AfterSteps(apt.StepNameInstall),
 		)),
 	)
 })
 
-const configureGcloudStepName = "Configure gcloud"
+const ConfigureStepName = "Configure gcloud"
 
 func configureGcloud(ctx *bootstrap.Context) error {
+	if addon.Config.skipLogin {
+		return nil
+	}
+	return LoginUser(ctx, addon.Config.allowedDomains)
+}
+
+// LoginUser runs gcloud login steps if necessary.
+//
+// If allowedDomains is nil, it will use the addon's configured default setting.
+// If it is not nill but empty, then it will accept any already logged in
+// account as sufficient. Otherwise it will only skip the login if an active
+// acccount in one of the given domains is found.
+func LoginUser(ctx context.Context, allowedDomains []string) error {
+	if allowedDomains == nil {
+		allowedDomains = addon.Config.allowedDomains
+	}
 	// check current accounts
 	res, err := shx.Run(
 		ctx,
@@ -127,6 +152,8 @@ func configureGcloud(ctx *bootstrap.Context) error {
 
 	return nil
 }
+
+// TODO: LoginServiceAccount
 
 type gcloudAccount struct {
 	Account string `json:"account"`
