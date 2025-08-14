@@ -18,16 +18,16 @@ const StepNameUpdate = "apt update"
 // ordering constraints in the options.
 func WithExtraUpdate(name string, opts ...bootstrap.StepOpt) bootstrap.Option {
 	opts = append([]bootstrap.StepOpt{bootstrap.AfterSteps(StepNameUpdate)}, opts...)
-	return bootstrap.WithSteps(bootstrap.NewStep(name, doUpdate, opts...))
+	return bootstrap.WithSteps(bootstrap.NewStep(name, DoUpdate, opts...))
 }
 
 func updateStep() *bootstrap.Step {
-	return bootstrap.NewStep(StepNameUpdate, doUpdate)
+	return bootstrap.NewStep(StepNameUpdate, DoUpdate)
 }
 
 var sourcesDirty = bootstrap.NewKey[bool]("apt sources dirty")
 
-func doUpdate(ctx *bootstrap.Context) error {
+func DoUpdate(ctx *bootstrap.Context) error {
 	dirty, ok := bootstrap.Get(ctx, sourcesDirty)
 	// TODO: heuristic if we can skip the update entirely, e.g. if no sources were
 	// changed and it ran within the last hour or something?
@@ -75,7 +75,7 @@ func installStep() *bootstrap.Step {
 // add new apt sources that call [ChangedSources] and [AddPackages].
 func WithExtraInstall(name string, opts ...bootstrap.StepOpt) bootstrap.Option {
 	opts = append([]bootstrap.StepOpt{bootstrap.AfterSteps(StepNameInstall)}, opts...)
-	return bootstrap.WithSteps(bootstrap.NewStep(name, doUpdate, opts...))
+	return bootstrap.WithSteps(bootstrap.NewStep(name, DoUpdate, opts...))
 }
 
 var pendingPackages = bootstrap.NewKey[map[string]struct{}]("pending-apt-packages")
