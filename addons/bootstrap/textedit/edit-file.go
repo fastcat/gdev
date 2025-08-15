@@ -12,16 +12,16 @@ import (
 func EditFile(
 	fileName string,
 	editor Editor,
-) error {
+) (bool, error) {
 	in, err := os.Open(fileName)
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer in.Close() // nolint:errcheck
 	d := filepath.Dir(fileName)
 	out, err := os.CreateTemp(d, filepath.Base(fileName)+".tmp")
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer out.Close() // nolint:errcheck
 	// keep a running checksum so we know if we can skip the final rename due to not
@@ -32,35 +32,37 @@ func EditFile(
 	if err := Edit(mr, mw, editor); err != nil {
 		_ = out.Close()
 		_ = os.Remove(out.Name())
-		return err
+		return false, err
 	}
 	// protect user data: flush the new file to disk before we do the rename
 	if err := out.Sync(); err != nil {
 		_ = out.Close()
 		_ = os.Remove(out.Name())
-		return err
+		return false, err
 	}
 	if err := out.Close(); err != nil {
 		_ = os.Remove(out.Name())
-		return err
+		return false, err
 	}
 	if err := in.Close(); err != nil {
-		return err
+		return false, err
 	}
+	changed := false
 	// if the checksums match, we didn't make any changes, so we can skip the
 	// rename and avoid the mtime/etc update of the file.
 	if hIn.Sum32() != hOut.Sum32() {
+		changed = true
 		if err := os.Rename(out.Name(), fileName); err != nil {
 			_ = os.Remove(out.Name())
-			return err
+			return false, err
 		}
 	} else {
 		// we didn't make any changes, so just remove the temp file
 		if err := os.Remove(out.Name()); err != nil {
-			return err
+			return false, err
 		}
 	}
-	return nil
+	return changed, nil
 }
 
 func Edit(

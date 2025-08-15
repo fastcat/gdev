@@ -66,7 +66,9 @@ func TestAppendLine(t *testing.T) {
 			time.Sleep(4 * time.Millisecond)
 
 			editor := AppendLine(tt.line, tt.oldLines...)
-			require.NoError(t, EditFile(fn, editor))
+			changed, err := EditFile(fn, editor)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectSkip, !changed)
 
 			got, err := os.ReadFile(fn)
 			require.NoError(t, err)

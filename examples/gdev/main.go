@@ -141,7 +141,12 @@ func shellRCSteps() []*bootstrap.Step {
 			if err != nil {
 				return err
 			}
-			return textedit.EditFile(filepath.Join(home, ".bashrc"), e)
+			if changed, err := textedit.EditFile(filepath.Join(home, ".bashrc"), e); err != nil {
+				return err
+			} else if changed {
+				bootstrap.SetNeedsReboot(ctx)
+			}
+			return nil
 		},
 	))
 	return ret

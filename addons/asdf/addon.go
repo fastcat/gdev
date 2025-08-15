@@ -374,7 +374,7 @@ func configureShell(ctx *bootstrap.Context) error {
 	return nil
 }
 
-func configureShims(_ *bootstrap.Context) error {
+func configureShims(ctx *bootstrap.Context) error {
 	files := addon.Config.shimsFiles
 	if len(files) == 0 {
 		files = map[string]string{filepath.Join(shx.HomeDir(), ".profile"): "sh"}
@@ -402,14 +402,17 @@ func configureShims(_ *bootstrap.Context) error {
 			return fmt.Errorf("asdf shims file syntax %s not yet implemented", syntax)
 		}
 		fmt.Printf("Configuring asdf shims in %s...\n", file)
-		if err := textedit.EditFile(file, editor); err != nil {
+		if changed, err := textedit.EditFile(file, editor); err != nil {
 			return fmt.Errorf("failed to configure asdf shims in %s: %w", file, err)
+		} else if changed {
+			// modifying the user's shell rc files often requires a reboot to take full effect
+			bootstrap.SetNeedsReboot(ctx)
 		}
 	}
 	return nil
 }
 
-func configureCompletion(_ *bootstrap.Context) error {
+func configureCompletion(ctx *bootstrap.Context) error {
 	filesMap := addon.Config.completionFiles
 	if len(filesMap) == 0 {
 		filesMap = map[string]string{filepath.Join(shx.HomeDir(), ".bashrc"): "bash"}
@@ -431,8 +434,10 @@ func configureCompletion(_ *bootstrap.Context) error {
 			return fmt.Errorf("asdf %s completion not yet implemented", completionType)
 		}
 		fmt.Printf("Configuring asdf %s completion in %s...\n", completionType, f)
-		if err := textedit.EditFile(f, editor); err != nil {
+		if changed, err := textedit.EditFile(f, editor); err != nil {
 			return fmt.Errorf("failed to configure asdf %s completion in %s: %w", completionType, f, err)
+		} else if changed {
+			bootstrap.SetNeedsReboot(ctx)
 		}
 	}
 	return nil

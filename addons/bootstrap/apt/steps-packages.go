@@ -2,6 +2,7 @@ package apt
 
 import (
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 
@@ -85,6 +86,14 @@ func doInstall(ctx *bootstrap.Context) error {
 	if len(pkgSet) == 0 {
 		return nil
 	}
+
+	// note the versions of target packages installedBefore before we start so we
+	// can detect if things changed.
+	installedBefore, err := DpkgInstalled(ctx)
+	if err != nil {
+		return err
+	}
+
 	cna := []string{"apt", "install", "--no-install-recommends", "--yes"}
 	offset := len(cna)
 	for pkg := range pkgSet {
@@ -107,6 +116,16 @@ func doInstall(ctx *bootstrap.Context) error {
 	// package groups later, e.g. in case setting up some apt source requires
 	// installing some packages.
 	clear(pkgSet)
+
+	// assume that installing or upgrading packages requires a reboot. Note that
+	// we intentionally don't just look at the packages we were asked to install,
+	// but the overall system in case dependencies changed.
+	if installedAfter, err := DpkgInstalled(ctx); err != nil {
+		return err
+	} else if !maps.Equal(installedBefore, installedAfter) {
+		bootstrap.SetNeedsReboot(ctx)
+	}
+
 	return nil
 }
 

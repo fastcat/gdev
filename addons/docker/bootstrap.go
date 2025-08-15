@@ -83,6 +83,7 @@ func addUserToDockerGroup(ctx *bootstrap.Context) error {
 	}
 
 	fmt.Printf("Adding user %s to group %s\n", un, dockerGroupName)
+	bootstrap.SetNeedsReboot(ctx)
 
 	res, err := shx.Run(
 		ctx,
