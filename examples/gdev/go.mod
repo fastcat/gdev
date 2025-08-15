@@ -3,18 +3,18 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.4.1-0.20250815173103-38109c32d50e
-	fastcat.org/go/gdev/addons/bootstrap/input v0.4.0
-	fastcat.org/go/gdev/addons/containerd v0.4.0
-	fastcat.org/go/gdev/addons/docker v0.4.0
-	fastcat.org/go/gdev/addons/gcs v0.4.0
-	fastcat.org/go/gdev/addons/gocache v0.4.0
-	fastcat.org/go/gdev/addons/gocache/gcs v0.4.0
-	fastcat.org/go/gdev/addons/gocache/s3 v0.4.0
-	fastcat.org/go/gdev/addons/k3s v0.4.0
-	fastcat.org/go/gdev/addons/k8s v0.4.0
-	fastcat.org/go/gdev/addons/postgres v0.4.0
-	fastcat.org/go/gdev/addons/valkey v0.4.0
+	fastcat.org/go/gdev v0.5.2
+	fastcat.org/go/gdev/addons/bootstrap/input v0.5.2
+	fastcat.org/go/gdev/addons/containerd v0.5.2
+	fastcat.org/go/gdev/addons/docker v0.5.2
+	fastcat.org/go/gdev/addons/gcs v0.5.2
+	fastcat.org/go/gdev/addons/gocache v0.5.2
+	fastcat.org/go/gdev/addons/gocache/gcs v0.5.2
+	fastcat.org/go/gdev/addons/gocache/s3 v0.5.2
+	fastcat.org/go/gdev/addons/k3s v0.5.2
+	fastcat.org/go/gdev/addons/k8s v0.5.2
+	fastcat.org/go/gdev/addons/postgres v0.5.2
+	fastcat.org/go/gdev/addons/valkey v0.5.2
 )
 
 require (
@@ -105,6 +105,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
@@ -135,8 +136,6 @@ require (
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/onsi/ginkgo/v2 v2.23.4 // indirect
-	github.com/onsi/gomega v1.37.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/opencontainers/runtime-spec v1.2.1 // indirect
@@ -163,8 +162,8 @@ require (
 	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
+	go.uber.org/automaxprocs v1.6.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/exp v0.0.0-20250811191247-51f88131bc50 // indirect
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
