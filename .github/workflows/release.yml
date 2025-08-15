@@ -98,3 +98,5 @@ jobs:
         args: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # this is always a release build
+        PKGSUFFIX: ""
