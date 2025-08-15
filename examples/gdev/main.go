@@ -15,6 +15,7 @@ import (
 	"fastcat.org/go/gdev/addons/containerd"
 	"fastcat.org/go/gdev/addons/diags"
 	"fastcat.org/go/gdev/addons/docker"
+	"fastcat.org/go/gdev/addons/docs"
 	"fastcat.org/go/gdev/addons/gcs"
 	gcs_k8s "fastcat.org/go/gdev/addons/gcs/k8s"
 	"fastcat.org/go/gdev/addons/github"
@@ -125,6 +126,8 @@ func main() {
 		diags.WithSourceProvider(pm.DiagsSources()),
 		diags.WithSourceProvider(k8s.DiagsSources()),
 	)
+
+	docs.Configure()
 
 	cmd.Main()
 }

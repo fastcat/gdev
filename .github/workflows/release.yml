@@ -86,3 +86,10 @@ jobs:
           org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc2
           org.opencontainers.image.url=${{ github.repositoryUrl }}
           org.opencontainers.image.vendor=fastcat
+
+    - name: Publish gdev example
+      uses: goreleaser/goreleaser-action@v6
+      with:
+        workdir: examples/gdev
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

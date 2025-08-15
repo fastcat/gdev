@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+before:
+  hooks:
+    - rm -rf dist_share/completions dist_share/man dist_share/markdown
+    - mkdir -p dist_share/completions dist_share/man dist_share/markdown
+    - "sh -c 'CGO_ENABLED=0 go build -o dist_share/gdev'"
+    - "sh -c 'dist_share/gdev completion bash > dist_share/completions/gdev.bash'"
+    - "sh -c 'dist_share/gdev completion zsh > dist_share/completions/gdev.zsh'"
+    - "sh -c 'dist_share/gdev completion fish > dist_share/completions/gdev.fish'"
+    - dist_share/gdev docs --man=dist_share/man --markdown=dist_share/markdown
+    - "sh -c 'gzip -9 dist_share/man/*.1'"
+builds:
+  - id: gdev
+    env:
+      - CGO_ENABLED=0
+    main: "."
+    binary: gdev
+    ldflags:
+      - "-s -w"
+    goos:
+      - linux
+    goarch:
+      - amd64
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
+snapshot:
+  version_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - Merge pull request
+      - Merge branch
+archives:
+  - id: bin-archives
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- if eq .Os "darwin" }}Darwin
+      {{- else if eq .Os "linux" }}Linux
+      {{- else }}{{ .Os }}{{ end }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{- .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}
+      {{- end }}
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - src: "dist_share/completions/*"
+        dst: "completions/"
+        strip_parent: true
+      - src: "dist_share/markdown/**"
+        dst: "docs"
+        strip_parent: true
+nfpms:
+  - id: debs
+    package_name: "gdev{{ .Env.PKGSUFFIX }}"
+    vendor: "fastcat.org"
+    maintainer: "Matthew Gabeler-Lee <fastcat@gmail.com>"
+    description: |
+      gdev is an example application for the gdev devex toolkit.
+    license: "Apache-2.0"
+    homepage: https://github.com/fastcat/gdev
+    formats:
+      - deb
+    bindir: /usr/bin
+    dependencies:
+      - sudo
+      - ca-certificates
+    conflicts:
+      - gdev
+      - gdev-dev
+    replaces:
+      - gdev
+      - gdev-dev
+    contents:
+      - dst: /usr/share/bash-completion/completions
+        type: dir
+      - dst: /usr/share/zsh/site-functions
+        type: dir
+      - dst: /usr/share/fish/vendor_completions.d
+        type: dir
+      - src: dist_share/completions/gdev.bash
+        dst: /usr/share/bash-completion/completions/gdev
+      - src: dist_share/completions/gdev.zsh
+        dst: /usr/share/zsh/vendor-completions/_gdev
+      - src: dist_share/completions/gdev.fish
+        dst: /usr/share/fish/vendor_completions.d/gdev.fish
+      - src: dist_share/man/*.1.gz
+        dst: /usr/share/man/man1
+      - src: dist_share/markdown/*.md
+        dst: /usr/share/doc/gdev
+release:
+  prerelease: auto
