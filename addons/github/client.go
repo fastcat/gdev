@@ -81,13 +81,21 @@ func (c *Client) GetRelease(ctx context.Context, owner, repo, tag string) (*Rele
 	return &resp, nil
 }
 
-func (c *Client) Download(ctx context.Context, url string) (*http.Response, error) {
+func (c *Client) DownloadReq(ctx context.Context, url string) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 	// must set this else we get json description of the resource back instead of the binary content
 	req.Header.Set("accept", "application/octet-stream")
+	return req, nil
+}
+
+func (c *Client) Download(ctx context.Context, url string) (*http.Response, error) {
+	req, err := c.DownloadReq(ctx, url)
+	if err != nil {
+		return nil, err
+	}
 	return c.Do(req)
 }
 

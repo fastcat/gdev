@@ -160,6 +160,36 @@ func DoInstall(
 	return nil
 }
 
+// InstallNeeded returns true if any queued packages or any extra listed are not
+// already installed.
+func InstallNeeded(
+	ctx *bootstrap.Context,
+	extras ...string,
+) (bool, error) {
+	pkgSet, _ := bootstrap.Get(ctx, pendingPackages)
+	if len(extras) > 0 {
+		// don't mutate the stored list
+		pkgSet = maps.Clone(pkgSet)
+		for _, pkg := range extras {
+			pkgSet[pkg] = struct{}{}
+		}
+	}
+	return needsInstall(ctx, pkgSet)
+}
+
+func needsInstall(ctx *bootstrap.Context, set map[string]struct{}) (bool, error) {
+	installed, err := DpkgInstalled(ctx)
+	if err != nil {
+		return true, err
+	}
+	for pkg := range set {
+		if _, ok := installed[pkg]; !ok {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func simInstall(ctx *bootstrap.Context) error {
 	pkgSet, _ := bootstrap.Get(ctx, pendingPackages)
 	if len(pkgSet) == 0 {

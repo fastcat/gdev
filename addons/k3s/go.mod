@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/k3s
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.4.0
+	fastcat.org/go/gdev v0.4.1-0.20250815135223-2cf245127418
 	fastcat.org/go/gdev/addons/k8s v0.4.0
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/sync v0.16.0
@@ -44,7 +44,6 @@ require (
 	github.com/onsi/gomega v1.37.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/spf13/pflag v1.0.7 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/crypto v0.41.0 // indirect

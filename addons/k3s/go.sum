@@ -1,5 +1,5 @@
-fastcat.org/go/gdev v0.4.0 h1:Ja/5O+fekbx+VpqZGcMvuflT4TeHK9Yhg4Wzc873HhY=
-fastcat.org/go/gdev v0.4.0/go.mod h1:lk4PPiH9W118HLmjFckJhE0VVlyqrX1pCNsfav/Bf2M=
+fastcat.org/go/gdev v0.4.1-0.20250815135223-2cf245127418 h1:GULizcsVCXP+aTX25nEwxtBdiKOrDKwW9IyOlL9zqtQ=
+fastcat.org/go/gdev v0.4.1-0.20250815135223-2cf245127418/go.mod h1:tlV0bUtSsSUPvlyOXovu4aRgx8XWH8xF1AKrehWYPic=
 fastcat.org/go/gdev/addons/k8s v0.4.0 h1:06PNzFJObCA5sHdaf359XQGiSlFORlIOoJJ+Un07DWE=
 fastcat.org/go/gdev/addons/k8s v0.4.0/go.mod h1:Q5Y3+rJaKlzUUqgXnEteP5GSDRqp93Y5hPWDHOwp1iw=
 github.com/coreos/go-systemd/v22 v22.5.0 h1:RrqgGjYQKalulkV8NGVIfkXQf6YYmOyiJKk8iXXhfZs=

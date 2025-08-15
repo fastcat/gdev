@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.4.0
+	fastcat.org/go/gdev v0.4.1-0.20250815135223-2cf245127418
 	fastcat.org/go/gdev/addons/bootstrap/input v0.4.0
 	fastcat.org/go/gdev/addons/containerd v0.4.0
 	fastcat.org/go/gdev/addons/docker v0.4.0
@@ -144,7 +144,6 @@ require (
 	github.com/pkg/sftp v1.13.9 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.7 // indirect
