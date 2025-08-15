@@ -19,6 +19,10 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
+      with:
+         # get enough commits to hopefully allow goreleaser to generate a proper
+         # changelog since the last release
+        fetch-depth: 100
     - name: Setup Go Module Access Token
       run: |
         git config --global url."https://x-access-token:$GH_ACTIONS_TOKEN@github.com/fastcat/gdev".insteadOf https://github.com/fastcat/gdev
@@ -91,5 +95,6 @@ jobs:
       uses: goreleaser/goreleaser-action@v6
       with:
         workdir: examples/gdev
+        args: release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
