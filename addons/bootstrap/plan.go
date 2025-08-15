@@ -73,6 +73,11 @@ func (p *Plan) resolveOne(s *Step) bool {
 	return true
 }
 
+// Ready tries to resolve all dependencies between plan steps to form a
+// well-ordered plan. It returns whether this was successful.
+//
+// You will usually want to call [*Plan.AddDefaultSteps] before this, or
+// alternately do so if this fails before trying again.
 func (p *Plan) Ready() bool {
 	p.tryResolveAll()
 	return len(p.pending) == 0
@@ -90,7 +95,16 @@ func (p *Plan) Run(ctx context.Context) error {
 			return err
 		}
 	}
-	fmt.Println("Done")
+
+	fmt.Println()
+	fmt.Println("Bootstrap completed successfully")
+
+	if needsReboot(bc) {
+		fmt.Println()
+		fmt.Println("IMPORTANT: You need to reboot before you can use the newly installed/updated tools!")
+		fmt.Println()
+	}
+
 	return nil
 }
 
@@ -129,7 +143,10 @@ func (p *Plan) Sim(ctx context.Context) error {
 			return err
 		}
 	}
-	fmt.Println("Done")
+
+	fmt.Println()
+	fmt.Println("Bootstrap simulated successfully")
+
 	return nil
 }
 
