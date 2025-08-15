@@ -62,7 +62,9 @@ const StepNameInstall = "apt install"
 func installStep() *bootstrap.Step {
 	return bootstrap.NewStep(
 		StepNameInstall,
-		doInstall,
+		func(ctx *bootstrap.Context) error {
+			return DoInstall(ctx, []string{"--no-install-recommends"}, nil, "")
+		},
 		bootstrap.AfterSteps(StepNameUpdate),
 		bootstrap.SimFunc(simInstall),
 	)
@@ -81,8 +83,33 @@ func WithExtraInstall(name string, opts ...bootstrap.StepOpt) bootstrap.Option {
 
 var pendingPackages = bootstrap.NewKey[map[string]struct{}]("pending-apt-packages")
 
-func doInstall(ctx *bootstrap.Context) error {
+// DoInstall runs `apt install -y ...` with:
+//
+//   - Any extra options you pass. Including `--no-install-recommends` is often
+//     a good idea
+//   - All the packages registered as pending installation
+//   - Any extra packages you pass
+//
+// After installation, the pending package set is cleared, and if the list of
+// installed packages changed, the needs-reboot flag is set.
+//
+// If sudoPrompt is set, it will be used as the prompt for the sudo password.
+// Otherwise a string noting the number of packages to be installed will be
+// generated.
+func DoInstall(
+	ctx *bootstrap.Context,
+	extraOpts []string,
+	extraPackages []string,
+	sudoPrompt string,
+) error {
 	pkgSet, _ := bootstrap.Get(ctx, pendingPackages)
+	if len(extraPackages) > 0 {
+		// don't mutate the stored list
+		pkgSet = maps.Clone(pkgSet)
+		for _, pkg := range extraPackages {
+			pkgSet[pkg] = struct{}{}
+		}
+	}
 	if len(pkgSet) == 0 {
 		return nil
 	}
@@ -94,10 +121,14 @@ func doInstall(ctx *bootstrap.Context) error {
 		return err
 	}
 
-	cna := []string{"apt", "install", "--no-install-recommends", "--yes"}
+	cna := []string{"apt", "install", "--yes"}
+	cna = append(cna, extraOpts...)
 	offset := len(cna)
 	for pkg := range pkgSet {
 		cna = append(cna, pkg)
+	}
+	if sudoPrompt == "" {
+		sudoPrompt = fmt.Sprintf("install %d packages", len(pkgSet))
 	}
 	// make printing deterministic
 	slices.Sort(cna[3:])
@@ -105,7 +136,7 @@ func doInstall(ctx *bootstrap.Context) error {
 	if _, err := shx.Run(
 		ctx,
 		cna,
-		shx.WithSudo(fmt.Sprintf("install %d packages", len(pkgSet))),
+		shx.WithSudo(sudoPrompt),
 		// installation may prompt for things
 		shx.PassStdio(),
 		shx.WithCombinedError(),
@@ -115,7 +146,7 @@ func doInstall(ctx *bootstrap.Context) error {
 	// clear the pending package list so that a little trickery can install more
 	// package groups later, e.g. in case setting up some apt source requires
 	// installing some packages.
-	clear(pkgSet)
+	bootstrap.Clear(ctx, pendingPackages)
 
 	// assume that installing or upgrading packages requires a reboot. Note that
 	// we intentionally don't just look at the packages we were asked to install,
