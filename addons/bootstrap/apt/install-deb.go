@@ -147,11 +147,17 @@ func streamWithProgress(
 	pt.Start()
 	pw.AppendTracker(pt)
 	var wg sync.WaitGroup
-	wg.Go(pw.Render)
-	defer wg.Wait()
-	defer pw.Stop()
-
-	_, err := io.Copy(&progressWriter{pt, dest}, src)
+	// if we run Render in the "background" there is a race where we might finish
+	// our work before it initializes, and then Stop() won't actually stop it, so
+	// we have to run Render in the "foreground" and the streaming in the
+	// background.
+	var err error
+	wg.Go(func() {
+		defer pw.Stop()
+		_, err = io.Copy(&progressWriter{pt, dest}, src)
+	})
+	pw.Render()
+	wg.Wait()
 	return err
 }
 
