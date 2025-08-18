@@ -103,6 +103,10 @@ func DoInstall(
 	sudoPrompt string,
 ) error {
 	pkgSet, _ := bootstrap.Get(ctx, pendingPackages)
+	if pkgSet == nil {
+		pkgSet = map[string]struct{}{}
+		bootstrap.Save(ctx, pendingPackages, pkgSet)
+	}
 	if len(extraPackages) > 0 {
 		// don't mutate the stored list
 		pkgSet = maps.Clone(pkgSet)
@@ -167,6 +171,10 @@ func InstallNeeded(
 	extras ...string,
 ) (bool, error) {
 	pkgSet, _ := bootstrap.Get(ctx, pendingPackages)
+	if pkgSet == nil {
+		pkgSet = map[string]struct{}{}
+		bootstrap.Save(ctx, pendingPackages, pkgSet)
+	}
 	if len(extras) > 0 {
 		// don't mutate the stored list
 		pkgSet = maps.Clone(pkgSet)
