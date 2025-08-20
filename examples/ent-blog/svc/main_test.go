@@ -10,7 +10,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/require"
 
-	"fastcat.org/go/gdev/examples/ent-blog/ent/enttest"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/enttest"
 )
 
 func TestIndex(t *testing.T) {

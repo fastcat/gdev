@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/post"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/user"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/post"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/user"
 )
 
 // ent aliases to avoid import conflicts in user's code.

@@ -12,12 +12,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"fastcat.org/go/gdev/examples/ent-blog/ent"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/post"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/post"
 
 	_ "github.com/jackc/pgx/v5"
 
-	"fastcat.org/go/gdev/examples/ent-blog/ent/user"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/user"
 )
 
 var (

@@ -9,14 +9,14 @@ import (
 	"log"
 	"reflect"
 
-	"fastcat.org/go/gdev/examples/ent-blog/ent/migrate"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/migrate"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/post"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/user"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/post"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/user"
 )
 
 // Client is the client that holds all ent builders.

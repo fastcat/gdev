@@ -5,9 +5,9 @@ package ent
 import (
 	"time"
 
-	"fastcat.org/go/gdev/examples/ent-blog/ent/post"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/schema"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/user"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/post"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/schema"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code

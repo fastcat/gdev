@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/post"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/predicate"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/post"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/predicate"
 )
 
 // PostDelete is the builder for deleting a Post entity.

@@ -11,9 +11,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/post"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/predicate"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/user"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/post"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/predicate"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/user"
 )
 
 const (

@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"fastcat.org/go/gdev/examples/ent-blog/ent"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent"
 	// required by schema hooks.
-	_ "fastcat.org/go/gdev/examples/ent-blog/ent/runtime"
+	_ "fastcat.org/go/gdev/examples/ent-blog/svc/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"fastcat.org/go/gdev/examples/ent-blog/ent/migrate"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent/migrate"
 )
 
 type (

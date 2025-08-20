@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"fastcat.org/go/gdev/examples/ent-blog/ent"
+	"fastcat.org/go/gdev/examples/ent-blog/svc/ent"
 )
 
 // The PostFunc type is an adapter to allow the use of ordinary
