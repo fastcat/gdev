@@ -1,0 +1,61 @@
+<html>
+<head>
+    <title>My Blog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+
+</head>
+<body>
+<div class="col-lg-8 mx-auto p-4 py-md-5">
+    <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
+        <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+            <span class="fs-4">Ent Blog Demo</span>
+        </a>
+    </header>
+
+    <main>
+        <div class="row g-5">
+            <div class="col-md-12">
+                {{- range . }}
+                    <h2>{{ .Title }}</h2>
+                    <p>
+                        {{ .CreatedAt.Format "2006-01-02" }} by {{ .Edges.Author.Name }}
+                    </p>
+                    <p>
+                        {{ .Body }}
+                    </p>
+                {{- end }}
+            </div>
+            <div class="col-md-12">
+                <hr/>
+                <h2>Create a new post</h2>
+                <form action="/add" method="post">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input name="title" type="text" class="form-control" id="title" placeholder="Once upon a time..">
+                    </div>
+                    <div class="mb-3">
+                        <label for="body" class="form-label">Body</label>
+                        <textarea name="body" class="form-control" id="body" rows="8"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary mb-3">Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+    <footer class="pt-5 my-5 text-muted border-top">
+        <p>
+            This is the Ent Blog Demo. It is a simple blog application built with Ent and Go. Get started:
+        </p>
+        <pre>go get entgo.io/ent</pre>
+    </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+        crossorigin="anonymous"></script>
+</body>
+</html>
