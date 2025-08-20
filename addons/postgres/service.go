@@ -21,23 +21,12 @@ import (
 func Service(
 	opts ...pgSvcOpt,
 ) service.Service {
-	var cfg pgSvcConfig
-	for _, o := range opts {
-		o(&cfg)
-	}
-	if cfg.major == 0 {
-		cfg.major = DefaultMajor
-	}
-	if cfg.variant == nil {
-		cfg.variant = internal.Ptr(DefaultVariant)
-	}
-	if cfg.name == "" {
-		cfg.name = fmt.Sprintf("postgres-%d", cfg.major)
-	}
+	cfg := newSvcConfig(opts...)
 	resources := []resource.Resource{
 		cfg.pvc(),
 		cfg.deployment(),
 		cfg.service(),
+		cfg.credentialsSecret(),
 	}
 	if cfg.nodePort > 0 {
 		resources = append(resources, cfg.nodePortService())
@@ -48,11 +37,48 @@ func Service(
 	)
 }
 
+func newSvcConfig(opts ...pgSvcOpt) pgSvcConfig {
+	var cfg pgSvcConfig
+	for _, o := range opts {
+		o(&cfg)
+	}
+	cfg.fillDefaults()
+	return cfg
+}
+
+func (c *pgSvcConfig) fillDefaults() {
+	if c.major == 0 {
+		c.major = DefaultMajor
+	}
+	if c.variant == nil {
+		c.variant = internal.Ptr(DefaultVariant)
+	}
+	if c.name == "" {
+		c.name = fmt.Sprintf("postgres-%d", c.major)
+	}
+}
+
 type pgSvcConfig struct {
 	name     string
 	major    int
 	variant  *string
 	nodePort int
+}
+
+// CredentialsSecretName returns the k8s secret name where credentials will be
+// stored (in the form of `PG...` environment variable names) for the default
+// service configured in the addon.
+func CredentialsSecretName() string {
+	addon.CheckInitialized()
+	cfg := newSvcConfig(addon.Config.svcOpts...)
+	return cfg.CredentialsSecretName()
+}
+
+func (c pgSvcConfig) CredentialsSecretName() string {
+	if c.name == "" {
+		panic(fmt.Errorf("cannot get credentials secret without a service name"))
+	}
+	return c.name + "-credentials"
 }
 
 type pgSvcOpt func(c *pgSvcConfig)
@@ -246,6 +272,28 @@ func (c pgSvcConfig) nodePortService() k8s.Resource {
 			WithSelector(c.selector()),
 	)
 	return k8s.Service(s)
+}
+
+func (c pgSvcConfig) credentialsSecret() k8s.Resource {
+	s := applyCoreV1.Secret(c.CredentialsSecretName(), "").
+		WithStringData(c.Credentials())
+	return k8s.Secret(s)
+}
+
+// Credentials returns connection credentials (in the form of `PG...`
+// environment variable names) for the default service configured in the addon,
+// e.g. for setting in a PM service environment block.
+func Credentials() map[string]string {
+	addon.CheckInitialized()
+	cfg := newSvcConfig(addon.Config.svcOpts...)
+	return cfg.Credentials()
+}
+
+func (c pgSvcConfig) Credentials() map[string]string {
+	return map[string]string{
+		"PGUSER":     "postgres",
+		"PGPASSWORD": internal.AppName(),
+	}
 }
 
 func (c pgSvcConfig) selector() map[string]string {
