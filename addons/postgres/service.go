@@ -31,6 +31,12 @@ func Service(
 	if cfg.nodePort > 0 {
 		resources = append(resources, cfg.nodePortService())
 	}
+	if len(cfg.initDBNames) > 0 {
+		if cfg.nodePort <= 0 {
+			panic(fmt.Errorf("initializing PG DBs requires enabling postgres.WithNodePort"))
+		}
+		resources = append(resources, cfg.initDBs())
+	}
 	return service.New(
 		cfg.name,
 		service.WithResources(resources...),
@@ -59,10 +65,11 @@ func (c *pgSvcConfig) fillDefaults() {
 }
 
 type pgSvcConfig struct {
-	name     string
-	major    int
-	variant  *string
-	nodePort int
+	name        string
+	major       int
+	variant     *string
+	nodePort    int
+	initDBNames []string
 }
 
 // CredentialsSecretName returns the k8s secret name where credentials will be
@@ -140,6 +147,19 @@ func WithNodePort(port int) pgSvcOpt {
 	}
 	return func(c *pgSvcConfig) {
 		c.nodePort = port
+	}
+}
+
+// WithInitDBs will cause the postgres service to ensure the named databases
+// exist during startup.
+//
+// This requires enabling WithNodePort.
+func WithInitDBs(dbs ...string) pgSvcOpt {
+	if len(dbs) == 0 {
+		panic(fmt.Errorf("must provide at least one init db"))
+	}
+	return func(c *pgSvcConfig) {
+		c.initDBNames = append(c.initDBNames, dbs...)
 	}
 }
 

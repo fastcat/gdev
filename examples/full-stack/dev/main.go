@@ -50,6 +50,7 @@ func main() {
 	postgres.Configure(postgres.WithService(
 		// avoid collisions with existing PG instances on the host
 		postgres.WithNodePort(pgNodePort),
+		postgres.WithInitDBs("ent-blog"),
 	))
 
 	svcRepo, svcSubdir := svcDirs()
