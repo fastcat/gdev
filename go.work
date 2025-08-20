@@ -15,7 +15,7 @@ use (
 	./addons/k8s
 	./addons/postgres
 	./addons/valkey
-	./examples/ent-blog
+	./examples/full-stack
 	./examples/gdev
 	./examples/stack
 	./magefiles

@@ -75,11 +75,11 @@ jobs:
         ko build \
           --base-import-paths \
           --image-label org.opencontainers.image.authors="fastcat" \
-          --image-label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/ent-blog/svc \
+          --image-label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/full-stack/ent-blog \
           --image-label org.opencontainers.image.url=${{ github.repositoryUrl }} \
           --image-label org.opencontainers.image.vendor="fastcat" \
           --tags "latest,${{ steps.semrel.outputs.version }}" \
-          ./examples/ent-blog/svc
+          ./examples/full-stack/ent-blog
 
     - name: "Build svc2"
       working-directory: examples/stack/svc2
