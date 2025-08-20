@@ -49,64 +49,75 @@ func main() {
 	svcSubdir := "examples/full-stack/ent-blog"
 
 	const svcName = "ent-blog"
+	k8sDSN := fmt.Sprintf(
+		"postgresql://postgres-17:%d/ent-blog?sslmode=disable",
+		postgres.DefaultPort,
+	)
+	appContainer := applyCore.Container().
+		WithName(svcName).
+		WithImage("ghcr.io/fastcat/gdev/ent-blog").
+		// should be PullAlways, but we don't have pull secrets setup yet
+		WithImagePullPolicy(apiCore.PullIfNotPresent).
+		WithEnv(
+			// TODO: pg service should make this available in a secret
+			applyCore.EnvVar().WithName("PGUSER").WithValue("postgres"),
+			applyCore.EnvVar().WithName("PGPASSWORD").WithValue(instance.AppName()),
+		).
+		WithArgs("-dsn", k8sDSN).
+		WithPorts(
+			applyCore.ContainerPort().
+				WithName("http").
+				WithContainerPort(8080).
+				WithProtocol(apiCore.ProtocolTCP),
+		)
+	initContainer := applyCore.Container().
+		WithName("atlas-migrate").
+		WithImage("ghcr.io/fastcat/gdev/ent-blog").
+		// should be PullAlways, but we don't have pull secrets setup yet
+		WithImagePullPolicy(apiCore.PullIfNotPresent).
+		WithEnv(
+			// TODO: pg service should make this available in a secret
+			applyCore.EnvVar().WithName("PGUSER").WithValue("postgres"),
+			applyCore.EnvVar().WithName("PGPASSWORD").WithValue(instance.AppName()),
+		).
+		WithCommand("/atlas").
+		WithArgs(
+			"migrate", "apply",
+			// TODO: pedantically this should be ${KO_DATA_PATH}/migrations, but that requires shell expansion
+			"--dir", "file:///var/run/ko/migrations",
+			"--url", k8sDSN,
+			// apply all of them
+			"1000000000",
+		)
 	stack.AddService(service.New(
 		svcName,
 		service.WithSource(svcRepo, svcSubdir, "git", "https://github.com/fastcat/gdev.git"),
 		service.WithModalResources(service.ModeDefault,
-			k8s.Deployment(
-				applyApps.Deployment(svcName, "").
-					WithSpec(
-						applyApps.DeploymentSpec().
-							WithTemplate(
-								applyCore.PodTemplateSpec().
-									WithSpec(
-										applyCore.PodSpec().
-											WithContainers(
-												applyCore.Container().
-													WithName(svcName).
-													WithImage("ghcr.io/fastcat/gdev/ent-blog").
-													// should be PullAlways, but we don't have pull secrets setup yet
-													WithImagePullPolicy(apiCore.PullIfNotPresent).
-													WithEnv(
-														// TODO: pg service should make this available in a secret
-														applyCore.EnvVar().WithName("PGUSER").WithValue("postgres"),
-														applyCore.EnvVar().WithName("PGPASSWORD").WithValue(instance.AppName()),
-													).
-													WithArgs(
-														"-dsn",
-														fmt.Sprintf(
-															"postgresql://postgres-17:%d/ent-blog?sslmode=disable",
-															postgres.DefaultPort,
-														),
-													).
-													WithPorts(
-														applyCore.ContainerPort().
-															WithName("http").
-															WithContainerPort(8080).
-															WithProtocol(apiCore.ProtocolTCP),
-													),
-											),
-									),
-							),
+			k8s.Deployment(applyApps.Deployment(svcName, "").
+				WithSpec(applyApps.DeploymentSpec().
+					WithTemplate(applyCore.PodTemplateSpec().
+						WithSpec(applyCore.PodSpec().
+							WithInitContainers(initContainer).
+							WithContainers(appContainer),
+						),
 					),
+				),
 			),
 			// expose on a nodeport
-			k8s.Service(
-				applyCore.Service(svcName, "").
-					WithSpec(
-						applyCore.ServiceSpec().
-							WithType(apiCore.ServiceTypeNodePort).
-							WithSelector(map[string]string{
-								k8s.AppLabel(): svcName,
-							}).
-							WithPorts(
-								applyCore.ServicePort().
-									WithName("http").
-									WithPort(8080).
-									WithTargetPort(intstr.FromString("http")).
-									WithNodePort(8080),
-							),
+			k8s.Service(applyCore.Service(svcName, "").
+				WithSpec(applyCore.ServiceSpec().
+					WithType(apiCore.ServiceTypeNodePort).
+					WithSelector(map[string]string{
+						k8s.AppLabel(): svcName,
+					}).
+					WithPorts(
+						applyCore.ServicePort().
+							WithName("http").
+							WithPort(8080).
+							WithTargetPort(intstr.FromString("http")).
+							WithNodePort(8080),
 					),
+				),
 			),
 		),
 		service.WithModalResources(service.ModeLocal,

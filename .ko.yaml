@@ -11,3 +11,7 @@ builds:
     ldflags:
       - -s -w
       - -extldflags "-static"
+baseImageOverrides:
+  # add our app to the atlas image as a lazy hack instead of making a separate
+  # atlas image. migrations will be included via ko-data trickery.
+  fastcat.org/go/gdev/examples/full-stack/ent-blog: arigaio/atlas:latest-alpine
