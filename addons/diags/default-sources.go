@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	appConfig "fastcat.org/go/gdev/config"
 	"fastcat.org/go/gdev/instance"
+	appConfig "fastcat.org/go/gdev/lib/config"
 )
 
 func CollectAppInfo(ctx context.Context, coll Collector) error {

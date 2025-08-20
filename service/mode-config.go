@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 
-	"fastcat.org/go/gdev/config"
+	"fastcat.org/go/gdev/lib/config"
 )
 
 func init() {

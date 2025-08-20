@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 type timestampedMap struct {

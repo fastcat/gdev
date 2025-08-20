@@ -13,7 +13,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 func killPods(ctx context.Context) error {

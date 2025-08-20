@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"slices"
 
+	"fastcat.org/go/gdev/lib/shx"
 	"fastcat.org/go/gdev/service"
-	"fastcat.org/go/gdev/shx"
 )
 
 type buildBeforeStart struct {

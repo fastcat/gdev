@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 // Name of the step registered by [AddAptUpdate]. Steps that modify apt sources

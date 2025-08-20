@@ -11,7 +11,7 @@ import (
 
 	"fastcat.org/go/gdev/addons/build"
 	"fastcat.org/go/gdev/internal"
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 func detectNPM(root string) (build.Builder, error) {

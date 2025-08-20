@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 // Builder represents a tool that can build a repo, or a set of subdirs within

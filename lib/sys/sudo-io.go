@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 type sudoReader struct {

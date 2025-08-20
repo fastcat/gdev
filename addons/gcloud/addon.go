@@ -12,7 +12,7 @@ import (
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
 	apt_common "fastcat.org/go/gdev/addons/bootstrap/apt/common"
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 // addon describes the addon provided by this package.

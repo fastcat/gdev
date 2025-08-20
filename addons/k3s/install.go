@@ -13,8 +13,8 @@ import (
 
 	"fastcat.org/go/gdev/addons/github"
 	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/shx"
-	"fastcat.org/go/gdev/sys"
+	"fastcat.org/go/gdev/lib/shx"
+	"fastcat.org/go/gdev/lib/sys"
 )
 
 const DefaultInstallPath = "/usr/local/bin/k3s"

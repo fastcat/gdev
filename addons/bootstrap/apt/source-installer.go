@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"fastcat.org/go/gdev/sys"
+	"fastcat.org/go/gdev/lib/sys"
 )
 
 type SourceInstaller struct {

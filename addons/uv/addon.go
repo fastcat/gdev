@@ -16,7 +16,7 @@ import (
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/github"
 	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 var addon = addons.Addon[config]{

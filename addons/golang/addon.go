@@ -8,7 +8,7 @@ import (
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/build"
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 var addon = addons.Addon[config]{

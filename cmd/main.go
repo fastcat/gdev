@@ -9,8 +9,8 @@ import (
 	"syscall"
 
 	"fastcat.org/go/gdev/addons"
-	"fastcat.org/go/gdev/config"
 	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/lib/config"
 )
 
 func Main() {

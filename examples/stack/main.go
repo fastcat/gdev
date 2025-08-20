@@ -12,8 +12,8 @@ import (
 	"fastcat.org/go/gdev/addons/pm/resource"
 	"fastcat.org/go/gdev/cmd"
 	"fastcat.org/go/gdev/instance"
+	"fastcat.org/go/gdev/lib/shx"
 	"fastcat.org/go/gdev/service"
-	"fastcat.org/go/gdev/shx"
 	"fastcat.org/go/gdev/stack"
 )
 

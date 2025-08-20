@@ -11,7 +11,7 @@ import (
 	"slices"
 	"strings"
 
-	"fastcat.org/go/gdev/shx"
+	"fastcat.org/go/gdev/lib/shx"
 )
 
 func Uninstall(ctx context.Context, dest string) error {

@@ -22,10 +22,10 @@ import (
 	pmResource "fastcat.org/go/gdev/addons/pm/resource"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/lib/sys"
 	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/service"
 	"fastcat.org/go/gdev/stack"
-	"fastcat.org/go/gdev/sys"
 )
 
 var addon = addons.Addon[config]{

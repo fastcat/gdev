@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"fastcat.org/go/gdev/addons/pm/api"
-	"fastcat.org/go/gdev/sys"
+	"fastcat.org/go/gdev/lib/sys"
 )
 
 func AutoStart(ctx context.Context, client api.API) error {
