@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	apiCore "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	applyApps "k8s.io/client-go/applyconfigurations/apps/v1"
 	applyCore "k8s.io/client-go/applyconfigurations/core/v1"
 
@@ -73,10 +74,34 @@ func main() {
 													).
 													WithArgs(
 														"-dsn",
-														fmt.Sprintf("postgresql://localhost:%d/ent-blog?sslmode=disable", pgNodePort),
+														fmt.Sprintf("postgresql://postgres-17:%d/ent-blog?sslmode=disable", postgres.DefaultPort),
+													).
+													WithPorts(
+														applyCore.ContainerPort().
+															WithName("http").
+															WithContainerPort(8080).
+															WithProtocol(apiCore.ProtocolTCP),
 													),
 											),
 									),
+							),
+					),
+			),
+			// expose on a nodeport
+			k8s.Service(
+				applyCore.Service(svcName, "").
+					WithSpec(
+						applyCore.ServiceSpec().
+							WithType(apiCore.ServiceTypeNodePort).
+							WithSelector(map[string]string{
+								k8s.AppLabel(): svcName,
+							}).
+							WithPorts(
+								applyCore.ServicePort().
+									WithName("http").
+									WithPort(8080).
+									WithTargetPort(intstr.FromString("http")).
+									WithNodePort(8080),
 							),
 					),
 			),
