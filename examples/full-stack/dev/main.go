@@ -9,7 +9,7 @@ import (
 	applyCore "k8s.io/client-go/applyconfigurations/core/v1"
 
 	"fastcat.org/go/gdev/addons/build"
-	"fastcat.org/go/gdev/addons/containerd"
+	"fastcat.org/go/gdev/addons/docker"
 	"fastcat.org/go/gdev/addons/golang"
 	"fastcat.org/go/gdev/addons/k3s"
 	"fastcat.org/go/gdev/addons/k8s"
@@ -32,7 +32,8 @@ func main() {
 
 	pm.Configure()
 	k3s.Configure(
-		k3s.WithProvider(containerd.K3SProvider()),
+		// use the docker provider for now so that we can manually pull images
+		k3s.WithProvider(docker.K3SProvider()),
 		k3s.WithK3SArgs("--service-node-port-range=1024-65535"),
 	)
 	build.Configure()
@@ -63,7 +64,8 @@ func main() {
 												applyCore.Container().
 													WithName(svcName).
 													WithImage("ghcr.io/fastcat/gdev/ent-blog").
-													WithImagePullPolicy(apiCore.PullAlways). // because we use the floating latest tag
+													// should be PullAlways, but we don't have pull secrets setup yet
+													WithImagePullPolicy(apiCore.PullIfNotPresent).
 													WithEnv(
 														// TODO: pg service should make this available in a secret
 														applyCore.EnvVar().WithName("PGUSER").WithValue("postgres"),

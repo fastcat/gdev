@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"flag"
 	"fmt"
@@ -9,13 +10,15 @@ import (
 	"log"
 	"net/http"
 
+	"entgo.io/ent/dialect"
+	ed_sql "entgo.io/ent/dialect/sql"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
 	"fastcat.org/go/gdev/examples/full-stack/ent-blog/ent"
 	"fastcat.org/go/gdev/examples/full-stack/ent-blog/ent/post"
 
-	_ "github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"fastcat.org/go/gdev/examples/full-stack/ent-blog/ent/user"
 )
@@ -33,11 +36,13 @@ func main() {
 	flag.Parse()
 
 	// Instantiate the Ent client.
-	client, err := ent.Open("postgresql", dsn)
+	conn, err := sql.Open("pgx/v5", dsn)
 	if err != nil {
-		log.Fatalf("failed connecting to postgresql: %v", err)
+		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
-	defer client.Close()
+	drv := ed_sql.OpenDB(dialect.Postgres, conn)
+	client := ent.NewClient(ent.Driver(drv))
+	defer client.Close() // will call conn.Close()
 
 	ctx := context.Background()
 	// If we don't have any posts yet, seed the database.
