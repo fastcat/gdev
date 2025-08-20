@@ -6,13 +6,15 @@ import (
 
 	apiAppsV1 "k8s.io/api/apps/v1"
 	apiCoreV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
+	apiResource "k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
 	applyMetaV1 "k8s.io/client-go/applyconfigurations/meta/v1"
 
 	"fastcat.org/go/gdev/addons/k8s"
 	"fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/service"
 )
 
@@ -32,20 +34,25 @@ func Service(
 	if cfg.name == "" {
 		cfg.name = fmt.Sprintf("postgres-%d", cfg.major)
 	}
+	resources := []resource.Resource{
+		cfg.pvc(),
+		cfg.deployment(),
+		cfg.service(),
+	}
+	if cfg.nodePort > 0 {
+		resources = append(resources, cfg.nodePortService())
+	}
 	return service.New(
 		cfg.name,
-		service.WithResources(
-			cfg.pvc(),
-			cfg.deployment(),
-			cfg.service(),
-		),
+		service.WithResources(resources...),
 	)
 }
 
 type pgSvcConfig struct {
-	name    string
-	major   int
-	variant *string
+	name     string
+	major    int
+	variant  *string
+	nodePort int
 }
 
 type pgSvcOpt func(c *pgSvcConfig)
@@ -95,6 +102,21 @@ func WithVariant(variant string) pgSvcOpt {
 	}
 }
 
+// Enables or disables exposing the postgres instance on a k8s NodePort.
+//
+// If port is 0, the NodePort will be disabled. Else the value is the exposed
+// port number.
+//
+// If port is not in [0..65535], it will panic.
+func WithNodePort(port int) pgSvcOpt {
+	if port < 0 || port > 65535 {
+		panic(fmt.Errorf("invalid tcp port %d", port))
+	}
+	return func(c *pgSvcConfig) {
+		c.nodePort = port
+	}
+}
+
 const DefaultPort = 5432
 
 const pgDataDir = "/var/lib/postgresql/data"
@@ -110,12 +132,14 @@ func (c pgSvcConfig) pvc() k8s.Resource {
 			// they were, so skip it. at least a request is required however.
 			WithResources(applyCoreV1.VolumeResourceRequirements().
 				WithRequests(apiCoreV1.ResourceList{
-					apiCoreV1.ResourceStorage: resource.MustParse("1Gi"),
+					apiCoreV1.ResourceStorage: apiResource.MustParse("1Gi"),
 				}),
 			),
 		)
 	return k8s.PersistentVolumeClaim(pvc)
 }
+
+const containerPortName = "postgres"
 
 func (c pgSvcConfig) deployment() k8s.ContainerResource {
 	img := "postgres:" + strconv.Itoa(c.major)
@@ -144,7 +168,7 @@ func (c pgSvcConfig) deployment() k8s.ContainerResource {
 		// TODO: allow setting config options, pass as args
 		WithPorts(
 			applyCoreV1.ContainerPort().
-				WithName("postgres").
+				WithName(containerPortName).
 				WithProtocol(apiCoreV1.ProtocolTCP).
 				WithContainerPort(DefaultPort),
 		).
@@ -197,7 +221,27 @@ func (c pgSvcConfig) service() k8s.Resource {
 					WithName("postgresql").
 					WithAppProtocol("postgresql").
 					WithProtocol(apiCoreV1.ProtocolTCP).
-					WithPort(DefaultPort),
+					WithPort(DefaultPort).
+					WithTargetPort(intstr.FromString(containerPortName)),
+			).
+			WithSelector(c.selector()),
+	)
+	return k8s.Service(s)
+}
+
+func (c pgSvcConfig) nodePortService() k8s.Resource {
+	s := applyCoreV1.Service(c.name+"-node", "").WithSpec(
+		applyCoreV1.ServiceSpec().
+			// TODO: support changing all these options
+			WithType(apiCoreV1.ServiceTypeNodePort).
+			WithPorts(
+				applyCoreV1.ServicePort().
+					WithName("postgresql-node").
+					WithAppProtocol("postgresql").
+					WithProtocol(apiCoreV1.ProtocolTCP).
+					WithPort(DefaultPort).
+					WithTargetPort(intstr.FromString(containerPortName)).
+					WithNodePort(int32(c.nodePort)),
 			).
 			WithSelector(c.selector()),
 	)

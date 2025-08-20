@@ -6,3 +6,8 @@ builds:
     ldflags:
       - -s -w
       - -extldflags "-static"
+  - id: examples-ent-blog-svc
+    main: ./examples/ent-blog/svc
+    ldflags:
+      - -s -w
+      - -extldflags "-static"

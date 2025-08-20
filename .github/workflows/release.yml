@@ -39,14 +39,6 @@ jobs:
     - name: Set up ko
       uses: ko-build/setup-ko@v0.8
 
-    - name: "Build svc2"
-      working-directory: examples/stack/svc2
-      run: |
-        set -xe
-        node common/scripts/install-run-rush.js install
-        node common/scripts/install-run-rush.js build --verbose
-        node common/scripts/install-run-rush.js deploy
-
     - name: Tag Release
       id: semrel
       uses: go-semantic-release/action@v1
@@ -76,6 +68,26 @@ jobs:
           --tags "latest,${{ steps.semrel.outputs.version }}" \
           ./examples/stack/svc1
 
+    - name: "Build & Publish ent-blog svc"
+      # TODO: use mage for this so it can pick up all the defined builds automatically
+      # make sure to overwrite all the labels from the chainguard base image
+      run: |
+        ko build \
+          --base-import-paths \
+          --image-label org.opencontainers.image.authors="fastcat" \
+          --image-label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/ent-blog/svc \
+          --image-label org.opencontainers.image.url=${{ github.repositoryUrl }} \
+          --image-label org.opencontainers.image.vendor="fastcat" \
+          --tags "latest,${{ steps.semrel.outputs.version }}" \
+          ./examples/ent-blog/svc
+
+    - name: "Build svc2"
+      working-directory: examples/stack/svc2
+      run: |
+        set -xe
+        node common/scripts/install-run-rush.js install
+        node common/scripts/install-run-rush.js build --verbose
+        node common/scripts/install-run-rush.js deploy
     - name: Publish svc2
       uses: docker/build-push-action@v6
       with:

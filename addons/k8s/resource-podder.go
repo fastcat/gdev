@@ -5,8 +5,6 @@ import (
 
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	applyBatchV1 "k8s.io/client-go/applyconfigurations/batch/v1"
-
-	"fastcat.org/go/gdev/addons/containers"
 )
 
 // podder generalizes the pattern of a k8s resource that schedules pods
@@ -49,10 +47,11 @@ func (p *podder[Client, Resource, Apply]) ContainerImages(ctx context.Context) (
 }
 
 func StatefulSet(apply *applyAppsV1.StatefulSetApplyConfiguration) ContainerResource {
-	l := containers.DefaultLabels()
+	l := AppLabels(*apply.Name)
 	apply.
 		WithLabels(l).
 		WithAnnotations(l)
+	apply.Spec.WithSelector(AppSelector(*apply.Name))
 	apply.Spec.Template.
 		WithLabels(l).
 		WithAnnotations(l)
@@ -60,10 +59,11 @@ func StatefulSet(apply *applyAppsV1.StatefulSetApplyConfiguration) ContainerReso
 }
 
 func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) ContainerResource {
-	l := containers.DefaultLabels()
+	l := AppLabels(*apply.Name)
 	apply.
 		WithLabels(l).
 		WithAnnotations(l)
+	apply.Spec.WithSelector(AppSelector(*apply.Name))
 	apply.Spec.Template.
 		WithLabels(l).
 		WithAnnotations(l)
@@ -71,10 +71,11 @@ func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) ContainerResour
 }
 
 func CronJob(apply *applyBatchV1.CronJobApplyConfiguration) ContainerResource {
-	l := containers.DefaultLabels()
+	l := AppLabels(*apply.Name)
 	apply.
 		WithLabels(l).
 		WithAnnotations(l)
+	apply.Spec.JobTemplate.Spec.WithSelector(AppSelector(*apply.Name))
 	apply.Spec.JobTemplate.Spec.Template.
 		WithLabels(l).
 		WithAnnotations(l)
@@ -82,10 +83,11 @@ func CronJob(apply *applyBatchV1.CronJobApplyConfiguration) ContainerResource {
 }
 
 func BatchJob(apply *applyBatchV1.JobApplyConfiguration) ContainerResource {
-	l := containers.DefaultLabels()
+	l := AppLabels(*apply.Name)
 	apply.
 		WithLabels(l).
 		WithAnnotations(l)
+	apply.Spec.WithSelector(AppSelector(*apply.Name))
 	apply.Spec.Template.
 		WithLabels(l).
 		WithAnnotations(l)
