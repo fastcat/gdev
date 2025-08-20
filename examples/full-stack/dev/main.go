@@ -74,7 +74,10 @@ func main() {
 													).
 													WithArgs(
 														"-dsn",
-														fmt.Sprintf("postgresql://postgres-17:%d/ent-blog?sslmode=disable", postgres.DefaultPort),
+														fmt.Sprintf(
+															"postgresql://postgres-17:%d/ent-blog?sslmode=disable",
+															postgres.DefaultPort,
+														),
 													).
 													WithPorts(
 														applyCore.ContainerPort().

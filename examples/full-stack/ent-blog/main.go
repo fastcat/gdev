@@ -42,7 +42,7 @@ func main() {
 	}
 	drv := ed_sql.OpenDB(dialect.Postgres, conn)
 	client := ent.NewClient(ent.Driver(drv))
-	defer client.Close() // will call conn.Close()
+	defer client.Close() // nolint:errcheck // will call conn.Close()
 
 	ctx := context.Background()
 	// If we don't have any posts yet, seed the database.

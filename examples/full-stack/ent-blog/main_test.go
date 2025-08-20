@@ -16,7 +16,7 @@ import (
 func TestIndex(t *testing.T) {
 	// Initialize an Ent client that uses an in memory SQLite db.
 	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
+	defer client.Close() // nolint:errcheck
 
 	// seed the database with our "Hello, world" post and user.
 	err := seed(context.Background(), client)
@@ -45,7 +45,7 @@ func TestIndex(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
+	defer client.Close() // nolint:errcheck
 	err := seed(context.Background(), client)
 	require.NoError(t, err)
 
