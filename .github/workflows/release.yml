@@ -30,12 +30,6 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '~1.25.0'
-    - name: Set up NodeJS
-      uses: actions/setup-node@v4
-      with:
-        node-version: "lts/*"
-        # TODO: cache doesn't support rush
-        cache-dependency-path: examples/stack/svc2/common/config/rush/pnpm-lock.yaml
     - name: Set up ko
       uses: ko-build/setup-ko@v0.8
 
@@ -54,7 +48,29 @@ jobs:
         git fetch origin "refs/tags/${ver}:refs/tags/${ver}"
         go tool mage -v tagSubModules "${ver}"
         git push origin $(git tag -l "*/${ver}")
+    outputs:
+        version: "${{ steps.semrel.outputs.version }}"
 
+  publish-e-s-svc1:
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: fastcat.org/go/gdev
+      GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+         # get enough commits to hopefully allow goreleaser to generate a proper
+         # changelog since the last release
+        fetch-depth: 100
+    - name: Setup Go Module Access Token
+      run: |
+        git config --global url."https://x-access-token:$GH_ACTIONS_TOKEN@github.com/fastcat/gdev".insteadOf https://github.com/fastcat/gdev
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '~1.25.0'
     - name: Build & Publish svc1
       # TODO: use mage for this so it can pick up all the defined builds automatically
       # make sure to overwrite all the labels from the chainguard base image
@@ -66,7 +82,7 @@ jobs:
           org.opencontainers.image.url=${{ github.repositoryUrl }}/tree/${{ github.sha }}/examples/stack/svc1
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.licenses="Apache-2.0"
-          org.opencontainers.image.version="${{ steps.semrel.outputs.version }}"
+          org.opencontainers.image.version="${{ needs.release.outputs.version }}"
           org.opencontainers.image.vendor="fastcat"
         )
         labelargs=()
@@ -76,33 +92,28 @@ jobs:
         ko build \
           --base-import-paths \
           "${labelargs[@]}" \
-          --tags "latest,${{ steps.semrel.outputs.version }}" \
+          --tags "latest,${{ needs.release.outputs.version }}" \
           ./examples/stack/svc1
 
-    - name: "Build & Publish ent-blog svc"
-      # TODO: use mage for this so it can pick up all the defined builds automatically
-      # make sure to overwrite all the labels from the chainguard base image
-      run: |
-        # DRY?
-        labels=(
-          org.opencontainers.image.authors="fastcat"
-          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-          org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/full-stack/ent-blog
-          org.opencontainers.image.revision=${{ github.sha }}
-          org.opencontainers.image.licenses="Apache-2.0"
-          org.opencontainers.image.version="${{ steps.semrel.outputs.version }}"
-          org.opencontainers.image.vendor="fastcat"
-        )
-        labelargs=()
-        for label in "${labels[@]}"; do
-          labelargs+=(--image-label "$label" --image-annotation "$label")
-        done
-        ko build \
-          --base-import-paths \
-          "${labelargs[@]}" \
-          --tags "latest,${{ steps.semrel.outputs.version }}" \
-          ./examples/full-stack/ent-blog
-
+  publish-e-s-svc2:
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: fastcat.org/go/gdev
+      GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+         # get enough commits to hopefully allow goreleaser to generate a proper
+         # changelog since the last release
+        fetch-depth: 100
+    - name: Set up NodeJS
+      uses: actions/setup-node@v4
+      with:
+        node-version: "lts/*"
+        # TODO: cache doesn't support rush
+        cache-dependency-path: examples/stack/svc2/common/config/rush/pnpm-lock.yaml
     - name: "Build svc2"
       working-directory: examples/stack/svc2
       run: |
@@ -117,7 +128,7 @@ jobs:
         file: examples/stack/svc2/app/Dockerfile
         push: true
         tags: |
-          ghcr.io/fastcat/gdev/svc2:${{ steps.semrel.outputs.version }}
+          ghcr.io/fastcat/gdev/svc2:${{ needs.release.outputs.version }}
           ghcr.io/fastcat/gdev/svc2:latest
         labels: |
           org.opencontainers.image.authors=fastcat
@@ -125,7 +136,7 @@ jobs:
           org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc2
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.licenses="Apache-2.0"
-          org.opencontainers.image.version="${{ steps.semrel.outputs.version }}"
+          org.opencontainers.image.version="${{ needs.release.outputs.version }}"
           org.opencontainers.image.vendor=fastcat
         annotations: |
           org.opencontainers.image.authors=fastcat
@@ -133,9 +144,73 @@ jobs:
           org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc2
           org.opencontainers.image.revision=${{ github.sha }}
           org.opencontainers.image.licenses="Apache-2.0"
-          org.opencontainers.image.version="${{ steps.semrel.outputs.version }}"
+          org.opencontainers.image.version="${{ needs.release.outputs.version }}"
           org.opencontainers.image.vendor=fastcat
 
+  publish-e-fs-ent-blog:
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: fastcat.org/go/gdev
+      GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+         # get enough commits to hopefully allow goreleaser to generate a proper
+         # changelog since the last release
+        fetch-depth: 100
+    - name: Setup Go Module Access Token
+      run: |
+        git config --global url."https://x-access-token:$GH_ACTIONS_TOKEN@github.com/fastcat/gdev".insteadOf https://github.com/fastcat/gdev
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '~1.25.0'
+    - name: "Build & Publish ent-blog svc"
+      # TODO: use mage for this so it can pick up all the defined builds automatically
+      # make sure to overwrite all the labels from the chainguard base image
+      run: |
+        # DRY?
+        labels=(
+          org.opencontainers.image.authors="fastcat"
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/full-stack/ent-blog
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.licenses="Apache-2.0"
+          org.opencontainers.image.version="${{ needs.release.outputs.version }}"
+          org.opencontainers.image.vendor="fastcat"
+        )
+        labelargs=()
+        for label in "${labels[@]}"; do
+          labelargs+=(--image-label "$label" --image-annotation "$label")
+        done
+        ko build \
+          --base-import-paths \
+          "${labelargs[@]}" \
+          --tags "latest,${{ needs.release.outputs.version }}" \
+          ./examples/full-stack/ent-blog
+
+  publish-e-gdev-deb:
+    needs: release
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: fastcat.org/go/gdev
+      GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+         # get enough commits to hopefully allow goreleaser to generate a proper
+         # changelog since the last release
+        fetch-depth: 100
+    - name: Setup Go Module Access Token
+      run: |
+        git config --global url."https://x-access-token:$GH_ACTIONS_TOKEN@github.com/fastcat/gdev".insteadOf https://github.com/fastcat/gdev
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '~1.25.0'
     - name: Publish gdev example
       uses: goreleaser/goreleaser-action@v6
       with:
