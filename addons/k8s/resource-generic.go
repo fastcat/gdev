@@ -74,7 +74,7 @@ func (r *appliable[Client, Resource, Apply]) Ready(ctx context.Context) (bool, e
 	if err != nil {
 		return false, err
 	}
-	return r.acc.ready(ctx, obj)
+	return r.acc.ready(ctx, resource.ContextValue[Interface](ctx), obj)
 }
 
 // K8SKind implements ContainerResource.

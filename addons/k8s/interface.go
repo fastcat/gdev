@@ -10,6 +10,7 @@ import (
 	appsV1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 	batchV1 "k8s.io/client-go/kubernetes/typed/batch/v1"
 	coreV1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	discoveryV1 "k8s.io/client-go/kubernetes/typed/discovery/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/flowcontrol"
 )
@@ -18,8 +19,9 @@ import (
 // packages that get pulled in and avoid binary bloat.
 type Interface interface {
 	AppsV1() appsV1.AppsV1Interface
-	CoreV1() coreV1.CoreV1Interface
 	BatchV1() batchV1.BatchV1Interface
+	CoreV1() coreV1.CoreV1Interface
+	DiscoveryV1() discoveryV1.DiscoveryV1Interface
 	Health() HealthInterface
 }
 
@@ -37,10 +39,11 @@ type HealthInterface interface {
 }
 
 type clientset struct {
-	apps   appsV1.AppsV1Interface
-	core   coreV1.CoreV1Interface
-	batch  batchV1.BatchV1Interface
-	health HealthInterface
+	apps      appsV1.AppsV1Interface
+	batch     batchV1.BatchV1Interface
+	core      coreV1.CoreV1Interface
+	discovery discoveryV1.DiscoveryV1Interface
+	health    HealthInterface
 }
 
 // AppsV1 implements Interface.
@@ -56,6 +59,11 @@ func (c *clientset) BatchV1() batchV1.BatchV1Interface {
 // CoreV1 implements Interface.
 func (c *clientset) CoreV1() coreV1.CoreV1Interface {
 	return c.core
+}
+
+// DiscoveryV1 implements Interface.
+func (c *clientset) DiscoveryV1() discoveryV1.DiscoveryV1Interface {
+	return c.discovery
 }
 
 // Health implements Interface.
@@ -96,16 +104,19 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*clientset,
 
 	var cs clientset
 	var err error
-	if cs.health, err = NewHealthClient(&configShallowCopy, httpClient); err != nil {
+	if cs.apps, err = appsV1.NewForConfigAndClient(&configShallowCopy, httpClient); err != nil {
 		return nil, err
 	}
-	if cs.apps, err = appsV1.NewForConfigAndClient(&configShallowCopy, httpClient); err != nil {
+	if cs.batch, err = batchV1.NewForConfigAndClient(&configShallowCopy, httpClient); err != nil {
 		return nil, err
 	}
 	if cs.core, err = coreV1.NewForConfigAndClient(&configShallowCopy, httpClient); err != nil {
 		return nil, err
 	}
-	if cs.batch, err = batchV1.NewForConfigAndClient(&configShallowCopy, httpClient); err != nil {
+	if cs.discovery, err = discoveryV1.NewForConfigAndClient(&configShallowCopy, httpClient); err != nil {
+		return nil, err
+	}
+	if cs.health, err = NewHealthClient(&configShallowCopy, httpClient); err != nil {
 		return nil, err
 	}
 

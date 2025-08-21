@@ -32,7 +32,13 @@ func Service(
 		resources = append(resources, cfg.nodePortService())
 	}
 	if cfg.waitReady {
-		resources = append(resources, k8s.DeploymentReadyWaiter(cfg.name))
+		resources = append(resources,
+			k8s.DeploymentReadyWaiter(cfg.name),
+			// takes a moment after the deployment is ready for the service to be
+			// ready (i.e. connectable)
+			k8s.ServiceReadyWaiter(cfg.name),
+			k8s.ServiceReadyWaiter(cfg.name+"-node"),
+		)
 	}
 	if len(cfg.initDBNames) > 0 {
 		if cfg.nodePort <= 0 {

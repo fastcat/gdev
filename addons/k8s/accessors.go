@@ -2,18 +2,22 @@ package k8s
 
 import (
 	"context"
+	"time"
 
 	apiAppsV1 "k8s.io/api/apps/v1"
 	apiBatchV1 "k8s.io/api/batch/v1"
 	apiCoreV1 "k8s.io/api/core/v1"
+	apiDiscoveryV1 "k8s.io/api/discovery/v1"
 	apiMetaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	applyAppsV1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	applyBatchV1 "k8s.io/client-go/applyconfigurations/batch/v1"
 	applyCoreV1 "k8s.io/client-go/applyconfigurations/core/v1"
+	applyDiscoveryV1 "k8s.io/client-go/applyconfigurations/discovery/v1"
 	applyMetaV1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	clientAppsV1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 	clientBatchV1 "k8s.io/client-go/kubernetes/typed/batch/v1" // for cronjob
 	clientCoreV1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	clientDiscoveryV1 "k8s.io/client-go/kubernetes/typed/discovery/v1"
 
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
@@ -54,7 +58,7 @@ type accessor[
 	)
 	resourceMeta func(r *Resource) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta)
 	podTemplate  func(a Apply) *applyCoreV1.PodSpecApplyConfiguration
-	ready        func(ctx context.Context, r *Resource) (bool, error)
+	ready        func(ctx context.Context, c Interface, r *Resource) (bool, error)
 }
 
 func applyToAPITypeMeta(tm applyMetaV1.TypeMetaApplyConfiguration) apiMetaV1.TypeMeta {
@@ -98,7 +102,7 @@ var accStatefulSet = accessor[
 	podTemplate: func(a *applyAppsV1.StatefulSetApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
 		return a.Spec.Template.Spec
 	},
-	ready: func(ctx context.Context, r *apiAppsV1.StatefulSet) (bool, error) {
+	ready: func(ctx context.Context, _ Interface, r *apiAppsV1.StatefulSet) (bool, error) {
 		s := r.Status
 		// statefulset knows what up to date means
 		ready := s.ObservedGeneration == r.Generation &&
@@ -146,7 +150,7 @@ var accDeployment = accessor[
 	podTemplate: func(a *applyAppsV1.DeploymentApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
 		return a.Spec.Template.Spec
 	},
-	ready: func(ctx context.Context, r *apiAppsV1.Deployment) (bool, error) {
+	ready: func(ctx context.Context, _ Interface, r *apiAppsV1.Deployment) (bool, error) {
 		s := r.Status
 		// deployment knows what up to date means
 		ready := s.ObservedGeneration == r.Generation &&
@@ -190,9 +194,88 @@ var accService = accessor[
 	resourceMeta: func(r *apiCoreV1.Service) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
-	ready: func(context.Context, *apiCoreV1.Service) (bool, error) {
-		// services have no readiness gates
-		return true, nil
+	ready: func(ctx context.Context, c Interface, svc *apiCoreV1.Service) (bool, error) {
+		// service is ready if it has a backend to talk to
+		epc := accEPSlice.getClient(c, Namespace(svc.Namespace))
+		lo := listOpts(ctx)
+		lo.LabelSelector = apiMetaV1.FormatLabelSelector(&apiMetaV1.LabelSelector{
+			MatchLabels: map[string]string{
+				`kubernetes.io/service-name`: svc.Name,
+			},
+		})
+		eps, err := accEPSlice.list(ctx, epc, lo)
+		if err != nil {
+			return false, err
+		}
+		for _, ep := range eps {
+			if ready, err := accEPSlice.ready(ctx, c, &ep); err != nil {
+				return false, err
+			} else if ready {
+				return true, nil
+			}
+		}
+		return false, nil
+	},
+}
+
+var accEPSlice = accessor[
+	clientDiscoveryV1.EndpointSliceInterface,
+	apiDiscoveryV1.EndpointSlice,
+	*applyDiscoveryV1.EndpointSliceApplyConfiguration,
+]{
+	typ: applyToAPITypeMeta(applyDiscoveryV1.EndpointSlice("", "").TypeMetaApplyConfiguration),
+	getClient: func(c Interface, ns Namespace) clientDiscoveryV1.EndpointSliceInterface {
+		return c.DiscoveryV1().EndpointSlices(string(ns))
+	},
+	list: func(
+		ctx context.Context,
+		c clientDiscoveryV1.EndpointSliceInterface,
+		opts apiMetaV1.ListOptions,
+	) ([]apiDiscoveryV1.EndpointSlice, error) {
+		l, err := c.List(ctx, opts)
+		if err != nil {
+			return nil, err
+		}
+		return l.Items, nil
+	},
+	applyMeta: func(a *applyDiscoveryV1.EndpointSliceApplyConfiguration) (
+		*applyMetaV1.TypeMetaApplyConfiguration,
+		*applyMetaV1.ObjectMetaApplyConfiguration,
+	) {
+		// this will ensure the ObjectMeta... is populated
+		a.GetName()
+		return &a.TypeMetaApplyConfiguration, a.ObjectMetaApplyConfiguration
+	},
+	resourceMeta: func(r *apiDiscoveryV1.EndpointSlice) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
+		return &r.TypeMeta, &r.ObjectMeta
+	},
+	ready: func(_ context.Context, _ Interface, eps *apiDiscoveryV1.EndpointSlice) (bool, error) {
+		// endpoint slice is ready if it has at least one healthy endpoint, and if
+		// it's a bit old, as nodeport stuff seems to require a bit of extra time
+		// before it is actually ready.
+		if mtime, err := time.Parse(
+			time.RFC3339Nano,
+			eps.Annotations[`endpoints.kubernetes.io/last-change-trigger-time`],
+		); err != nil {
+			return false, err
+		} else if time.Since(mtime) < 1500*time.Millisecond {
+			// Sadly this is only reported at second-level precision, so we can't
+			// insert a sub-second delay here. We really want a half-second delay, but
+			// we don't know when in the listed second the actual event happened, so
+			// we have to pessimistically assume it was at .999, but is reporting at
+			// .000, so we need to wait for 1.500.
+			return false, nil
+		}
+
+		for _, ep := range eps.Endpoints {
+			if len(ep.Addresses) > 0 &&
+				internal.ValueOrZero(ep.Conditions.Ready) &&
+				internal.ValueOrZero(ep.Conditions.Serving) &&
+				!internal.ValueOrZero(ep.Conditions.Terminating) {
+				return true, nil
+			}
+		}
+		return false, nil
 	},
 }
 
@@ -227,7 +310,7 @@ var accConfigMap = accessor[
 	resourceMeta: func(r *apiCoreV1.ConfigMap) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
-	ready: func(context.Context, *apiCoreV1.ConfigMap) (bool, error) {
+	ready: func(context.Context, Interface, *apiCoreV1.ConfigMap) (bool, error) {
 		// config maps have no readiness gates
 		return true, nil
 	},
@@ -264,7 +347,7 @@ var accPVC = accessor[
 	resourceMeta: func(r *apiCoreV1.PersistentVolumeClaim) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
-	ready: func(ctx context.Context, r *apiCoreV1.PersistentVolumeClaim) (bool, error) {
+	ready: func(ctx context.Context, _ Interface, r *apiCoreV1.PersistentVolumeClaim) (bool, error) {
 		if r.Status.Phase != apiCoreV1.ClaimBound {
 			// not bound to a PV
 			return false, nil
@@ -357,7 +440,7 @@ var accCronJob = accessor[
 	podTemplate: func(a *applyBatchV1.CronJobApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
 		return a.Spec.JobTemplate.Spec.Template.Spec
 	},
-	ready: func(ctx context.Context, r *apiBatchV1.CronJob) (bool, error) {
+	ready: func(ctx context.Context, _ Interface, r *apiBatchV1.CronJob) (bool, error) {
 		// TODO: check if it has run, and if the last run was successful?
 		return true, nil
 	},
@@ -397,7 +480,7 @@ var accBatchJob = accessor[
 	podTemplate: func(a *applyBatchV1.JobApplyConfiguration) *applyCoreV1.PodSpecApplyConfiguration {
 		return a.Spec.Template.Spec
 	},
-	ready: func(ctx context.Context, r *apiBatchV1.Job) (bool, error) {
+	ready: func(ctx context.Context, _ Interface, r *apiBatchV1.Job) (bool, error) {
 		// batch jobs have a ready status for when they are running, but we want to
 		// wait for them to finish given how this readiness gate is used.
 		s := r.Status
@@ -446,7 +529,7 @@ var accPod = accessor[
 	resourceMeta: func(r *apiCoreV1.Pod) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
-	ready: func(ctx context.Context, r *apiCoreV1.Pod) (bool, error) {
+	ready: func(ctx context.Context, _ Interface, r *apiCoreV1.Pod) (bool, error) {
 		// use the pod conditions to determine readiness
 		for _, c := range r.Status.Conditions {
 			if c.Type == apiCoreV1.PodReady {
@@ -489,7 +572,7 @@ var accSecret = accessor[
 	resourceMeta: func(r *apiCoreV1.Secret) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
-	ready: func(context.Context, *apiCoreV1.Secret) (bool, error) {
+	ready: func(context.Context, Interface, *apiCoreV1.Secret) (bool, error) {
 		// secrets have no readiness gates
 		return true, nil
 	},
@@ -526,7 +609,7 @@ var accNode = accessor[
 	resourceMeta: func(r *apiCoreV1.Node) (*apiMetaV1.TypeMeta, *apiMetaV1.ObjectMeta) {
 		return &r.TypeMeta, &r.ObjectMeta
 	},
-	ready: func(ctx context.Context, r *apiCoreV1.Node) (bool, error) {
+	ready: func(ctx context.Context, _ Interface, r *apiCoreV1.Node) (bool, error) {
 		// use the node conditions to determine readiness
 		for _, c := range r.Status.Conditions {
 			if c.Type == apiCoreV1.NodeReady {

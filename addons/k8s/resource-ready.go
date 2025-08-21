@@ -52,7 +52,7 @@ func NodeReadyWaiter() resource.Resource {
 			return false, err
 		}
 		for i := range l {
-			if ready, err := accNode.ready(ctx, &l[i]); err != nil {
+			if ready, err := accNode.ready(ctx, client, &l[i]); err != nil {
 				return false, err
 			} else if !ready {
 				return false, nil
@@ -76,6 +76,13 @@ func StatefulsetReadyWaiter(name string) resource.Resource {
 	return accReadyWaiter(accStatefulSet, name)
 }
 
+// ServiceReadyWaiter creates a Resource that will block waiting for the
+// named Service to be ready. It will error out if the Service does not
+// exist. Ready for a service means at least one healthy endpoint.
+func ServiceReadyWaiter(name string) resource.Resource {
+	return accReadyWaiter(accService, name)
+}
+
 func accReadyWaiter[
 	Client client[Resource, Apply],
 	Resource any,
@@ -89,6 +96,6 @@ func accReadyWaiter[
 		if err != nil {
 			return false, err
 		}
-		return acc.ready(ctx, r)
+		return acc.ready(ctx, kc, r)
 	})
 }
