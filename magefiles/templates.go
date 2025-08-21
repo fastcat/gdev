@@ -23,6 +23,11 @@ var workFile = sync.OnceValues(func() (*modfile.WorkFile, error) {
 	}
 })
 
+// Generate `./dir/...` for each module in the work file, except the one(s)
+// listed.
+//
+// If you don't need to exclude any, then use the `work` pattern instead if the
+// tool supports it.
 func modSpreads(exclude ...string) []string {
 	w, err := workFile()
 	if err != nil {

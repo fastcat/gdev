@@ -60,6 +60,7 @@ func (Lint) Other(ctx context.Context) /* error */ {
 
 func (Lint) Golangci(ctx context.Context) error {
 	fmt.Println("Lint: golangci-lint")
+	// golangci-lint doesn't support the `work` pattern
 	return shx.Cmd(ctx, findGCI(), append([]string{"run"}, modSpreads()...)...).
 		With(
 			// getting told the linter failed without seeing why is useless
@@ -70,11 +71,12 @@ func (Lint) Golangci(ctx context.Context) error {
 
 func (Lint) Govulncheck(ctx context.Context) error {
 	fmt.Println("Lint: govulncheck")
-	return shx.Run(ctx, "go", append([]string{"tool", "govulncheck"}, modSpreads()...)...)
+	return shx.Run(ctx, "go", "tool", "govulncheck", "work")
 }
 
 func Format(ctx context.Context) error {
 	fmt.Println("Format: golangci-lint")
+	// golangci-lint doesn't support the `work` pattern
 	return shx.Run(ctx, findGCI(), append([]string{"fmt"}, modSpreads()...)...)
 }
 
