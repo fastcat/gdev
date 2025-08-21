@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -54,11 +55,23 @@ func (r *initDBsResource) Start(ctx context.Context) error {
 			return fmt.Errorf("unexpected credential %q", k)
 		}
 	}
-	conn, err := pgx.ConnectConfig(ctx, cc)
-	if err != nil {
-		return err
+	var conn *pgx.Conn
+	connRetry := time.NewTicker(100 * time.Millisecond)
+	defer connRetry.Stop()
+	for {
+		conn, err = pgx.ConnectConfig(ctx, cc)
+		if err == nil {
+			defer conn.Close(ctx) // nolint:errcheck
+			break
+		}
+		// TODO: print why it isn't ready
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-connRetry.C:
+			// continue & retry
+		}
 	}
-	defer conn.Close(ctx) // nolint:errcheck
 
 	for _, dbName := range r.cfg.initDBNames {
 		safeName := pgx.Identifier{dbName}.Sanitize()
