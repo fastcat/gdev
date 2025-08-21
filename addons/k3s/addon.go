@@ -299,12 +299,14 @@ func stackService(cfg *config) service.Service {
 						// TODO: provide the certs to validate this somehow
 						Insecure: true,
 						Port:     6443,
-						Path:     "/ping",
+						// TODO: provide client cert so we can use /readyz instead of a
+						// separate waiter
+						Path: "/ping",
 					},
 				},
 			}).
-				// TODO: make this a more generic wait resource
 				WithWaitOnStart(),
+			k8s.APIReadyWaiter(),
 		),
 	)
 }
