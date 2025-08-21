@@ -91,6 +91,13 @@ func svcDefaultResources(context.Context) []resource.Resource {
 				WithName("http").
 				WithContainerPort(8080).
 				WithProtocol(apiCore.ProtocolTCP),
+		).
+		WithReadinessProbe(applyCore.Probe().
+			WithHTTPGet(
+				applyCore.HTTPGetAction().
+					WithPort(intstr.FromString("http")).
+					WithPath("/"),
+			),
 		)
 	initContainer := applyCore.Container().
 		WithName("atlas-migrate").
@@ -153,6 +160,14 @@ func svcLocalResources(context.Context) []resource.Resource {
 				"run",
 				".",
 				"-dsn", fmt.Sprintf("postgresql://localhost:%d/ent-blog?sslmode=disable", pgNodePort),
+			},
+		},
+		HealthCheck: &api.HealthCheck{
+			TimeoutSeconds: 1,
+			Http: &api.HttpHealthCheck{
+				Scheme: "http",
+				Port:   8080,
+				Path:   "/",
 			},
 		},
 	})

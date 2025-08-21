@@ -80,13 +80,20 @@ func StartServices(ctx context.Context, kind string, svcs ...service.Service) er
 	defer ticker.Stop()
 	// TODO: wait for all to be ready in a single pass, instead of all being ready
 	// sequentially, catches crash loops better
+	printedDots := false
 	for _, r := range resources {
 		fmt.Printf("Waiting on %s ", r.ID())
 		for {
 			if ready, err := r.Ready(ctx); err != nil {
-				fmt.Println(" FAILED")
+				if printedDots {
+					fmt.Print(" ")
+				}
+				fmt.Println("FAILED")
 				return fmt.Errorf("error checking %s for ready: %w", r.ID(), err)
 			} else if ready {
+				if printedDots {
+					fmt.Print(" ")
+				}
 				fmt.Println("OK")
 				break
 			}
@@ -96,6 +103,7 @@ func StartServices(ctx context.Context, kind string, svcs ...service.Service) er
 			case <-ticker.C:
 				// retry
 				fmt.Print(".")
+				printedDots = true
 			}
 		}
 	}
