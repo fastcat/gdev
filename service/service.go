@@ -9,6 +9,7 @@ import (
 type Service interface {
 	Name() string
 	Resources(context.Context) []resource.Resource
+	HasModal(Mode) bool
 }
 
 type ServiceWithSource interface {

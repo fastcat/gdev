@@ -53,6 +53,20 @@ func ConfiguredMode(name string) Mode {
 	return sm[name]
 }
 
+func ConfiguredModes() map[string]Mode {
+	sm := config.Get(serviceModesKey{})
+	if sm == nil {
+		return nil
+	}
+	ret := make(map[string]Mode, len(sm))
+	for k, v := range sm {
+		if v != ModeDefault {
+			ret[k] = v
+		}
+	}
+	return ret
+}
+
 func SetMode(name string, mode Mode) {
 	if name == "" {
 		panic("name must not be empty")
