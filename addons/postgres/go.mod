@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/postgres
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.6.0
-	fastcat.org/go/gdev/addons/k8s v0.6.0
+	fastcat.org/go/gdev v0.6.4
+	fastcat.org/go/gdev/addons/k8s v0.6.4
 	github.com/jackc/pgx/v5 v5.7.5
 	k8s.io/api v0.33.3
 	k8s.io/apimachinery v0.33.3

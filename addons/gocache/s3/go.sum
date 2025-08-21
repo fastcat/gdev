@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.6.0 h1:lO2TaGPj1D7vPSCISdP3iP/sgA/J9ZiUSutzwpCWhes=
-fastcat.org/go/gdev v0.6.0/go.mod h1:QTgkNYewPMKZDxuorfq4kLuEK5eBoOyWGXcRKjy6LX8=
-fastcat.org/go/gdev/addons/gocache v0.6.0 h1:MOgYGiWOLHJvr/TPRM//isIo+F7Vsb5OcJyn2YIBuoU=
-fastcat.org/go/gdev/addons/gocache v0.6.0/go.mod h1:WovsraRRv4bhYm2pFOr0Oos+q2/OeyWc4ouKEuuKoGw=
+fastcat.org/go/gdev v0.6.4 h1:eP40PdoYo3giw8xoZ64kTrmK3BGx4GBKzlg14XVr6Zs=
+fastcat.org/go/gdev v0.6.4/go.mod h1:QTgkNYewPMKZDxuorfq4kLuEK5eBoOyWGXcRKjy6LX8=
+fastcat.org/go/gdev/addons/gocache v0.6.4 h1:DW6r77g8SnaNAiO4xWbB84AGCHUWLwd2gAnKKVhLuvE=
+fastcat.org/go/gdev/addons/gocache v0.6.4/go.mod h1:IK60J5mnSW5fYmrFRWtG8CFAoBGl+/WwPxtWWYkIksQ=
 github.com/aws/aws-sdk-go-v2 v1.38.0 h1:UCRQ5mlqcFk9HJDIqENSLR3wiG1VTWlyUfLDEvY7RxU=
 github.com/aws/aws-sdk-go-v2 v1.38.0/go.mod h1:9Q0OoGQoboYIAJyslFyF1f5K1Ryddop8gqMhWx/n4Wg=
 github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.0 h1:6GMWV6CNpA/6fbFHnoAjrv4+LGfyTqZz2LtCHnspgDg=
