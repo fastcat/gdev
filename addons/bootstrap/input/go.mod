@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/bootstrap/input
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.5.2
+	fastcat.org/go/gdev v0.5.3-0.20250820233459-ddf8c333390b
 	github.com/charmbracelet/bubbletea v1.3.6
 	github.com/charmbracelet/huh v0.7.0
 	golang.org/x/sys v0.35.0
