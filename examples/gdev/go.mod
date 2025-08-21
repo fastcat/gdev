@@ -3,18 +3,18 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.5.2
-	fastcat.org/go/gdev/addons/bootstrap/input v0.5.2
-	fastcat.org/go/gdev/addons/containerd v0.5.2
-	fastcat.org/go/gdev/addons/docker v0.5.2
-	fastcat.org/go/gdev/addons/gcs v0.5.2
-	fastcat.org/go/gdev/addons/gocache v0.5.2
-	fastcat.org/go/gdev/addons/gocache/gcs v0.5.2
-	fastcat.org/go/gdev/addons/gocache/s3 v0.5.2
-	fastcat.org/go/gdev/addons/k3s v0.5.2
-	fastcat.org/go/gdev/addons/k8s v0.5.2
-	fastcat.org/go/gdev/addons/postgres v0.5.2
-	fastcat.org/go/gdev/addons/valkey v0.5.2
+	fastcat.org/go/gdev v0.6.0
+	fastcat.org/go/gdev/addons/bootstrap/input v0.6.0
+	fastcat.org/go/gdev/addons/containerd v0.6.0
+	fastcat.org/go/gdev/addons/docker v0.6.0
+	fastcat.org/go/gdev/addons/gcs v0.6.0
+	fastcat.org/go/gdev/addons/gocache v0.6.0
+	fastcat.org/go/gdev/addons/gocache/gcs v0.6.0
+	fastcat.org/go/gdev/addons/gocache/s3 v0.6.0
+	fastcat.org/go/gdev/addons/k3s v0.6.0
+	fastcat.org/go/gdev/addons/k8s v0.6.0
+	fastcat.org/go/gdev/addons/postgres v0.6.0
+	fastcat.org/go/gdev/addons/valkey v0.6.0
 )
 
 require (
@@ -105,12 +105,14 @@ require (
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/gnostic-models v0.6.9 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/pgx/v5 v5.7.5 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.6.8 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
@@ -162,7 +164,6 @@ require (
 	go.opentelemetry.io/otel/sdk v1.37.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.37.0 // indirect
 	go.opentelemetry.io/otel/trace v1.37.0 // indirect
-	go.uber.org/automaxprocs v1.6.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect

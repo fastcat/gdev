@@ -20,10 +20,10 @@ cloud.google.com/go/storage v1.56.0 h1:iixmq2Fse2tqxMbWhLWC9HfBj1qdxqAmiK8/eqtsL
 cloud.google.com/go/storage v1.56.0/go.mod h1:Tpuj6t4NweCLzlNbw9Z9iwxEkrSem20AetIeH/shgVU=
 cloud.google.com/go/trace v1.11.6 h1:2O2zjPzqPYAHrn3OKl029qlqG6W8ZdYaOWRyr8NgMT4=
 cloud.google.com/go/trace v1.11.6/go.mod h1:GA855OeDEBiBMzcckLPE2kDunIpC72N+Pq8WFieFjnI=
-fastcat.org/go/gdev v0.5.2 h1:+EJTPd5yh6SXJryCLTmmcRPOiLjnS7IWu7R2NmDfddo=
-fastcat.org/go/gdev v0.5.2/go.mod h1:QTgkNYewPMKZDxuorfq4kLuEK5eBoOyWGXcRKjy6LX8=
-fastcat.org/go/gdev/addons/gocache v0.5.2 h1:OLDIL1e+WOOWitX5LG86H2XHm9zr5/gQfXlu0krWFnQ=
-fastcat.org/go/gdev/addons/gocache v0.5.2/go.mod h1:pOpX3Z7HeNeYwJhvpAhUBeVPDW7nLojP2nISPgFBAzA=
+fastcat.org/go/gdev v0.6.0 h1:lO2TaGPj1D7vPSCISdP3iP/sgA/J9ZiUSutzwpCWhes=
+fastcat.org/go/gdev v0.6.0/go.mod h1:QTgkNYewPMKZDxuorfq4kLuEK5eBoOyWGXcRKjy6LX8=
+fastcat.org/go/gdev/addons/gocache v0.6.0 h1:MOgYGiWOLHJvr/TPRM//isIo+F7Vsb5OcJyn2YIBuoU=
+fastcat.org/go/gdev/addons/gocache v0.6.0/go.mod h1:WovsraRRv4bhYm2pFOr0Oos+q2/OeyWc4ouKEuuKoGw=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.29.0 h1:UQUsRi8WTzhZntp5313l+CHIAT95ojUI2lpP/ExlZa4=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.29.0/go.mod h1:Cz6ft6Dkn3Et6l2v2a9/RpN7epQ1GtDlO6lj8bEcOvw=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.53.0 h1:owcC2UnmsZycprQ5RfRgjydWhuoxg71LUfyiQdijZuM=
