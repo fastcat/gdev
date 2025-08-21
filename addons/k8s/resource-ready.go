@@ -61,3 +61,34 @@ func NodeReadyWaiter() resource.Resource {
 		return len(l) > 0, nil
 	})
 }
+
+// DeploymentReadyWaiter creates a Resource that will block waiting for the
+// named Deployment to be ready. It will error out if the deployment does not
+// exist.
+func DeploymentReadyWaiter(name string) resource.Resource {
+	return accReadyWaiter(accDeployment, name)
+}
+
+// StatefulsetReadyWaiter creates a Resource that will block waiting for the
+// named StatefulSet to be ready. It will error out if the StatefulSet does not
+// exist.
+func StatefulsetReadyWaiter(name string) resource.Resource {
+	return accReadyWaiter(accStatefulSet, name)
+}
+
+func accReadyWaiter[
+	Client client[Resource, Apply],
+	Resource any,
+	Apply apply[Apply],
+](acc accessor[Client, Resource, Apply], name string) resource.Resource {
+	return resource.Waiter(acc.typ.Kind+"/"+name, func(ctx context.Context) (bool, error) {
+		kc := resource.ContextValue[Interface](ctx)
+		namespace := resource.ContextValue[Namespace](ctx)
+		c := acc.getClient(kc, namespace)
+		r, err := c.Get(ctx, name, getOpts(ctx))
+		if err != nil {
+			return false, err
+		}
+		return acc.ready(ctx, r)
+	})
+}

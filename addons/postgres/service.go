@@ -31,6 +31,9 @@ func Service(
 	if cfg.nodePort > 0 {
 		resources = append(resources, cfg.nodePortService())
 	}
+	if cfg.waitReady {
+		resources = append(resources, k8s.DeploymentReadyWaiter(cfg.name))
+	}
 	if len(cfg.initDBNames) > 0 {
 		if cfg.nodePort <= 0 {
 			panic(fmt.Errorf("initializing PG DBs requires enabling postgres.WithNodePort"))
@@ -70,6 +73,7 @@ type pgSvcConfig struct {
 	variant     *string
 	nodePort    int
 	initDBNames []string
+	waitReady   bool
 }
 
 // CredentialsSecretName returns the k8s secret name where credentials will be
@@ -159,7 +163,18 @@ func WithInitDBs(dbs ...string) pgSvcOpt {
 		panic(fmt.Errorf("must provide at least one init db"))
 	}
 	return func(c *pgSvcConfig) {
+		c.waitReady = true
 		c.initDBNames = append(c.initDBNames, dbs...)
+	}
+}
+
+// WithWaitReady will include a resource in the service that waits for postgres
+// to be ready before continuing.
+//
+// This is implied if you use WithInitDBs.
+func WithWaitReady() pgSvcOpt {
+	return func(c *pgSvcConfig) {
+		c.waitReady = true
 	}
 }
 
