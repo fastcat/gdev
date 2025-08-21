@@ -312,6 +312,9 @@ func stackService(
 	resources := []resource.Resource{pmr}
 	if waiters {
 		pmr.WithWaitOnStart()
+		// TODO: insert an inverse waiter that waits for all pods in a terminating
+		// state to go away, and for a brief moment to ensure pods get into a
+		// terminating state for deployments/etc. that got scaled down.
 		resources = append(resources, k8s.APIReadyWaiter(), k8s.NodeReadyWaiter())
 	}
 	return service.New("k3s", service.WithResources(resources...))
