@@ -9,7 +9,7 @@ require (
 	fastcat.org/go/gdev/addons/k3s v0.5.3-0.20250820233459-ddf8c333390b
 	fastcat.org/go/gdev/addons/k8s v0.5.3-0.20250820233459-ddf8c333390b
 	fastcat.org/go/gdev/addons/postgres v0.5.2
-	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/stretchr/testify v1.10.0
