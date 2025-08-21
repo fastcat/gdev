@@ -10,11 +10,12 @@ type waitResource struct {
 	ready func(context.Context) (bool, error)
 }
 
-// NewWaitResource creates a resource that blocks during start until the
-// provided ready function passes. That function will also provide the
-// implementation of Ready. Stop is a no-op.
+// Waiter creates a resource that blocks during start until the provided ready
+// function passes. That function will also provide the implementation of Ready.
+// Stop is a no-op.
+//
 // TODO: allow customizing the poll interval
-func NewWaitResource(name string, ready func(context.Context) (bool, error)) *waitResource {
+func Waiter(name string, ready func(context.Context) (bool, error)) *waitResource {
 	return &waitResource{
 		name:  name,
 		ready: ready,

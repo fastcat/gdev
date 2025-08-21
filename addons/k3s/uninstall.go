@@ -147,18 +147,18 @@ func Uninstall(ctx context.Context, dest string) error {
 	); err != nil {
 		return err
 	}
+	if err := unmountAndRemove("/var/lib/rancher/k3s"); err != nil {
+		return err
+	}
 
 	if err := multiSudo(
 		[]string{"remove /var/lib/cni", "rm", "-rf", "/var/lib/cni"},
 		[]string{"remove /etc/rancher/k3s", "rm", "-rf", "/etc/rancher/k3s"},
 		[]string{"remove /run/k3s", "rm", "-rf", "/run/k3s"},
 		[]string{"remove /run/flannel", "rm", "-rf", "/run/flannel"},
-		// did this one earlier
-		// []string{"remove /var/lib/kubelet", "rm", "-rf", "/var/lib/kubelet"},
+		[]string{"remove /var/lib/kubelet", "rm", "-rf", "/var/lib/kubelet"},
+		[]string{"remove /var/lib/rancher/k3s", "rm", "-rf", "/var/lib/rancher/k3s"},
 	); err != nil {
-		return err
-	}
-	if err := unmountAndRemove("/var/lib/rancher/k3s"); err != nil {
 		return err
 	}
 

@@ -113,7 +113,11 @@ var configureBootstrap = sync.OnceFunc(func() {
 				ctx := cmd.Context()
 				ctx = service.NewContext(ctx)
 				ctx = resource.NewEmptyContext(ctx)
-				err := stack.StartServices(ctx, "k3s", stackService(&addon.Config))
+				// this needs to wait for the the server to be started a bit, enough to
+				// ping anyways, but it can't wait for the API to be ready because that
+				// requires having the cert/auth data that we are trying to collect
+				// here.
+				err := stack.StartServices(ctx, "k3s", stackService(&addon.Config, false))
 				if err != nil {
 					return fmt.Errorf("failed to start k3s service: %w", err)
 				}
@@ -182,7 +186,7 @@ func initialize() error {
 	// is easy with docker but harder with containerd once k3s (which _is_
 	// containerd) is gone.
 
-	stack.AddInfrastructure(stackService(&addon.Config))
+	stack.AddInfrastructure(stackService(&addon.Config, true))
 	// TODO: add infra service to wait for kube to be ready to run pods in the
 	// selected namespace: it exists, and at least one node is ready. except this
 	// really belongs in the k8s addon, but that produces an ordering issue.
@@ -256,59 +260,61 @@ func (c *config) ContextName() string {
 	return instance.AppName()
 }
 
-func stackService(cfg *config) service.Service {
-	return service.New(
-		"k3s",
-		service.WithResources(
-			// TODO: add a stop-only resource that stops the systemd user unit it ran
-			// under to get rid of all the pods, and then uses systemd apis(?) to find
-			// the containerd-shim-... processes to kill as well. Goes here because
-			// resources are stopped in reverse order, so it should run after k3s
-			// itself is stopped.
-			pmResource.PMStaticInfra(api.Child{
-				// TODO: flag this service to not be restarted on stack "apply"
-				Name: "k3s",
-				Annotations: map[string]string{
-					// TODO: we want this annotation to be automatic due to it being part
-					// of the infrastructure service list.
-					api.AnnotationGroup: "infrastructure",
+func stackService(
+	cfg *config,
+	waiters bool,
+) service.Service {
+	// TODO: add a stop-only resource that stops the systemd user unit it ran
+	// under to get rid of all the pods, and then uses systemd apis(?) to find
+	// the containerd-shim-... processes to kill as well. Goes here because
+	// resources are stopped in reverse order, so it should run after k3s
+	// itself is stopped.
+	pmr := pmResource.PMStaticInfra(api.Child{
+		// TODO: flag this service to not be restarted on stack "apply"
+		Name: "k3s",
+		Annotations: map[string]string{
+			// TODO: we want this annotation to be automatic due to it being part
+			// of the infrastructure service list.
+			api.AnnotationGroup: "infrastructure",
+		},
+		Init: []api.Exec{{
+			// try to kill running k3s before trying to start a new one
+			Cwd:  "/",
+			Cmd:  "/bin/sh",
+			Args: []string{"-c", "sudo -n pkill -TERM k3s || true"},
+		}},
+		Main: api.Exec{
+			Cwd: "/", // TODO: $HOME?
+			// TODO: support running k3s not as root
+			Cmd: "sudo",
+			Args: append(
+				[]string{
+					"-n",
+					cfg.k3sPath,
+					"server",
 				},
-				Init: []api.Exec{{
-					// try to kill running k3s before trying to start a new one
-					Cwd:  "/",
-					Cmd:  "/bin/sh",
-					Args: []string{"-c", "sudo -n pkill -TERM k3s || true"},
-				}},
-				Main: api.Exec{
-					Cwd: "/", // TODO: $HOME?
-					// TODO: support running k3s not as root
-					Cmd: "sudo",
-					Args: append(
-						[]string{
-							"-n",
-							cfg.k3sPath,
-							"server",
-						},
-						cfg.k3sArgs...,
-					),
-				},
-				HealthCheck: &api.HealthCheck{
-					TimeoutSeconds: 1,
-					Http: &api.HttpHealthCheck{
-						Scheme: "https",
-						// TODO: provide the certs to validate this somehow
-						Insecure: true,
-						Port:     6443,
-						// TODO: provide client cert so we can use /readyz instead of a
-						// separate waiter
-						Path: "/ping",
-					},
-				},
-			}).
-				WithWaitOnStart(),
-			k8s.APIReadyWaiter(),
-		),
-	)
+				cfg.k3sArgs...,
+			),
+		},
+		HealthCheck: &api.HealthCheck{
+			TimeoutSeconds: 1,
+			Http: &api.HttpHealthCheck{
+				Scheme: "https",
+				// TODO: provide the certs to validate this somehow
+				Insecure: true,
+				Port:     6443,
+				// TODO: provide client cert so we can use /readyz instead of a
+				// separate waiter
+				Path: "/ping",
+			},
+		},
+	})
+	resources := []resource.Resource{pmr}
+	if waiters {
+		pmr.WithWaitOnStart()
+		resources = append(resources, k8s.APIReadyWaiter(), k8s.NodeReadyWaiter())
+	}
+	return service.New("k3s", service.WithResources(resources...))
 }
 
 type clientConfigMarker struct{}
