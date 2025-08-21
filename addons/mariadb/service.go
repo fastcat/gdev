@@ -1,8 +1,9 @@
-package postgres
+package mariadb
 
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	apiAppsV1 "k8s.io/api/apps/v1"
 	apiCoreV1 "k8s.io/api/core/v1"
@@ -24,6 +25,7 @@ func Service(
 	cfg := newSvcConfig(opts...)
 	resources := []resource.Resource{
 		cfg.pvc(),
+		cfg.initMap(),
 		cfg.deployment(),
 		cfg.service(),
 		cfg.credentialsSecret(),
@@ -42,7 +44,7 @@ func Service(
 	}
 	if len(cfg.initDBNames) > 0 {
 		if cfg.nodePort <= 0 {
-			panic(fmt.Errorf("initializing PG DBs requires enabling postgres.WithNodePort"))
+			panic(fmt.Errorf("initializing MariaDB DBs requires enabling mariadb.WithNodePort"))
 		}
 		resources = append(resources, cfg.initDBs())
 	}
@@ -69,7 +71,7 @@ func (c *svcConfig) fillDefaults() {
 		c.variant = internal.Ptr(DefaultVariant)
 	}
 	if c.name == "" {
-		c.name = fmt.Sprintf("postgres-%d", c.major)
+		c.name = fmt.Sprintf("mariadb-%d", c.major)
 	}
 }
 
@@ -83,7 +85,7 @@ type svcConfig struct {
 }
 
 // CredentialsSecretName returns the k8s secret name where credentials will be
-// stored (in the form of `PG...` environment variable names) for the default
+// stored (in the form of `MYSQL_...` environment variable names) for the default
 // service configured in the addon.
 func CredentialsSecretName() string {
 	addon.CheckInitialized()
@@ -111,15 +113,15 @@ func WithName(name string) svcOpt {
 	}
 }
 
-const DefaultMajor = 17
+const DefaultMajor = 12
 
-// Set the major version of postgres to run. Different major versions will have
+// Set the major version of mariadb to run. Different major versions will have
 // data stored in different PVs.
 //
 // If this is not set, or set to zero, [DefaultMajor] will be used.
 func WithMajor(major int) svcOpt {
 	if major < 0 || major > 0 && major < 10 {
-		panic(fmt.Errorf("invalid postgres major version %d", major))
+		panic(fmt.Errorf("invalid mariadb major version %d", major))
 	}
 	return func(c *svcConfig) {
 		c.major = major
@@ -129,7 +131,7 @@ func WithMajor(major int) svcOpt {
 // The default variant of the image to use.
 //
 // Note that this is may not be the same as the upstream default variant!
-const DefaultVariant = "alpine"
+const DefaultVariant = ""
 
 // Set the variant to run. Changing variants between Debian and Alpine will
 // cause data to need to be re-indexed in most cases due to differeing libc
@@ -145,7 +147,7 @@ func WithVariant(variant string) svcOpt {
 	}
 }
 
-// Enables or disables exposing the postgres instance on a k8s NodePort.
+// Enables or disables exposing the mariadb instance on a k8s NodePort.
 //
 // If port is 0, the NodePort will be disabled. Else the value is the exposed
 // port number.
@@ -160,7 +162,7 @@ func WithNodePort(port int) svcOpt {
 	}
 }
 
-// WithInitDBs will cause the postgres service to ensure the named databases
+// WithInitDBs will cause the mariadb service to ensure the named databases
 // exist during startup.
 //
 // This requires enabling WithNodePort.
@@ -174,7 +176,7 @@ func WithInitDBs(dbs ...string) svcOpt {
 	}
 }
 
-// WithWaitReady will include a resource in the service that waits for postgres
+// WithWaitReady will include a resource in the service that waits for mariadb
 // to be ready before continuing.
 //
 // This is implied if you use WithInitDBs.
@@ -184,9 +186,9 @@ func WithWaitReady() svcOpt {
 	}
 }
 
-const DefaultPort = 5432
+const DefaultPort = 3306
 
-const dataDir = "/var/lib/postgresql/data"
+const dataDir = "/var/lib/mysql"
 
 func (c svcConfig) pvc() k8s.Resource {
 	pvc := applyCoreV1.PersistentVolumeClaim(c.pvcName(), "").
@@ -206,15 +208,32 @@ func (c svcConfig) pvc() k8s.Resource {
 	return k8s.PersistentVolumeClaim(pvc)
 }
 
-const containerPortName = "postgres"
+func (c svcConfig) initMap() k8s.Resource {
+	// to grant privs, we need to run some SQL. The easiest way to do this is to
+	// just shove them in as an init script via a configmap.
+	return k8s.ConfigMap(applyCoreV1.ConfigMap(c.name+"-init", "").
+		WithData(map[string]string{
+			"init.sql": strings.Join([]string{
+				fmt.Sprintf(`GRANT ALL PRIVILEGES ON *.* TO '%s'@'%%';`, internal.AppName()),
+				"flush privileges;",
+			}, "\n"),
+		}))
+}
+
+const containerPortName = "mariadb"
 
 func (c svcConfig) deployment() k8s.ContainerResource {
-	img := "postgres:" + strconv.Itoa(c.major)
+	img := "mariadb:" + strconv.Itoa(c.major)
 	if internal.ValueOrZero(c.variant) != "" {
 		img += "-" + *c.variant
 	}
-	const volName = "pg-data"
-	ready := applyCoreV1.ExecAction().WithCommand("pg_isready", "-U", "postgres")
+	const volName = "mariadb-data"
+	ready := applyCoreV1.ExecAction().WithCommand(
+		// See: https://mariadb.com/docs/server/server-management/install-and-upgrade-mariadb/
+		// ... installing-mariadb/binary-packages/automated-mariadb-deployment-and-administration/
+		// ... docker-and-mariadb/using-healthcheck-sh
+		"healthcheck.sh", "--connect", "--innodb_initialized",
+	)
 	startupProbe := applyCoreV1.Probe().
 		WithExec(ready).
 		WithInitialDelaySeconds(1).
@@ -228,7 +247,7 @@ func (c svcConfig) deployment() k8s.ContainerResource {
 		WithPeriodSeconds(15).
 		WithTimeoutSeconds(15)
 	pc := applyCoreV1.Container().
-		WithName("postgres").
+		WithName("mariadb").
 		WithImage(img).
 		// these are floating images, move forward automatically to get bug fixes
 		WithImagePullPolicy(apiCoreV1.PullAlways).
@@ -241,14 +260,27 @@ func (c svcConfig) deployment() k8s.ContainerResource {
 		).
 		WithEnv(k8s.EnvApply(map[string]string{
 			// TODO: allow more customization
-			"POSTGRES_PASSWORD": internal.AppName(),
+			"MARIADB_ROOT_PASSWORD": internal.AppName(),
+			// create a non-root user so access controls are sane
+			"MARIADB_USER":     internal.AppName(),
+			"MARIADB_PASSWORD": internal.AppName(),
 		})...).
+		WithSecurityContext(
+			applyCoreV1.SecurityContext().
+				WithRunAsUser(999).
+				WithRunAsGroup(999).
+				WithRunAsNonRoot(true),
+		).
 		WithStartupProbe(startupProbe).
 		WithReadinessProbe(readyProbe).
 		WithVolumeMounts(
 			applyCoreV1.VolumeMount().
 				WithName(volName).
 				WithMountPath(dataDir),
+			applyCoreV1.VolumeMount().
+				WithName("init-scripts").
+				WithMountPath("/docker-entrypoint-initdb.d").
+				WithReadOnly(true),
 		)
 	ps := applyCoreV1.PodSpec().
 		WithVolumes(
@@ -256,6 +288,11 @@ func (c svcConfig) deployment() k8s.ContainerResource {
 				WithName(volName).
 				WithPersistentVolumeClaim(
 					applyCoreV1.PersistentVolumeClaimVolumeSource().WithClaimName(c.pvcName()),
+				),
+			applyCoreV1.Volume().
+				WithName("init-scripts").
+				WithConfigMap(
+					applyCoreV1.ConfigMapVolumeSource().WithName(c.name+"-init"),
 				),
 		).
 		WithContainers(pc)
@@ -285,8 +322,8 @@ func (c svcConfig) service() k8s.Resource {
 			WithType(apiCoreV1.ServiceTypeClusterIP).
 			WithPorts(
 				applyCoreV1.ServicePort().
-					WithName("postgresql").
-					WithAppProtocol("postgresql").
+					WithName("mariadb").
+					WithAppProtocol("mariadb").
 					WithProtocol(apiCoreV1.ProtocolTCP).
 					WithPort(DefaultPort).
 					WithTargetPort(intstr.FromString(containerPortName)),
@@ -303,8 +340,8 @@ func (c svcConfig) nodePortService() k8s.Resource {
 			WithType(apiCoreV1.ServiceTypeNodePort).
 			WithPorts(
 				applyCoreV1.ServicePort().
-					WithName("postgresql-node").
-					WithAppProtocol("postgresql").
+					WithName("mariadb-node").
+					WithAppProtocol("mariadb").
 					WithProtocol(apiCoreV1.ProtocolTCP).
 					WithPort(DefaultPort).
 					WithTargetPort(intstr.FromString(containerPortName)).
@@ -321,7 +358,7 @@ func (c svcConfig) credentialsSecret() k8s.Resource {
 	return k8s.Secret(s)
 }
 
-// Credentials returns connection credentials (in the form of `PG...`
+// Credentials returns connection credentials (in the form of `MYSQL_...`
 // environment variable names) for the default service configured in the addon,
 // e.g. for setting in a PM service environment block.
 func Credentials() map[string]string {
@@ -332,8 +369,9 @@ func Credentials() map[string]string {
 
 func (c svcConfig) Credentials() map[string]string {
 	return map[string]string{
-		"PGUSER":     "postgres",
-		"PGPASSWORD": internal.AppName(),
+		// T ODO: user var is non-standard and password is heavily deprecated
+		"MYSQL_USER": internal.AppName(),
+		"MYSQL_PWD":  internal.AppName(),
 	}
 }
 

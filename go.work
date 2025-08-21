@@ -13,6 +13,7 @@ use (
 	./addons/gocache/s3
 	./addons/k3s
 	./addons/k8s
+	./addons/mariadb
 	./addons/postgres
 	./addons/valkey
 	./examples/full-stack

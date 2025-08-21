@@ -1,12 +1,12 @@
-package postgres
+package mariadb
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/go-sql-driver/mysql"
 
 	"fastcat.org/go/gdev/resource"
 )
@@ -24,7 +24,7 @@ type initDBsResource struct {
 // ID implements resource.Resource.
 func (r *initDBsResource) ID() string {
 	// TODO: this name stutters
-	return fmt.Sprintf("postgres/%s/init-dbs", r.cfg.name)
+	return fmt.Sprintf("mariadb/%s/init-dbs", r.cfg.name)
 }
 
 // Ready implements resource.Resource.
@@ -36,37 +36,43 @@ func (r *initDBsResource) Ready(context.Context) (bool, error) {
 // Start implements resource.Resource.
 func (r *initDBsResource) Start(ctx context.Context) error {
 	if r.cfg.nodePort <= 0 {
-		return fmt.Errorf("initializing PG DBs requires enabling postgres.WithNodePort")
+		return fmt.Errorf("initializing MariaDB DBs requires enabling mariadb.WithNodePort")
 	}
 
-	cc, err := pgx.ParseConfig(fmt.Sprintf("postgres://localhost:%d/postgres", r.cfg.nodePort))
-	if err != nil {
-		return err
-	}
-	// would be nice if pgx provided an override for os.Getenv to help with this
+	var user, password string
 	for k, v := range r.creds {
 		switch k {
-		case "PGUSER":
-			cc.User = v
-		case "PGPASSWORD":
-			cc.Password = v
+		case "MYSQL_USER":
+			user = v
+		case "MYSQL_PWD":
+			password = v
 		default:
 			return fmt.Errorf("unexpected credential %q", k)
 		}
 	}
-	conn, err := pgx.ConnectConfig(ctx, cc)
+	var dsn string
+	if user != "" {
+		dsn = user
+		if password != "" {
+			dsn += ":" + password
+		}
+		dsn += "@"
+	}
+	dsn += fmt.Sprintf("tcp(localhost:%d)/", r.cfg.nodePort)
+
+	conn, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return err
 	}
-	defer conn.Close(ctx) // nolint:errcheck
+	defer conn.Close() // nolint:errcheck
 
 	for _, dbName := range r.cfg.initDBNames {
-		safeName := pgx.Identifier{dbName}.Sanitize()
 		// create the database if it doesn't exist
-		_, err := conn.Exec(ctx, "CREATE DATABASE "+safeName)
+		// FIXME: quote this shit better
+		_, err := conn.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE `%s`", dbName))
 		if err != nil {
-			var pge *pgconn.PgError
-			if errors.As(err, &pge) && pge.SQLState() == "42P04" {
+			var me *mysql.MySQLError
+			if errors.As(err, &me) && string(me.SQLState[:]) == "HY000" {
 				// database already exists
 				continue
 			}

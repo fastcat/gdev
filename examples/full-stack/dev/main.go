@@ -29,7 +29,8 @@ import (
 )
 
 const (
-	svcName    = "ent-blog"
+	svcName = "ent-blog"
+	// avoid collisions with existing PG instances on the host
 	pgNodePort = 55432
 )
 
@@ -48,7 +49,6 @@ func main() {
 	build.Configure()
 	golang.Configure()
 	postgres.Configure(postgres.WithService(
-		// avoid collisions with existing PG instances on the host
 		postgres.WithNodePort(pgNodePort),
 		postgres.WithInitDBs("ent-blog"),
 	))

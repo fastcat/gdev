@@ -1,4 +1,4 @@
-package postgres
+package mariadb
 
 import (
 	"sync"
@@ -12,10 +12,10 @@ import (
 
 var addon = addons.Addon[config]{
 	Definition: addons.Definition{
-		Name: "postgres",
+		Name: "mariadb",
 		Description: func() string {
 			internal.CheckLockedDown()
-			return "General postgres support"
+			return "General mariadb support"
 		},
 		// Initialize: initialize,
 	},
@@ -45,7 +45,7 @@ func Configure(opts ...option) {
 	addon.RegisterIfNeeded()
 }
 
-// WithService causes a postgres server instance to be added to the stack, using
+// WithService causes a mariadb server instance to be added to the stack, using
 // the given options.
 func WithService(opts ...svcOpt) option {
 	return func(c *config) {
@@ -56,8 +56,8 @@ func WithService(opts ...svcOpt) option {
 
 var configureBootstrap = sync.OnceFunc(func() {
 	bootstrap.Configure(apt.WithPackages(
-		"Select PostgreSQL client packages",
-		"postgresql-client",
+		"Select MariaDB client packages",
+		"mariadb-client",
 	))
 })
 
