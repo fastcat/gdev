@@ -25,3 +25,9 @@ jobs:
         package-name: "gdev/svc2"
         package-type: "container"
         min-versions-to-keep: 2
+    - name: Prune gdev/ent-blog
+      uses: actions/delete-package-versions@v5
+      with:
+        package-name: "gdev/ent-blog"
+        package-type: "container"
+        min-versions-to-keep: 2
