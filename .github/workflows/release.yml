@@ -62,8 +62,11 @@ jobs:
         # DRY?
         labels=(
           org.opencontainers.image.authors="fastcat"
-          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc1
-          org.opencontainers.image.url=${{ github.repositoryUrl }}
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.url=${{ github.repositoryUrl }}/tree/${{ github.sha }}/examples/stack/svc1
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.licenses="Apache-2.0"
+          org.opencontainers.image.version="${{ steps.semrel.outputs.version }}"
           org.opencontainers.image.vendor="fastcat"
         )
         labelargs=()
@@ -83,8 +86,11 @@ jobs:
         # DRY?
         labels=(
           org.opencontainers.image.authors="fastcat"
-          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/full-stack/ent-blog
-          org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}.git
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/full-stack/ent-blog
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.licenses="Apache-2.0"
+          org.opencontainers.image.version="${{ steps.semrel.outputs.version }}"
           org.opencontainers.image.vendor="fastcat"
         )
         labelargs=()
@@ -115,13 +121,19 @@ jobs:
           ghcr.io/fastcat/gdev/svc2:latest
         labels: |
           org.opencontainers.image.authors=fastcat
-          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc2
-          org.opencontainers.image.url=${{ github.repositoryUrl }}
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc2
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.licenses="Apache-2.0"
+          org.opencontainers.image.version="${{ steps.semrel.outputs.version }}"
           org.opencontainers.image.vendor=fastcat
         annotations: |
           org.opencontainers.image.authors=fastcat
-          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc2
-          org.opencontainers.image.url=${{ github.repositoryUrl }}
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}/tree/${{ github.sha }}/examples/stack/svc2
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.licenses="Apache-2.0"
+          org.opencontainers.image.version="${{ steps.semrel.outputs.version }}"
           org.opencontainers.image.vendor=fastcat
 
     - name: Publish gdev example
