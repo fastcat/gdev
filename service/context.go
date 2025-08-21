@@ -17,10 +17,14 @@ func NewContext(
 	opts ...ContextOption,
 ) *Context {
 	internal.CheckLockedDown()
-	return &Context{
+	c := &Context{
 		Context:      ctx,
 		serviceModes: make(map[string]Mode),
 	}
+	for _, o := range opts {
+		o(c)
+	}
+	return c
 }
 
 type ContextOption func(*Context)
