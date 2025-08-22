@@ -296,7 +296,7 @@ func (p *Prompter[T]) finishForm(
 			return fmt.Errorf("invalid value: %w", err)
 		}
 	}
-	internal.Save(ctx, p.key, value)
+	internal.Set(ctx, p.key, value)
 	var errs []error
 	for _, writer := range p.writers {
 		if err := writer(ctx, value); err != nil {

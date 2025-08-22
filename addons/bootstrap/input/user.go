@@ -2,8 +2,10 @@ package input
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os/user"
+	"slices"
 	"strings"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
@@ -115,7 +117,9 @@ func UserNamePrompt() *Prompter[string] {
 	)
 }
 
-// UserEmailPrompt prompts for the `user.email` git setting, with no guessing.
+// UserEmailPrompt prompts for the `user.email` git setting.
+//
+// It will use the guesser from [SetUserEmailGuesser], if any.
 //
 // TODO: allow providing a custom guesser for this, since most companies will
 // have predictable emails from the person's name.
@@ -124,9 +128,56 @@ func UserEmailPrompt() *Prompter[string] {
 		internal.NewKey[string]("user email"),
 		"What's your email address (for git)?",
 		WithLoaders(ReadGitConfigString("user.email")),
-		// no good guessing rule here sadly
+		WithGuessers(func(ctx context.Context) (string, bool, error) {
+			if userEmailGuesser != nil {
+				fullName, ok, err := ReadGitConfigString("user.name")(ctx)
+				if err != nil {
+					return "", false, err
+				}
+				if !ok || fullName == "" {
+					// try again with other guesser
+					if fullName, ok, err = NameFromOS()(ctx); err != nil {
+						return "", false, err
+					}
+				}
+				if ok && fullName != "" {
+					email := userEmailGuesser(fullName)
+					if email != "" {
+						return email, true, nil
+					}
+				}
+			}
+			return "", false, nil
+		}),
+		WithValidator(func(email string) error {
+			// TODO: use "the" email regexp / parser rules instead of this simplistic stuff
+			local, domain, ok := strings.Cut(email, "@")
+			if !ok || local == "" || domain == "" {
+				return fmt.Errorf("invalid email format")
+			}
+			if len(userEmailDomains) > 0 && !slices.Contains(userEmailDomains, domain) {
+				return fmt.Errorf("email domain %q is not allowed", domain)
+			}
+			return nil
+		}),
 		WithWriters(WriteGitConfigString("user.email")),
 	)
+}
+
+var (
+	userEmailGuesser func(fullName string) (email string)
+	userEmailDomains []string
+)
+
+// TODO: this should be some kind of bootstrap config option
+func SetUserEmailGuesser(guesser func(fullName string) (email string)) {
+	userEmailGuesser = guesser
+}
+
+// Require the user email entered to be in one of the listed domains. Do not
+// include the `@`.
+func RequireUserEmailDomains(validDomains ...string) {
+	userEmailDomains = slices.Clone(validDomains)
 }
 
 // GitHubUserPrompt prompts for the `github.user` git setting, with no guessing.
