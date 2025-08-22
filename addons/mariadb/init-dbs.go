@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/go-sql-driver/mysql"
 
@@ -68,8 +69,9 @@ func (r *initDBsResource) Start(ctx context.Context) error {
 
 	for _, dbName := range r.cfg.initDBNames {
 		// create the database if it doesn't exist
-		// FIXME: quote this shit better
-		_, err := conn.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE `%s`", dbName))
+		// can't use placeholders here so have to manually escape the value
+		escapedName := "`" + strings.ReplaceAll(dbName, "`", "``") + "`"
+		_, err := conn.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s", escapedName))
 		if err != nil {
 			var me *mysql.MySQLError
 			if errors.As(err, &me) && string(me.SQLState[:]) == "HY000" {
