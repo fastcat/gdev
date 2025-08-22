@@ -108,6 +108,7 @@ func WriteFileAsRoot(ctx context.Context, fn string, content io.Reader, mode os.
 			ctx,
 			[]string{"mkdir", "-p", dir, "-m", fmt.Sprintf("%04o", dm)},
 			shx.WithSudo(fmt.Sprintf("mkdir %s", dir)),
+			shx.WithCombinedError(),
 		); err != nil {
 			return err
 		}
@@ -120,6 +121,7 @@ func WriteFileAsRoot(ctx context.Context, fn string, content io.Reader, mode os.
 		[]string{"tee", fn},
 		shx.WithSudo(fmt.Sprintf("write %s", fn)),
 		shx.FeedStdin(content),
+		shx.WithCombinedError(),
 	); err != nil {
 		return err
 	}
@@ -132,6 +134,7 @@ func WriteFileAsRoot(ctx context.Context, fn string, content io.Reader, mode os.
 		[]string{"chmod", fmt.Sprintf("%04o", mode), fn},
 		shx.WithSudo(fmt.Sprintf("set permissions on %s", fn)),
 		shx.PassStderr(),
+		shx.WithCombinedError(),
 	); err != nil {
 		return err
 	}
