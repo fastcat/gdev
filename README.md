@@ -37,8 +37,10 @@ running your stack:
 - K3S as the Kubernetes environment
   - Using either containerd or Docker as the backend
 - A generic process manager daemon for running & monitoring local processes
-- Postgres run under K8S
-- Valkey (Redis fork) run under K8S
+- Databases and other "infrastructure" services to support your app
+- Recipes for how to compile your code before running it when running from local
+  source (instead of pre-built containers)
+  - And APIs for you to provide custom recipes
 
 You can also configure your own infrastructure services. All the infrastructure
 services `gdev` provides are implemented using exported APIs, access to `gdev`
@@ -58,6 +60,7 @@ As initial examples, `gdev` knows how to build some simple project types:
   - using `mage` or `go tool mage`
 - NodeJS
   - using `npm run build`
+  - using `rush` (<https://rushjs.io>)
 - _More to come soon_
 
 More will be added, and like the infrastructure services, these capabilities are
@@ -72,6 +75,19 @@ patterns.
 pluggable remote backends. Included are backends for HTTP, GCS, S3, and SFTP.
 You can also provide your own backends by registering implementations of some
 interfaces.
+
+### Diags
+
+A "diags" addon is available to help collect information from your users on
+demand to diagnose problems with their development environment. A baseline set
+of collectors is provided, along with an API for you to provide additional
+collectors.
+
+The result is a `.tgz` of the various files & collected data. Where this goes is
+up to you. The addon comes with code to simply store it locally in a temp file
+that the user can send manually, but an API is provided so you could, for
+example, upload it to a storage bucket or other cloud destination to simplify
+the workflow.
 
 ## Custom Commands
 
@@ -90,9 +106,14 @@ stack? No worries, your binary won't be bloated by its large client SDK. Addons
 with large dependencies are broken out into separate modules, so your build also
 won't have to download those unused modules.
 
+## Addons
+
+The full list of addons you can enable when building your `xdev` tool is in the
+[addons README](https://github.com/fastcat/gdev/tree/main/addons)
+
 ## Usage
 
-The general idea of how you use an "`xdev`" tool built with `gdev` is:
+The general idea of how you use an `xdev` tool built with `gdev` is:
 
 1. You download & install an initial version of `xdev`
 2. You run `xdev bootstrap` to configure your machine (once)
