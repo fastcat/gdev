@@ -94,14 +94,18 @@ func installUV(ctx *bootstrap.Context) error {
 	}
 	defer resp.Body.Close() //nolint:errcheck
 
+	// /tmp is often a different filesystem from $HOME, preventing renames at the
+	// end, so store this in the dest dir instead
+	destDir := filepath.Join(shx.HomeDir(), ".local", "bin")
+
 	// create temp files for uv and uvx binaries
-	tmpUV, err := os.CreateTemp("", instance.AppName()+"-uv-*")
+	tmpUV, err := os.CreateTemp(destDir, instance.AppName()+"-uv-*")
 	if err != nil {
 		return err
 	}
 	defer tmpUV.Close()           // nolint:errcheck
 	defer os.Remove(tmpUV.Name()) // nolint:errcheck
-	tmpUVX, err := os.CreateTemp("", instance.AppName()+"-uvx-*")
+	tmpUVX, err := os.CreateTemp(destDir, instance.AppName()+"-uvx-*")
 	if err != nil {
 		return err
 	}
@@ -180,7 +184,6 @@ func installUV(ctx *bootstrap.Context) error {
 
 	// TODO: this assumes that ~/.local/bin/ is in the user's PATH, or at least
 	// will be once they reboot if it wasn't added because it didn't exist yet.
-	destDir := filepath.Join(shx.HomeDir(), ".local", "bin")
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create asdf destination directory %s: %w", destDir, err)
 	}
