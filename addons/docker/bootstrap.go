@@ -17,6 +17,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			"Select common Docker packages",
 			"docker.io",
 			"docker-buildx",
+			"golang-docker-credential-helpers",
 		),
 		bootstrap.WithSteps(
 			apt.AddPackageIfAvailable(
@@ -48,6 +49,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			}),
 			bootstrap.AfterSteps(apt.StepNameInstall),
 		)),
+		// TODO: configure secretsstore as docker credential helper
 	)
 })
 
