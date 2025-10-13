@@ -238,6 +238,9 @@ func installAsdf(ctx *bootstrap.Context) error {
 	// download to a temp file. /tmp is often a different filesystem from $HOME,
 	// preventing renames at the end, so store this in the dest dir instead
 	destDir := filepath.Join(shx.HomeDir(), ".local", "bin")
+	if err := os.MkdirAll(destDir, 0o755); err != nil {
+		return fmt.Errorf("failed to create asdf destination directory %s: %w", destDir, err)
+	}
 	tf, err := os.CreateTemp(destDir, instance.AppName()+"-asdf-*")
 	if err != nil {
 		return err
@@ -280,9 +283,6 @@ func installAsdf(ctx *bootstrap.Context) error {
 
 	// TODO: this assumes that ~/.local/bin/ is in the user's PATH, or at least
 	// will be once they reboot if it wasn't added because it didn't exist yet.
-	if err := os.MkdirAll(destDir, 0o755); err != nil {
-		return fmt.Errorf("failed to create asdf destination directory %s: %w", destDir, err)
-	}
 	if err := os.Rename(tfn, filepath.Join(destDir, "asdf")); err != nil {
 		return fmt.Errorf("failed to install asdf binary to %s: %w", destDir, err)
 	}
