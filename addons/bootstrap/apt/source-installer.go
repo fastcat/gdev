@@ -15,6 +15,9 @@ type SourceInstaller struct {
 	Source     *Source
 	SigningKey []byte
 	Deb822     bool
+	// If RuntimeUpdate is set, it will be called just before using the source
+	// (pre-validation)
+	RuntimeUpdate func(*SourceInstaller) error
 }
 
 func (i *SourceInstaller) AsDeb822() *SourceInstaller {
@@ -46,6 +49,11 @@ func (i *SourceInstaller) Sim(ctx context.Context) (bool, error) {
 }
 
 func (i *SourceInstaller) prepare() (filename string, content *bytes.Buffer, err error) {
+	if i.RuntimeUpdate != nil {
+		if err := i.RuntimeUpdate(i); err != nil {
+			return "", nil, fmt.Errorf("failed to run runtime update for source %q: %w", i.SourceName, err)
+		}
+	}
 	if err := i.validate(); err != nil {
 		return "", nil, err
 	}
