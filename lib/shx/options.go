@@ -185,7 +185,21 @@ func WithSudoUser(user, purpose string) Option {
 }
 
 func WithUmask(umask os.FileMode) Option {
+	// changing the umask requires hacks, see
+	// https://github.com/golang/go/issues/56016. those hacks often don't work in
+	// e.g. containers or other constrained environments (unshare FS => operation
+	// not permitted), so use /bin/sh hacks instead
 	return optionCmdFunc(func(c *Cmd) {
-		c.umask = &umask
+		c.cmdAndArgs = append(
+			[]string{
+				"/bin/sh", "-c",
+				fmt.Sprintf("umask 0%03o && exec \"$@\"", umask),
+				// this allows us to pass the original command and args as positional
+				// parameters without having to worry about any shell quoting/escaping
+				// rules
+				"--",
+			},
+			c.cmdAndArgs...,
+		)
 	})
 }
