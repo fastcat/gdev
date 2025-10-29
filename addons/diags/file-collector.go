@@ -304,7 +304,7 @@ func OpenTempDiagsFile(context.Context) (dest DestWriter, out io.WriteCloser, er
 	}
 	dest = &fileWrap{fh}
 	out = gzip.NewWriter(dest)
-	return
+	return dest, out, err
 }
 
 type fileWrap struct {
