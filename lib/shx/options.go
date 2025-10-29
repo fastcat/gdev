@@ -183,3 +183,9 @@ func WithSudoUser(user, purpose string) Option {
 		)
 	})
 }
+
+func WithUmask(umask os.FileMode) Option {
+	return optionCmdFunc(func(c *Cmd) {
+		c.umask = &umask
+	})
+}

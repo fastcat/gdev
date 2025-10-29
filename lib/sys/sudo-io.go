@@ -121,6 +121,9 @@ func WriteFileAsRoot(ctx context.Context, fn string, content io.Reader, mode os.
 		[]string{"tee", fn},
 		shx.WithSudo(fmt.Sprintf("write %s", fn)),
 		shx.FeedStdin(content),
+		// don't let any undesired perm bits be present during the write, other than
+		// the "we can write it ourselves" that is required
+		shx.WithUmask(0o600|mode),
 		shx.WithCombinedError(),
 	); err != nil {
 		return err
@@ -140,4 +143,26 @@ func WriteFileAsRoot(ctx context.Context, fn string, content io.Reader, mode os.
 	}
 
 	return nil
+}
+
+func RenameFileAsRoot(ctx context.Context, oldFn, newFn string) error {
+	_, err := shx.Run(
+		ctx,
+		[]string{"mv", "-f", "-T", oldFn, newFn},
+		shx.WithSudo(fmt.Sprintf("rename %s to %s", oldFn, newFn)),
+		shx.PassStderr(),
+		shx.WithCombinedError(),
+	)
+	return err
+}
+
+func RemoveFileAsRoot(ctx context.Context, fn string) error {
+	_, err := shx.Run(
+		ctx,
+		[]string{"rm", fn},
+		shx.WithSudo(fmt.Sprintf("remove %s", fn)),
+		shx.PassStderr(),
+		shx.WithCombinedError(),
+	)
+	return err
 }

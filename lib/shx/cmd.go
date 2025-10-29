@@ -3,10 +3,14 @@ package shx
 import (
 	"context"
 	"errors"
+	"fmt"
 	"maps"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
+	"sync"
+	"syscall"
 )
 
 type Cmd struct {
@@ -15,6 +19,7 @@ type Cmd struct {
 	combineExecErrors bool
 	env               map[string]string
 	onStarted         func(*os.Process)
+	umask             *os.FileMode
 
 	opts []Option
 }
@@ -55,6 +60,35 @@ func (c *Cmd) With(opts ...Option) *Cmd {
 // This behavior can be overridden with an option to copy the Result error to
 // the top level error, if the caller doesn't care about the distinction.
 func (c *Cmd) Run(ctx context.Context) (*Result, error) {
+	// changing the umask requires hacks, see https://github.com/golang/go/issues/56016
+	if c.umask != nil && runtime.GOOS != "linux" {
+		return nil, fmt.Errorf("can only set umask on Linux due to Go limitations")
+	}
+	if c.umask != nil {
+		var wg sync.WaitGroup
+		var result *Result
+		var err error
+		wg.Go(func() {
+			// workaround adopted from Go issue: break this thread's FS state (which
+			// includes umask among others) off of the rest of the process so we can
+			// set its umask without affecting other goroutines. This is irreversible,
+			// so we never unlock the thread and the runtime will close it out at the
+			// end of this goroutine.
+			runtime.LockOSThread()
+			if err = syscall.Unshare(syscall.CLONE_FS); err != nil {
+				err = fmt.Errorf("failed to unshare FS state for umask change: %w", err)
+				return
+			}
+			syscall.Umask(int(*c.umask)) // never fails
+			result, err = c.run(ctx)
+		})
+		wg.Wait()
+		return result, err
+	}
+	return c.run(ctx)
+}
+
+func (c *Cmd) run(ctx context.Context) (*Result, error) {
 	cmd := exec.CommandContext(ctx, c.cmdAndArgs[0], c.cmdAndArgs[1:]...)
 	c.applyEnv(cmd)
 	var res Result
