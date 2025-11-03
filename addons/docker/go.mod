@@ -5,7 +5,7 @@ go 1.25
 require (
 	fastcat.org/go/gdev v0.6.4
 	github.com/containerd/errdefs v1.0.0
-	github.com/docker/docker v28.4.0+incompatible
+	github.com/docker/docker v28.5.1+incompatible
 	github.com/docker/go-connections v0.6.0
 )
 
