@@ -28,6 +28,7 @@
 		"trixie",
 		"xdev"
 	],
+	"go.formatTool": "default",
 	"gopls": {
 		"formatting.gofumpt": true,
 		"formatting.local": "fastcat.org"
