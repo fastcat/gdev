@@ -18,7 +18,6 @@ jobs:
   deps:
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: fastcat.org/go/gdev
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@v4

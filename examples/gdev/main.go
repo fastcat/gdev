@@ -138,6 +138,7 @@ func shellRCSteps() []*bootstrap.Step {
 		"Set GOPRIVATE in ~/.bashrc",
 		func(ctx *bootstrap.Context) error {
 			e := textedit.AppendLine(
+				// this is no longer necessary, but kept as an example
 				`export GOPRIVATE="${GOPRIVATE:+${GOPRIVATE},}fastcat.org/go"`,
 			)
 			home, err := os.UserHomeDir()

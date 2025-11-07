@@ -14,7 +14,6 @@ jobs:
   release:
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: fastcat.org/go/gdev
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
@@ -52,7 +51,6 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: fastcat.org/go/gdev
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
@@ -96,7 +94,6 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: fastcat.org/go/gdev
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
@@ -152,7 +149,6 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: fastcat.org/go/gdev
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
@@ -196,7 +192,6 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     env:
-      GOPRIVATE: fastcat.org/go/gdev
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
