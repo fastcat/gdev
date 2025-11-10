@@ -203,3 +203,9 @@ func WithUmask(umask os.FileMode) Option {
 		)
 	})
 }
+
+func WithEnv(key, value string) Option {
+	return optionCmdFunc(func(c *Cmd) {
+		c.env[key] = value
+	})
+}
