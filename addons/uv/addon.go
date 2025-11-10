@@ -3,13 +3,16 @@ package uv
 import (
 	"archive/tar"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strings"
 	"sync"
 
 	"fastcat.org/go/gdev/addons"
@@ -60,6 +63,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 		bootstrap.NewStep(
 			"Install uv",
 			installUV,
+			bootstrap.SimFunc(simUV),
 		)),
 	)
 })
@@ -67,10 +71,23 @@ var configureBootstrap = sync.OnceFunc(func() {
 func installUV(ctx *bootstrap.Context) error {
 	fmt.Println("Installing uv python environment manager...")
 
-	ghc := github.NewClient()
-	rel, err := ghc.GetRelease(ctx, "astral-sh", "uv", "latest")
+	ghc, rel, destDir, alreadyInstalled, err := prepUV(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to fetch uv release: %w", err)
+		return err
+	}
+
+	// ~/.local/bin might not be in the PATH because most bashrc setups only add
+	// it if it exists. Make sure it's there now so we can run the just-installed
+	// copy.
+	// TODO: put this in shx or something
+	if slices.Index(filepath.SplitList(os.Getenv("PATH")), destDir) < 0 {
+		if err := os.Setenv("PATH", destDir+string(os.PathListSeparator)+os.Getenv("PATH")); err != nil {
+			return fmt.Errorf("failed to add %s to PATH: %w", destDir, err)
+		}
+	}
+
+	if alreadyInstalled {
+		return nil
 	}
 
 	// e.g. uv-x86_64-unknown-linux-gnu.tar.gz
@@ -96,12 +113,9 @@ func installUV(ctx *bootstrap.Context) error {
 
 	// /tmp is often a different filesystem from $HOME, preventing renames at the
 	// end, so store this in the dest dir instead
-	destDir := filepath.Join(shx.HomeDir(), ".local", "bin")
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create asdf destination directory %s: %w", destDir, err)
 	}
-
-	// create temp files for uv and uvx binaries
 	tmpUV, err := os.CreateTemp(destDir, instance.AppName()+"-uv-*")
 	if err != nil {
 		return err
@@ -194,15 +208,57 @@ func installUV(ctx *bootstrap.Context) error {
 		return fmt.Errorf("failed to install uvx binary to %s: %w", destDir, err)
 	}
 
-	// ~/.local/bin might not be in the PATH because most bashrc setups only add
-	// it if it exists. Make sure it's there now so we can run the just-installed
-	// copy.
-	// TODO: put this in shx or something
-	if slices.Index(filepath.SplitList(os.Getenv("PATH")), destDir) < 0 {
-		if err := os.Setenv("PATH", destDir+string(os.PathListSeparator)+os.Getenv("PATH")); err != nil {
-			return fmt.Errorf("failed to add %s to PATH: %w", destDir, err)
-		}
+	return nil
+}
+
+func simUV(ctx *bootstrap.Context) error {
+	fmt.Println("Simulating uv installation...")
+	_, rel, _, alreadyInstalled, err := prepUV(ctx)
+	if err != nil {
+		return err
+	} else if alreadyInstalled {
+		return nil
+	}
+	fmt.Printf("Would install uv %s\n", rel.TagName)
+	return nil
+}
+
+func prepUV(ctx *bootstrap.Context) (*github.Client, *github.Release, string, bool, error) {
+	ghc := github.NewClient()
+	rel, err := ghc.GetRelease(ctx, "astral-sh", "uv", "latest")
+	if err != nil {
+		return nil, nil, "", false, fmt.Errorf("failed to fetch uv release: %w", err)
 	}
 
-	return nil
+	destDir := filepath.Join(shx.HomeDir(), ".local", "bin")
+
+	// check what version is installed, only update if it's different
+	outdated := false
+	for _, bin := range []string{"uv", "uvx"} {
+		if res, err := shx.Run(ctx,
+			[]string{filepath.Join(destDir, bin), "--version"},
+			shx.CaptureOutput(),
+		); err != nil {
+			if !errors.Is(err, exec.ErrNotFound) {
+				return nil, nil, "", false, err
+			}
+			outdated = true
+			break
+		} else if err := res.Err(); err != nil {
+			// binary broken? force reinstallation
+			outdated = true
+			break
+		} else if out, err := io.ReadAll(res.Stdout()); err != nil {
+			// should not happen?
+			return nil, nil, "", false, fmt.Errorf("failed to read `%s --version` output: %w", bin, err)
+		} else if outStr := strings.TrimSpace(string(out)); outStr != bin+" "+rel.TagName {
+			outdated = true
+			break
+		}
+	}
+	if !outdated {
+		fmt.Printf("uv %s already installed, skipping\n", rel.TagName)
+		return nil, nil, "", true, nil
+	}
+	return ghc, rel, destDir, false, nil
 }

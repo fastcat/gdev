@@ -3,10 +3,12 @@ package asdf
 import (
 	"archive/tar"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"maps"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -176,6 +178,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 		bootstrap.NewStep(
 			installName,
 			installAsdf,
+			bootstrap.SimFunc(simAsdf),
 		),
 		bootstrap.NewStep(
 			pluginsName,
@@ -218,11 +221,25 @@ func installAsdf(ctx *bootstrap.Context) error {
 	// TODO: check installed version and at least print some info, maybe skip
 	// upgrade if latest version is already installed.
 
-	ghc := github.NewClient()
-	rel, err := ghc.GetRelease(ctx, "asdf-vm", "asdf", "latest")
+	ghc, rel, destDir, alreadyInstalled, err := prepAsdf(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to fetch asdf release: %w", err)
+		return err
 	}
+
+	// ~/.local/bin might not be in the PATH because most bashrc setups only add
+	// it if it exists. Make sure it's there now so we can run the just-installed
+	// copy.
+	// TODO: put this in shx or something
+	if slices.Index(filepath.SplitList(os.Getenv("PATH")), destDir) < 0 {
+		if err := os.Setenv("PATH", destDir+string(os.PathListSeparator)+os.Getenv("PATH")); err != nil {
+			return fmt.Errorf("failed to add %s to PATH: %w", destDir, err)
+		}
+	}
+
+	if alreadyInstalled {
+		return nil
+	}
+
 	// e.g. asdf-v0.18.0-linux-amd64.tar.gz
 	assetName := "asdf-" + rel.TagName + "-" + runtime.GOOS + "-" + runtime.GOARCH + ".tar.gz"
 	i := slices.IndexFunc(rel.Assets, func(a github.ReleaseAsset) bool { return a.Name == assetName })
@@ -237,7 +254,6 @@ func installAsdf(ctx *bootstrap.Context) error {
 
 	// download to a temp file. /tmp is often a different filesystem from $HOME,
 	// preventing renames at the end, so store this in the dest dir instead
-	destDir := filepath.Join(shx.HomeDir(), ".local", "bin")
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return fmt.Errorf("failed to create asdf destination directory %s: %w", destDir, err)
 	}
@@ -287,17 +303,58 @@ func installAsdf(ctx *bootstrap.Context) error {
 		return fmt.Errorf("failed to install asdf binary to %s: %w", destDir, err)
 	}
 
-	// ~/.local/bin might not be in the PATH because most bashrc setups only add
-	// it if it exists. Make sure it's there now so we can run the just-installed
-	// copy.
-	// TODO: put this in shx or something
-	if slices.Index(filepath.SplitList(os.Getenv("PATH")), destDir) < 0 {
-		if err := os.Setenv("PATH", destDir+string(os.PathListSeparator)+os.Getenv("PATH")); err != nil {
-			return fmt.Errorf("failed to add %s to PATH: %w", destDir, err)
-		}
+	return nil
+}
+
+func simAsdf(ctx *bootstrap.Context) error {
+	fmt.Println("Simulating asdf installation...")
+	_, rel, _, alreadyInstalled, err := prepAsdf(ctx)
+	if err != nil {
+		return err
+	} else if alreadyInstalled {
+		return nil
+	}
+	fmt.Printf("Would install asdf %s\n", rel.TagName)
+	return nil
+}
+
+func prepAsdf(ctx *bootstrap.Context) (*github.Client, *github.Release, string, bool, error) {
+	ghc := github.NewClient()
+	rel, err := ghc.GetRelease(ctx, "asdf-vm", "asdf", "latest")
+	if err != nil {
+		return nil, nil, "", false, fmt.Errorf("failed to fetch asdf release: %w", err)
 	}
 
-	return nil
+	destDir := filepath.Join(shx.HomeDir(), ".local", "bin")
+
+	// check what version is installed, only update if it's different
+	outdated := false
+	if res, err := shx.Run(ctx,
+		[]string{filepath.Join(destDir, "asdf"), "--version"},
+		shx.CaptureOutput(),
+	); err != nil {
+		if !errors.Is(err, exec.ErrNotFound) {
+			return nil, nil, "", false, err
+		}
+		outdated = true
+	} else if err := res.Err(); err != nil {
+		// binary broken? force reinstallation
+		outdated = true
+	} else if out, err := io.ReadAll(res.Stdout()); err != nil {
+		// should not happen?
+		return nil, nil, "", false, fmt.Errorf("failed to read `%s --version` output: %w", "asdf", err)
+	} else if outStr := strings.TrimSpace(string(out)); !strings.HasPrefix(
+		outStr,
+		"asdf version "+rel.TagName+" (revision ",
+	) {
+		outdated = true
+	}
+	if !outdated {
+		fmt.Printf("asdf %s already installed, skipping\n", rel.TagName)
+		return nil, nil, "", true, nil
+	}
+
+	return ghc, rel, destDir, false, nil
 }
 
 func installPlugins(ctx *bootstrap.Context) error {
