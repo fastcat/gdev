@@ -32,6 +32,7 @@ const (
 	aptPkgCacheFile = "/var/cache/apt/pkgcache.bin"
 )
 
+// DpkgInstalled returns a map of installed packages to their versions.
 func DpkgInstalled(ctx *bootstrap.Context) (map[string]string, error) {
 	data, ok := bootstrap.Get(ctx, installedKey)
 	if ok {
