@@ -3,6 +3,7 @@ package gcloud
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -110,7 +111,7 @@ func configureGcloud(ctx *bootstrap.Context) error {
 	if addon.Config.skipLogin {
 		return nil
 	}
-	return LoginUser(ctx, addon.Config.allowedDomains)
+	return LoginUser(ctx)
 }
 
 // LoginUser runs gcloud login steps if necessary.
@@ -119,55 +120,19 @@ func configureGcloud(ctx *bootstrap.Context) error {
 // If it is not nill but empty, then it will accept any already logged in
 // account as sufficient. Otherwise it will only skip the login if an active
 // acccount in one of the given domains is found.
-func LoginUser(ctx context.Context, allowedDomains []string) error {
-	if allowedDomains == nil {
-		allowedDomains = addon.Config.allowedDomains
-	}
+func LoginUser(ctx context.Context) error {
 	// check current accounts
-	res, err := shx.Run(
-		ctx,
-		[]string{"gcloud", "auth", "list", "--format=json"},
-		shx.CaptureOutput(),
-		shx.WithCombinedError(),
-	)
+	accounts, err := getAccounts(ctx)
 	if err != nil {
 		return err
 	}
-	var accounts []gcloudAccount
-	if err := json.NewDecoder(res.Stdout()).Decode(&accounts); err != nil {
-		return err
-	}
 	// see if any active account in an allowed domain is present
-	loggedIn := false
-	for _, acct := range accounts {
-		if acct.Status != "ACTIVE" {
-			continue
+	if _, err := activeAccount(accounts, addon.Config.allowedDomains); err == nil {
+		if err := copyADC(ctx); err != nil {
+			return err
 		}
-		if len(allowedDomains) == 0 {
-			loggedIn = true
-			break
-		}
-		_, domain, ok := strings.Cut(acct.Account, "@")
-		if !ok {
-			return fmt.Errorf("invalid account email, no @: %q", acct.Account)
-		}
-		if slices.Contains(allowedDomains, domain) {
-			loggedIn = true
-			break
-		}
-	}
-	if loggedIn {
-		// need to have ADC too
-		if _, err := os.Stat(filepath.Join(
-			shx.HomeDir(),
-			".config",
-			"gcloud",
-			"application_default_credentials.json",
-		)); err == nil {
-			fmt.Println("gcloud already logged in")
-			return nil
-		}
-		fmt.Println("need to refresh login to get ADC")
+		fmt.Println("gcloud already logged in")
+		return nil
 	}
 
 	if _, err := shx.Run(
@@ -184,9 +149,184 @@ func LoginUser(ctx context.Context, allowedDomains []string) error {
 	return nil
 }
 
-// TODO: LoginServiceAccount
+func LoginServiceAccount(ctx context.Context, email string) (finalErr error) {
+	if !strings.HasSuffix(email, ".iam.gserviceaccount.com") {
+		return fmt.Errorf("service email must be in .iam.gserviceaccount.com domain")
+	}
+	accounts, err := getAccounts(ctx)
+	if err != nil {
+		return err
+	}
+	if acct, err := activeAccount(accounts, nil); err == nil && acct.Account == email {
+		fmt.Println("gcloud already logged in the desired service account")
+		return nil
+	}
+
+	// creating a service account key requires us to log in as a user, use that
+	// user to create the key, and then revoke that user login
+
+	fmt.Println("Temporarily logging into gcloud as user to create service account key")
+	if _, err := shx.Run(
+		ctx,
+		[]string{"gcloud", "auth", "login", "--update-adc"},
+		shx.PassStdio(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return err
+	}
+	if accounts, err = getAccounts(ctx); err != nil {
+		return err
+	}
+	userAccount, err := activeAccount(accounts, addon.Config.allowedDomains)
+	if err != nil {
+		return fmt.Errorf("failed to find active user account after login: %w", err)
+	}
+	// only revoke once, but be sure we do so regardless of why we leave
+	revoked := false
+	revoke := func() error {
+		fmt.Println("Revoking temporary user gcloud login")
+		if _, err := shx.Run(
+			ctx,
+			[]string{"gcloud", "auth", "revoke", userAccount.Account},
+			shx.PassStdio(),
+			shx.WithCombinedError(),
+		); err != nil {
+			return err
+		}
+		return nil
+	}
+	defer func() {
+		if !revoked {
+			if err := revoke(); err != nil {
+				if finalErr == nil {
+					finalErr = err
+				} else {
+					finalErr = errors.Join(finalErr, err)
+				}
+			}
+		}
+	}()
+
+	fmt.Println("Creating service account key")
+	td, err := os.MkdirTemp("", "gdev-svc-key.*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(td) //nolint:errcheck
+	kp := filepath.Join(td, "key.json")
+	// FUTURE: we could do this with the API SDK instead
+	if _, err := shx.Run(
+		ctx,
+		[]string{"gcloud", "iam", "service-accounts", "keys", "create", kp, "--iam-account", email},
+		shx.PassStdio(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return err
+	}
+	fmt.Println("Logging into gcloud as service account")
+	if _, err := shx.Run(
+		ctx,
+		[]string{"gcloud", "auth", "activate-service-account", "--key-file", kp},
+		shx.PassStdio(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return err
+	}
+	if err := copyADC(ctx); err != nil {
+		return err
+	}
+	revoked = true
+	if err := revoke(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func copyADC(ctx context.Context) error {
+	accounts, err := getAccounts(ctx)
+	if err != nil {
+		return err
+	}
+	account, err := activeAccount(accounts, nil)
+	if err != nil {
+		return err
+	}
+
+	// gcloud saves an ADC file for each account, we can just copy it
+	adcPath := filepath.Join(
+		shx.HomeDir(),
+		".config",
+		"gcloud",
+		"legacy_credentials",
+		account.Account,
+		"adc.json",
+	)
+	adcContents, err := os.ReadFile(adcPath)
+	if err != nil {
+		return err
+	}
+	// temp file dance
+	gcDir := filepath.Join(shx.HomeDir(), ".config", "gcloud")
+	tf, err := os.CreateTemp(gcDir, "gdev-adc.json.*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tf.Name())
+	defer tf.Close()
+	if _, err := tf.Write(adcContents); err != nil {
+		return err
+	}
+	if err := tf.Sync(); err != nil {
+		return err
+	}
+	if err := tf.Close(); err != nil {
+		return err
+	}
+	if err := os.Rename(tf.Name(), filepath.Join(gcDir, "application_default_credentials.json")); err != nil {
+		return err
+	}
+	return nil
+}
 
 type gcloudAccount struct {
 	Account string `json:"account"`
 	Status  string `json:"status"`
 }
+
+func getAccounts(ctx context.Context) ([]gcloudAccount, error) {
+	res, err := shx.Run(
+		ctx,
+		[]string{"gcloud", "auth", "list", "--format=json"},
+		shx.CaptureOutput(),
+		shx.WithCombinedError(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	var accounts []gcloudAccount
+	if err := json.NewDecoder(res.Stdout()).Decode(&accounts); err != nil {
+		return nil, err
+	}
+	return accounts, nil
+}
+
+func activeAccount(accounts []gcloudAccount, allowedDomains []string) (gcloudAccount, error) {
+	for _, acct := range accounts {
+		if acct.Status != "ACTIVE" {
+			continue
+		}
+		if len(allowedDomains) == 0 {
+			return acct, nil
+		}
+		_, domain, ok := strings.Cut(acct.Account, "@")
+		if !ok {
+			return gcloudAccount{}, fmt.Errorf("invalid account email, no @: %q", acct.Account)
+		}
+		if slices.Contains(allowedDomains, domain) {
+			return acct, nil
+		}
+	}
+	return gcloudAccount{}, errNoActiveAccount
+}
+
+var errNoActiveAccount = fmt.Errorf("no active account in valid domain found")
