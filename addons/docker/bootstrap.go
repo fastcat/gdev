@@ -17,9 +17,15 @@ var configureBootstrap = sync.OnceFunc(func() {
 			"Select common Docker packages",
 			"docker.io",
 			"docker-buildx",
-			"golang-docker-credential-helpers",
 		),
 		bootstrap.WithSteps(
+			apt.AddPackagesStep(
+				"Select docker credential helper(s)",
+				"golang-docker-credential-helpers",
+			).With(
+				bootstrap.BeforeSteps(apt.StepNameInstall),
+				bootstrap.SkipInContainer(),
+			),
 			apt.AddPackageIfAvailable(
 				"Select docker-cli if needed",
 				// this is only on Ubuntu 25.04+ and Debian 13+

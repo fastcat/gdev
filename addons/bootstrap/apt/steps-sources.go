@@ -7,8 +7,13 @@ import (
 // SourceInstallStep creates a bootstrap step that installs the given APT
 // source.
 //
-// You should always adjust the returned step with [bootstrap.BeforeSteps],
-// commonly [bootstrap.StepNameAptUpdate].
+// You should always adjust the step with before/after constraints. For example
+// if this is a public source, you would typically use [bootstrap.BeforeSteps],
+// commonly [bootstrap.StepNameAptUpdate] (or call [PublicSourceInstallSteps]).
+// If this is a private source, then you would typically use
+// [bootstrap.AfterSteps] and [bootstrap.BeforeSteps] to ensure it runs after
+// the normal apt setup and before the secondary apt install that uses packages
+// from this private source.
 func SourceInstallStep(
 	installer *SourceInstaller,
 	opts ...bootstrap.StepOpt,

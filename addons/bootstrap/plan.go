@@ -118,6 +118,7 @@ func (p *Plan) prepare(ctx context.Context) (*Context, error) {
 		for _, s := range p.pending {
 			names = append(names, s.name)
 		}
+		p.debugCircularDeps()
 		return nil, fmt.Errorf("plan has unresolved dependencies blocking %s", strings.Join(names, ", "))
 	}
 	if len(p.ordered) == 0 {
@@ -125,6 +126,62 @@ func (p *Plan) prepare(ctx context.Context) (*Context, error) {
 	}
 
 	return bc, nil
+}
+
+func (p *Plan) debugCircularDeps() {
+	isOrdered := make(map[string]bool, len(p.ordered))
+	for _, s := range p.ordered {
+		isOrdered[s.name] = true
+	}
+	afterByName := make(map[string]map[string]struct{}, len(p.pending))
+	for _, s := range p.pending {
+		m := maps.Clone(s.after)
+		// trim out satisfied deps
+		for n := range m {
+			if _, ok := isOrdered[n]; ok {
+				delete(m, n)
+			}
+		}
+		afterByName[s.name] = m
+	}
+	for _, s := range p.pending {
+		for beforeName := range s.before {
+			if _, ok := isOrdered[beforeName]; !ok {
+				if afterByName[beforeName] == nil {
+					afterByName[beforeName] = make(map[string]struct{})
+				}
+				afterByName[beforeName][s.name] = struct{}{}
+			}
+		}
+	}
+	// find cycles
+	visited := make(map[string]bool, len(afterByName))
+	var visit func(name string, stack []string) bool
+	visit = func(name string, stack []string) bool {
+		if visited[name] {
+			return false
+		}
+		visited[name] = true
+		stack = append(stack, name)
+		for depName := range afterByName[name] {
+			for i, sn := range stack {
+				if sn == depName {
+					fmt.Printf("circular dependency: %s\n", strings.Join(append(stack[i:], depName), " -> "))
+					return true
+				}
+			}
+			if visit(depName, stack) {
+				return true
+			}
+		}
+		return false
+	}
+	for name := range afterByName {
+		if !visited[name] {
+			// don't stop after one cycle, find them all
+			visit(name, nil)
+		}
+	}
 }
 
 func (p *Plan) Sim(ctx context.Context) error {

@@ -1,6 +1,10 @@
 package bootstrap
 
-import "fastcat.org/go/gdev/internal"
+import (
+	"fmt"
+
+	"fastcat.org/go/gdev/internal"
+)
 
 type Step struct {
 	name   string
@@ -61,6 +65,38 @@ func AfterSteps(names ...string) StepOpt {
 	return func(s *Step) {
 		for _, n := range names {
 			s.after[n] = struct{}{}
+		}
+	}
+}
+
+func SkipFunc(f func(*Context) (bool, error)) StepOpt {
+	return func(s *Step) {
+		origRun := s.run
+		s.run = func(ctx *Context) error {
+			skip, err := f(ctx)
+			if err != nil {
+				return err
+			}
+			if skip {
+				fmt.Println("Skipping", s.name)
+				return nil
+			}
+			return origRun(ctx)
+		}
+		origSim := s.sim
+		s.sim = func(ctx *Context) error {
+			skip, err := f(ctx)
+			if err != nil {
+				return err
+			}
+			if skip {
+				fmt.Println("Skipping", s.name)
+				return nil
+			}
+			if origSim != nil {
+				return origSim(ctx)
+			}
+			return nil
 		}
 	}
 }

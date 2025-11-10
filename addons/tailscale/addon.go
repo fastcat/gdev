@@ -94,6 +94,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			ConfigureStepName,
 			configureTailscale,
 			bootstrap.AfterSteps(apt.StepNameInstall),
+			bootstrap.SkipInContainer(),
 		)),
 	)
 })

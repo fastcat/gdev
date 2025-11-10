@@ -11,7 +11,6 @@ import (
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
-	apt_common "fastcat.org/go/gdev/addons/bootstrap/apt/common"
 	"fastcat.org/go/gdev/lib/shx"
 )
 
@@ -34,8 +33,9 @@ func init() {
 }
 
 type config struct {
-	skipLogin      bool
-	allowedDomains []string
+	skipLogin        bool
+	includeTransport bool
+	allowedDomains   []string
 }
 
 type option func(*config)
@@ -58,7 +58,19 @@ func initialize() error {
 // WithSkipLogin causes the bootstrap sequence to no-op the login step.
 func WithSkipLogin() option {
 	return func(c *config) {
+		if configuredBootstrap {
+			panic("WithSkipLogin must be called before first Configure()")
+		}
 		c.skipLogin = true
+	}
+}
+
+func WithAptTransport() option {
+	return func(c *config) {
+		if configuredBootstrap {
+			panic("WithAptTransport must be called before first Configure()")
+		}
+		c.includeTransport = true
 	}
 }
 
@@ -68,19 +80,27 @@ func WithAllowedDomains(domains ...string) option {
 	}
 }
 
-var configureBootstrap = sync.OnceFunc(func() {
-	// TODO: allow customization of the bootstrap steps somehow?
-	// We can't do the bootstrap config in initialize(), so it gets a little tricky
-	bootstrap.Configure(
-		bootstrap.WithSteps(apt.PublicSourceInstallSteps(apt_common.GoogleCloudInstaller())...),
-		apt.WithPackages("Select gcloud packages", "google-cloud-cli"),
-		bootstrap.WithSteps(bootstrap.NewStep(
-			ConfigureStepName,
-			configureGcloud,
-			bootstrap.AfterSteps(apt.StepNameInstall),
-		)),
-	)
-})
+var (
+	configuredBootstrap bool
+	configureBootstrap  = sync.OnceFunc(func() {
+		sources := []*apt.SourceInstaller{CLISourceInstaller()}
+		packages := []string{"google-cloud-cli"}
+		if addon.Config.includeTransport {
+			sources = append(sources, AptTransportSourceInstaller())
+			packages = append(packages, "apt-transport-artifact-registry")
+		}
+		bootstrap.Configure(
+			bootstrap.WithSteps(apt.PublicSourceInstallSteps(sources...)...),
+			apt.WithPackages("Select gcloud packages", packages...),
+			bootstrap.WithSteps(bootstrap.NewStep(
+				ConfigureStepName,
+				configureGcloud,
+				bootstrap.AfterSteps(apt.StepNameInstall),
+			)),
+		)
+		configuredBootstrap = true
+	})
+)
 
 const ConfigureStepName = "Configure gcloud"
 

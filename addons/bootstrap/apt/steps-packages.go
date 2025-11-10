@@ -17,9 +17,18 @@ const StepNameUpdate = "apt update"
 // WithExtraUpdate adds a secondary `apt update` step with the given name. It
 // will always run after the main `apt update` step. You may pass additional
 // ordering constraints in the options.
+//
+// This is equivalent to calling [bootstrap.WithSteps] with the result of [ExtraUpdateStep].
 func WithExtraUpdate(name string, opts ...bootstrap.StepOpt) bootstrap.Option {
+	return bootstrap.WithSteps(ExtraUpdateStep(name, opts...))
+}
+
+// ExtraUpdateStep creates a secondary `apt update` step with the given name. It
+// will always run after the main `apt update` step. You should pass additional
+// ordering constraints in the options.
+func ExtraUpdateStep(name string, opts ...bootstrap.StepOpt) *bootstrap.Step {
 	opts = append([]bootstrap.StepOpt{bootstrap.AfterSteps(StepNameUpdate)}, opts...)
-	return bootstrap.WithSteps(bootstrap.NewStep(name, DoUpdate, opts...))
+	return bootstrap.NewStep(name, DoUpdate, opts...)
 }
 
 func updateStep() *bootstrap.Step {
@@ -62,9 +71,7 @@ const StepNameInstall = "apt install"
 func installStep() *bootstrap.Step {
 	return bootstrap.NewStep(
 		StepNameInstall,
-		func(ctx *bootstrap.Context) error {
-			return DoInstall(ctx, []string{"--no-install-recommends"}, nil, "")
-		},
+		doInstall,
 		bootstrap.AfterSteps(StepNameUpdate),
 		bootstrap.SimFunc(simInstall),
 	)
@@ -76,12 +83,33 @@ func installStep() *bootstrap.Step {
 //
 // You likely want to pair this with [WithExtraUpdate], one or more steps to
 // add new apt sources that call [ChangedSources] and [AddPackages].
+//
+// This is equivalent to calling [bootstrap.WithSteps] with the result of
+// [ExtraInstallStep].
 func WithExtraInstall(name string, opts ...bootstrap.StepOpt) bootstrap.Option {
-	opts = append([]bootstrap.StepOpt{bootstrap.AfterSteps(StepNameInstall)}, opts...)
-	return bootstrap.WithSteps(bootstrap.NewStep(name, DoUpdate, opts...))
+	return bootstrap.WithSteps(ExtraInstallStep(name, opts...))
+}
+
+// ExtraInstallStep creates a secondary `apt install` step with the given name.
+// It will always run after the main `apt install` step. You should pass
+// additional ordering constraints in the options, e.g. ensuring this runs after
+// a custom update and package selection steps.
+func ExtraInstallStep(name string, opts ...bootstrap.StepOpt) *bootstrap.Step {
+	opts = append(
+		[]bootstrap.StepOpt{
+			bootstrap.AfterSteps(StepNameInstall),
+			bootstrap.SimFunc(simInstall),
+		},
+		opts...,
+	)
+	return bootstrap.NewStep(name, doInstall, opts...)
 }
 
 var pendingPackages = bootstrap.NewKey[map[string]struct{}]("pending-apt-packages")
+
+func doInstall(ctx *bootstrap.Context) error {
+	return DoInstall(ctx, []string{"--no-install-recommends"}, nil, "")
+}
 
 // DoInstall runs `apt install -y ...` with:
 //
@@ -250,6 +278,21 @@ func AddPackagesStep(
 		bootstrap.BeforeSteps(StepNameInstall),
 		// this just marks things in memory, so sim can be the same as run, so that
 		// the sim apt install step shows the real list
+		bootstrap.SimFunc(mark),
+	)
+}
+
+func AddExtraPackagesStep(
+	stepName string,
+	packages ...string,
+) *bootstrap.Step {
+	mark := func(ctx *bootstrap.Context) error {
+		AddPackages(ctx, packages...)
+		return nil
+	}
+	return bootstrap.NewStep(
+		stepName,
+		mark,
 		bootstrap.SimFunc(mark),
 	)
 }

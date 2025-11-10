@@ -16,6 +16,7 @@ import (
 	"fastcat.org/go/gdev/addons/diags"
 	"fastcat.org/go/gdev/addons/docker"
 	"fastcat.org/go/gdev/addons/docs"
+	"fastcat.org/go/gdev/addons/gcloud"
 	"fastcat.org/go/gdev/addons/gcs"
 	gcs_k8s "fastcat.org/go/gdev/addons/gcs/k8s"
 	"fastcat.org/go/gdev/addons/github"
@@ -53,7 +54,7 @@ func main() {
 		bootstrap.WithSteps(apt.PublicSourceInstallSteps(
 			apt_common.GitHubCLIInstaller(),
 			apt_common.VSCodeInstaller(),
-			apt_common.GoogleCloudInstaller(),
+			gcloud.CLISourceInstaller(),
 			apt_common.HashicorpInstaller(),
 			apt_common.GoogleChromeInstaller(),
 			apt_common.MozillaInstaller(),
