@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/k3s
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.7.0
-	fastcat.org/go/gdev/addons/k8s v0.7.0
+	fastcat.org/go/gdev v0.7.1
+	fastcat.org/go/gdev/addons/k8s v0.7.1
 	github.com/spf13/cobra v1.10.1
 	golang.org/x/sync v0.18.0
 	k8s.io/api v0.34.1

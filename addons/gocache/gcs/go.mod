@@ -4,8 +4,8 @@ go 1.25
 
 require (
 	cloud.google.com/go/storage v1.57.1
-	fastcat.org/go/gdev v0.7.0
-	fastcat.org/go/gdev/addons/gocache v0.7.0
+	fastcat.org/go/gdev v0.7.1
+	fastcat.org/go/gdev/addons/gocache v0.7.1
 )
 
 require (
@@ -53,10 +53,10 @@ require (
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/api v0.254.0 // indirect
+	google.golang.org/api v0.255.0 // indirect
 	google.golang.org/genproto v0.0.0-20250826171959-ef028d996bc1 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250826171959-ef028d996bc1 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda // indirect
 	google.golang.org/grpc v1.76.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )

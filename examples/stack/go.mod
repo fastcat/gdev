@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/examples/stack
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.7.0
-	fastcat.org/go/gdev/addons/docker v0.7.0
+	fastcat.org/go/gdev v0.7.1
+	fastcat.org/go/gdev/addons/docker v0.7.1
 )
 
 require (
@@ -16,7 +16,7 @@ require (
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.6.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/docker v28.5.1+incompatible // indirect
+	github.com/docker/docker v28.5.2+incompatible // indirect
 	github.com/docker/go-connections v0.6.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -51,4 +51,5 @@ require (
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/term v0.36.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda // indirect
 )

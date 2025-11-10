@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/containerd
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.7.0
+	fastcat.org/go/gdev v0.7.1
 	github.com/containerd/containerd/v2 v2.2.0
 )
 
@@ -56,7 +56,7 @@ require (
 	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20251029180050-ab9386a59fda // indirect
 	google.golang.org/grpc v1.76.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 )
