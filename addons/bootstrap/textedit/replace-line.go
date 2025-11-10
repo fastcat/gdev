@@ -68,12 +68,23 @@ func (r *replaceLineEditor) Next(line string) (output iter.Seq[string], err erro
 		return each(line), nil
 	}
 	tsl := strings.TrimSpace(line)
-	if r.prevPos >= len(r.previousLines) {
-		if tsl == r.oldLine {
+
+	if r.prevPos == len(r.previousLines) {
+		// reset the search if we hit the end, whether or not we find a match there
+		r.prevPos = 0
+		switch tsl {
+		case r.oldLine:
 			r.found = true
 			return each(r.newLine), nil
+		case r.newLine:
+			r.found = true
+			// NOTE: keep existing line's white-space as-is, don't replace it with the template
+			return each(line), nil
 		}
-	} else if tsl == r.previousLines[r.prevPos] {
+		// fall through to re-check if we are on the start of the previous lines again
+	}
+
+	if tsl == r.previousLines[r.prevPos] {
 		r.prevPos++
 	} else {
 		r.prevPos = 0

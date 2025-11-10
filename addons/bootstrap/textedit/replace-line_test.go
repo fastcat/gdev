@@ -53,6 +53,30 @@ func TestReplaceLine(t *testing.T) {
 			prevLines:  []string{"pfx1", "pfx2"},
 			expectSkip: true,
 		},
+		{
+			name:       "with previous lines and already edited",
+			original:   []string{"ctx1\n", "ctx2\n", "pfx1\n", "new\n"},
+			oldLine:    "old",
+			newLine:    "new",
+			prevLines:  []string{"pfx1"},
+			expectSkip: true,
+		},
+		{
+			name:      "previous lines repeat",
+			original:  []string{"ctx1\n", "pfx1\n", "pfx2\n", "pfx1\n", "pfx2\n", "old\n", "ctx2\n"},
+			oldLine:   "old",
+			newLine:   "new",
+			prevLines: []string{"pfx1", "pfx2"},
+			expected:  []string{"ctx1\n", "pfx1\n", "pfx2\n", "pfx1\n", "pfx2\n", "new\n", "ctx2\n"},
+		},
+		{
+			name:      "previous lines repeat with gap",
+			original:  []string{"ctx1\n", "pfx1\n", "pfx2\n", "ctx2\n", "pfx1\n", "pfx2\n", "old\n", "ctx3\n"},
+			oldLine:   "old",
+			newLine:   "new",
+			prevLines: []string{"pfx1", "pfx2"},
+			expected:  []string{"ctx1\n", "pfx1\n", "pfx2\n", "ctx2\n", "pfx1\n", "pfx2\n", "new\n", "ctx3\n"},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
