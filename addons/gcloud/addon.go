@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
@@ -155,8 +157,17 @@ func LoginUser(ctx context.Context, allowedDomains []string) error {
 		}
 	}
 	if loggedIn {
-		fmt.Println("gcloud already logged in")
-		return nil
+		// need to have ADC too
+		if _, err := os.Stat(filepath.Join(
+			shx.HomeDir(),
+			".config",
+			"gcloud",
+			"application_default_credentials.json",
+		)); err == nil {
+			fmt.Println("gcloud already logged in")
+			return nil
+		}
+		fmt.Println("need to refresh login to get ADC")
 	}
 
 	if _, err := shx.Run(
