@@ -239,7 +239,7 @@ func prepUV(ctx *bootstrap.Context) (*github.Client, *github.Release, string, bo
 			[]string{filepath.Join(destDir, bin), "--version"},
 			shx.CaptureOutput(),
 		); err != nil {
-			if !errors.Is(err, exec.ErrNotFound) {
+			if !errors.Is(err, exec.ErrNotFound) && !errors.Is(err, os.ErrNotExist) {
 				return nil, nil, "", false, err
 			}
 			outdated = true

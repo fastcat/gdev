@@ -333,7 +333,7 @@ func prepAsdf(ctx *bootstrap.Context) (*github.Client, *github.Release, string, 
 		[]string{filepath.Join(destDir, "asdf"), "--version"},
 		shx.CaptureOutput(),
 	); err != nil {
-		if !errors.Is(err, exec.ErrNotFound) {
+		if !errors.Is(err, exec.ErrNotFound) && !errors.Is(err, os.ErrNotExist) {
 			return nil, nil, "", false, err
 		}
 		outdated = true
