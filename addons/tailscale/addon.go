@@ -113,6 +113,7 @@ func TailscaleUp(ctx *bootstrap.Context) error {
 	_, err := shx.Run(
 		ctx,
 		[]string{"tailscale", "up"},
+		shx.WithSudo("bring up tailscale"),
 		shx.PassStdio(),
 		shx.WithCombinedError(),
 	)
