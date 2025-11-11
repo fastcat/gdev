@@ -155,7 +155,11 @@ func getUserSlice(t testing.TB) string {
 	// need  to make sure the group actually exists, cgroup2 package APIs
 	// generally don't do that
 	groupFullPath := filepath.Join(cgroupsMountPath, group)
-	_, err = os.Stat(groupFullPath)
+	st, err := os.Stat(groupFullPath)
 	require.NoError(t, err, "user slice cgroup %q does not exist at %q", group, groupFullPath)
+	t.Logf("cgroup stat: %+v", st)
+	st, err = os.Stat(filepath.Join(groupFullPath, "cgroup.procs"))
+	require.NoError(t, err)
+	t.Logf("cgroup.procs stat: %+v", st)
 	return group
 }
