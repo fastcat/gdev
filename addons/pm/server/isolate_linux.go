@@ -21,7 +21,7 @@ func init() {
 		if canSystemd(context.Background()) {
 			return &systemdIsolator{}, nil
 		} else {
-			return cgroupsIsolator{}, nil
+			return &cgroupsIsolator{}, nil
 		}
 	})
 }
@@ -129,17 +129,23 @@ func (s *systemdIsolator) cleanup(ctx context.Context, group string) error {
 	}
 }
 
-type cgroupsIsolator struct{}
+type cgroupsIsolator struct {
+	parentGroup string
+}
 
-func (cgroupsIsolator) isolateProcess(
+func (c *cgroupsIsolator) isolateProcess(
 	ctx context.Context,
 	name string,
 	process *os.Process,
 ) (string, error) {
-	// put the new scope below whatever contains the current process
-	cur, err := cgroup2.PidGroupPath(os.Getpid())
-	if err != nil {
-		return "", err
+	cur := c.parentGroup
+	if c.parentGroup == "" {
+		// default: put the new scope below whatever contains the current process
+		var err error
+		cur, err = cgroup2.PidGroupPath(os.Getpid())
+		if err != nil {
+			return "", err
+		}
 	}
 	groupPath := filepath.Join(cur, instance.AppName()+"-pm-"+name+".scope")
 	mgr, err := cgroup2.NewManager(
@@ -158,7 +164,7 @@ func (cgroupsIsolator) isolateProcess(
 	return groupPath, nil
 }
 
-func (cgroupsIsolator) cleanup(ctx context.Context, groupPath string) error {
+func (*cgroupsIsolator) cleanup(ctx context.Context, groupPath string) error {
 	mgr, err := cgroup2.Load(groupPath)
 	if err != nil {
 		return err

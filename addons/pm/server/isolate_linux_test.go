@@ -2,9 +2,12 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"testing"
 	"time"
@@ -95,6 +98,14 @@ func Test_systemdIsolator_isolateProcess(t *testing.T) {
 
 func Test_cgroupsIsolator_isolateProcess(t *testing.T) {
 	i := cgroupsIsolator{}
+	cur, err := cgroup2.PidGroupPath(os.Getpid())
+	require.NoError(t, err)
+	t.Logf("current cgroup: %q", cur)
+	if strings.Contains(cur, "system.slice") {
+		// happens in CI, we can't attach child cgroups here, so try to find the
+		// user slice instead
+		i.parentGroup = getUserSlice(t)
+	}
 
 	t.Run("create and cleanup", func(t *testing.T) {
 		cmd := startSleep(t)
@@ -135,4 +146,16 @@ func startSleep(t *testing.T) *exec.Cmd {
 		cmd.Process.Wait() //nolint:errcheck
 	})
 	return cmd
+}
+
+func getUserSlice(t testing.TB) string {
+	u, err := user.Current()
+	require.NoError(t, err)
+	group := fmt.Sprintf("/user.slice/user-%[1]s.slice/user@%[1]s.service/app.slice", u.Uid)
+	// need  to make sure the group actually exists, cgroup2 package APIs
+	// generally don't do that
+	groupFullPath := filepath.Join(cgroupsMountPath, group)
+	_, err = os.Stat(groupFullPath)
+	require.NoError(t, err, "user slice cgroup %q does not exist at %q", group, groupFullPath)
+	return group
 }
