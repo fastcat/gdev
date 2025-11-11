@@ -37,6 +37,7 @@ type ExecStatus struct {
 	State    ExecState `json:"state"`
 	StartErr string    `json:"startErr"`
 	Pid      int       `json:"pid,omitzero"`
+	Group    string    `json:"group,omitzero"`
 	ExitCode int       `json:"exitCode"`
 }
 

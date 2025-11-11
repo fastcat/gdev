@@ -17,6 +17,9 @@ func TestChildSleeps(t *testing.T) {
 		t.SkipNow() // does not return
 	}
 
+	isolator, err := getIsolator()
+	require.NoError(t, err)
+
 	// run a simple sequence of init containers followed by a process container
 	def := api.Child{
 		Name: "sleeps",
@@ -35,7 +38,7 @@ func TestChildSleeps(t *testing.T) {
 			Args: []string{"1h"}, // we will kill this one
 		},
 	}
-	c := newChild(def)
+	c := newChild(def, isolator)
 	// TODO: this will hang if something goes wrong
 	t.Cleanup(c.Wait)
 
@@ -78,6 +81,9 @@ func TestChildFails(t *testing.T) {
 		t.SkipNow() // does not return
 	}
 
+	isolator, err := getIsolator()
+	require.NoError(t, err)
+
 	td := t.TempDir()
 
 	// run a simple sequence of init containers followed by a process container
@@ -98,7 +104,7 @@ func TestChildFails(t *testing.T) {
 			Cwd:  td,
 		},
 	}
-	c := newChild(def)
+	c := newChild(def, isolator)
 	// speed up the restart timers to make this test not so slow
 	c.restartDelay = 20 * time.Millisecond
 

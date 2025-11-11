@@ -22,10 +22,11 @@ import (
 )
 
 type child struct {
-	def    api.Child
-	status atomic.Pointer[api.ChildStatus]
-	cmds   chan childCmd
-	wg     sync.WaitGroup
+	def      api.Child
+	status   atomic.Pointer[api.ChildStatus]
+	cmds     chan childCmd
+	wg       sync.WaitGroup
+	isolator isolator
 
 	restartDelay               time.Duration
 	killDelay                  time.Duration
@@ -33,10 +34,11 @@ type child struct {
 	healthCheckInterval        time.Duration
 }
 
-func newChild(def api.Child) *child {
+func newChild(def api.Child, isolator isolator) *child {
 	c := &child{
-		def:  def,
-		cmds: make(chan childCmd), // important that this be un-buffered
+		def:      def,
+		cmds:     make(chan childCmd), // important that this be un-buffered
+		isolator: isolator,
 
 		// tests may override these
 		restartDelay: time.Second, // TODO: scale
@@ -142,6 +144,9 @@ MANAGER:
 			}
 			curProc = nil
 			s := curStatus()
+			// make sure any children that tried to fork off get caught and killed via
+			// the cgroup, unless they managed to escape into a new cgroup
+			c.cleanup(s)
 			s.State = api.ExecEnded
 			var ee *exec.ExitError
 			if errors.As(err, &ee) {
@@ -153,6 +158,9 @@ MANAGER:
 			s.Pid = 0
 			switch status.State {
 			case api.ChildStopping:
+				// re-check all the isolation groups to make sure all processes are
+				// killed and cgroups removed
+				c.cleanupAll(&status)
 				// stop completed
 				status.State = api.ChildStopped
 				// reset the starting process to the beginning
@@ -315,21 +323,20 @@ func (c *child) start(
 		return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState
 	}
 	log.Printf("started %s as pid %d", name, cmd.Process.Pid)
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		err := cmd.Wait()
 		exited <- err
-	}()
-	if err := isolateProcess(context.TODO(), name, cmd.Process); err != nil {
-		log.Printf("ERROR: failed to isolate process %d as %q: %v", cmd.Process.Pid, name, err)
+	})
+	eStat := api.ExecStatus{
+		State: api.ExecRunning,
+		Pid:   cmd.Process.Pid,
 	}
-	return cmd.Process,
-		api.ExecStatus{
-			State: api.ExecRunning,
-			Pid:   cmd.Process.Pid,
-		},
-		runningState
+	if isolationGroup, err := c.isolator.isolateProcess(context.TODO(), name, cmd.Process); err != nil {
+		log.Printf("ERROR: failed to isolate process %d as %q: %v", cmd.Process.Pid, name, err)
+	} else {
+		eStat.Group = isolationGroup
+	}
+	return cmd.Process, eStat, runningState
 }
 
 func (c *child) terminate(p *os.Process, s *api.ExecStatus) {
@@ -345,7 +352,30 @@ func (c *child) kill(p *os.Process, s *api.ExecStatus) {
 	if err := syscall.Kill(-p.Pid, syscall.SIGKILL); err != nil {
 		log.Printf("failed to kill %d: %v", p.Pid, err)
 	}
+	if s.Group != "" {
+		if err := c.isolator.cleanup(context.TODO(), s.Group); err != nil {
+			log.Printf("failed to cleanup isolation group %q: %v", s.Group, err)
+		}
+	}
 	s.State = api.ExecStopping
+}
+
+func (c *child) cleanup(s *api.ExecStatus) {
+	if s.Group == "" {
+		return
+	}
+	if err := c.isolator.cleanup(context.TODO(), s.Group); err != nil {
+		log.Printf("failed to cleanup isolation group %q: %v", s.Group, err)
+	} else {
+		s.Group = ""
+	}
+}
+
+func (c *child) cleanupAll(s *api.ChildStatus) {
+	for i := range s.Init {
+		c.cleanup(&s.Init[i])
+	}
+	c.cleanup(&s.Main)
 }
 
 func cloneStatus(s api.ChildStatus) *api.ChildStatus {

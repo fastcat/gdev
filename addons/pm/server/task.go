@@ -14,11 +14,9 @@ type Task struct {
 
 func (d *daemon) startTasks(ctx context.Context, wg *sync.WaitGroup) {
 	for _, t := range d.tasks {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			d.runTask(ctx, t)
-		}()
+		})
 	}
 }
 

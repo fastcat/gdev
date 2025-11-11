@@ -271,8 +271,8 @@ func copyADC(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer os.Remove(tf.Name())
-	defer tf.Close()
+	defer os.Remove(tf.Name()) //nolint:errcheck
+	defer tf.Close()           //nolint:errcheck
 	if _, err := tf.Write(adcContents); err != nil {
 		return err
 	}
