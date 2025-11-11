@@ -37,6 +37,7 @@ func Test_systemdIsolator_isolateProcess(t *testing.T) {
 		require.NoError(t, err)
 		mgr, err := cgroup2.Load(g)
 		require.NoError(t, err)
+		t.Logf("found unit in cgroup %q", g)
 		require.NoError(t, mgr.Kill())
 		ps, err := cmd.Process.Wait()
 		if assert.NoError(t, err) {
