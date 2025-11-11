@@ -151,7 +151,7 @@ func startSleep(t *testing.T) *exec.Cmd {
 func getUserSlice(t testing.TB) string {
 	u, err := user.Current()
 	require.NoError(t, err)
-	group := fmt.Sprintf("/user.slice/user-%[1]s.slice/user@%[1]s.service/app.slice", u.Uid)
+	group := fmt.Sprintf("/user.slice/user-%[1]s.slice", u.Uid)
 	// need  to make sure the group actually exists, cgroup2 package APIs
 	// generally don't do that
 	groupFullPath := filepath.Join(cgroupsMountPath, group)
