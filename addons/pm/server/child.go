@@ -321,7 +321,9 @@ func (c *child) start(
 		err := cmd.Wait()
 		exited <- err
 	}()
-	if err := isolateProcess(context.TODO(), name, cmd.Process); err != nil {
+	if i, err := getIsolator(); err != nil {
+		log.Printf("WARNING: failed to get isolator for process %d (%s): %v", cmd.Process.Pid, name, err)
+	} else if _, err := i.isolateProcess(context.TODO(), name, cmd.Process); err != nil {
 		log.Printf("ERROR: failed to isolate process %d as %q: %v", cmd.Process.Pid, name, err)
 	}
 	return cmd.Process,
