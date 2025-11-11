@@ -4,9 +4,9 @@ go 1.25
 
 require (
 	cloud.google.com/go/storage v1.57.1
-	fastcat.org/go/gdev v0.7.1
-	fastcat.org/go/gdev/addons/docker v0.7.1
-	fastcat.org/go/gdev/addons/k8s v0.7.1
+	fastcat.org/go/gdev v0.8.0
+	fastcat.org/go/gdev/addons/docker v0.8.0
+	fastcat.org/go/gdev/addons/k8s v0.8.0
 	google.golang.org/api v0.255.0
 	k8s.io/api v0.34.1
 	k8s.io/apimachinery v0.34.1

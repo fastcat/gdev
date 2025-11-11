@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.7.1 h1:zvbYnQBOsxERt2U/Yc4SQk1SZUUsNJg42sZw/98dwG0=
-fastcat.org/go/gdev v0.7.1/go.mod h1:t9Ru9wWBkUeW4KUVcBn9OoGsoIcKzQbXOHsHa8T6Kv0=
-fastcat.org/go/gdev/addons/k8s v0.7.1 h1:Y+c+ByrS61xqC0Rw13W5GZkM3azzNBsNn48emovfruo=
-fastcat.org/go/gdev/addons/k8s v0.7.1/go.mod h1:YzcAa+BtLaJTZ0Rkmzewd+OvtZwwXgupi5eDC+sRhRQ=
+fastcat.org/go/gdev v0.8.0 h1:kKRwvxweqE9adYtUl9g56CNXB8xNSJDa1b1HGcGzuZc=
+fastcat.org/go/gdev v0.8.0/go.mod h1:Toc2PMzp0RN29yF8ORAwTK8AM/KZBuaU26Xeu2O8PrQ=
+fastcat.org/go/gdev/addons/k8s v0.8.0 h1:SozKX3VzbUBtING8SCa+9q2RyrKxh0YTwvsYO+x0/zQ=
+fastcat.org/go/gdev/addons/k8s v0.8.0/go.mod h1:YlKSayCfif9hY+CT+T4uYAPbJPqemDEefhDgR27497U=
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
 github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1Xbatp0=
