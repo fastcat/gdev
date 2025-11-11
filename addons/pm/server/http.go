@@ -55,9 +55,7 @@ func (h *HTTP) Run(ctx context.Context) error {
 	h.daemon.onTerminate = shutdown
 	var wg sync.WaitGroup
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		<-ctx.Done()
 		log.Print("stopping pm server")
 		sdCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -66,7 +64,7 @@ func (h *HTTP) Run(ctx context.Context) error {
 			// force it to close harder
 			_ = h.Server.Close()
 		}
-	}()
+	})
 
 	h.daemon.startTasks(ctx, &wg)
 

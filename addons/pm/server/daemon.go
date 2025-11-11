@@ -227,9 +227,7 @@ func (d *daemon) Terminate(context.Context) error {
 	d.mu.Unlock()
 	var wg sync.WaitGroup
 	for _, child := range children {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			child.cmds <- childStop
 			// wait for it to stop
 			// TODO: avoid polling
@@ -242,7 +240,7 @@ func (d *daemon) Terminate(context.Context) error {
 			}
 			child.cmds <- childDelete
 			child.Wait()
-		}()
+		})
 	}
 	wg.Wait()
 	log.Print("daemon done")

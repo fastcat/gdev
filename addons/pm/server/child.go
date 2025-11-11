@@ -315,12 +315,10 @@ func (c *child) start(
 		return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState
 	}
 	log.Printf("started %s as pid %d", name, cmd.Process.Pid)
-	c.wg.Add(1)
-	go func() {
-		defer c.wg.Done()
+	c.wg.Go(func() {
 		err := cmd.Wait()
 		exited <- err
-	}()
+	})
 	if i, err := getIsolator(); err != nil {
 		log.Printf("WARNING: failed to get isolator for process %d (%s): %v", cmd.Process.Pid, name, err)
 	} else if _, err := i.isolateProcess(context.TODO(), name, cmd.Process); err != nil {
