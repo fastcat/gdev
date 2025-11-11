@@ -20,13 +20,19 @@ type daemon struct {
 	children    map[string]*child
 	onTerminate context.CancelFunc
 	tasks       []Task
+	isolator    isolator
 }
 
-func NewDaemon(tasks ...Task) *daemon {
+func NewDaemon(tasks ...Task) (*daemon, error) {
+	isolator, err := getIsolator()
+	if err != nil {
+		return nil, err
+	}
 	return &daemon{
 		children: make(map[string]*child),
 		tasks:    slices.Clone(tasks),
-	}
+		isolator: isolator,
+	}, nil
 }
 
 var _ api.API = (*daemon)(nil)
@@ -86,7 +92,7 @@ func (d *daemon) PutChild(ctx context.Context, child api.Child) (*api.ChildWithS
 	if _, ok := d.children[child.Name]; ok {
 		return nil, internal.WithStatus(http.StatusConflict, fmt.Errorf("child %s already exists", child.Name))
 	}
-	c := newChild(child)
+	c := newChild(child, d.isolator)
 	d.children[child.Name] = c
 	go func() {
 		c.run()

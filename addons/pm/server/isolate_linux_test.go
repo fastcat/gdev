@@ -58,6 +58,7 @@ func Test_systemdIsolator_isolateProcess(t *testing.T) {
 			case <-deadline.Done():
 				done = true
 			case <-retry.C:
+				//cspell:ignore Procs
 				_, err = mgr.Procs(false)
 				if err != nil || done {
 					if assert.ErrorIs(t, err, os.ErrNotExist) {

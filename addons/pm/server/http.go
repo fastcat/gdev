@@ -37,7 +37,10 @@ func NewHTTP(tasks ...Task) (*HTTP, error) {
 		return nil, err
 	}
 
-	daemon := NewDaemon(tasks...)
+	daemon, err := NewDaemon(tasks...)
+	if err != nil {
+		return nil, err
+	}
 
 	s := &http.Server{
 		Addr:    a.String(),
