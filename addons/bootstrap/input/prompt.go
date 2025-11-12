@@ -417,3 +417,25 @@ func PromptStep(
 		}),
 	)
 }
+
+func PromptFactoryStep[T HuhPrompter](
+	name string,
+	factories ...func() T,
+) *bootstrap.Step {
+	instantiate := func() []HuhPrompter {
+		prompts := make([]HuhPrompter, 0, len(factories))
+		for _, factory := range factories {
+			prompts = append(prompts, factory())
+		}
+		return prompts
+	}
+	return bootstrap.NewStep(
+		name,
+		func(ctx *bootstrap.Context) error {
+			return RunPrompts(ctx, instantiate()...)
+		},
+		bootstrap.SimFunc(func(ctx *bootstrap.Context) error {
+			return SimPrompts(ctx, instantiate()...)
+		}),
+	)
+}

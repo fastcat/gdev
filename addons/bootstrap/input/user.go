@@ -103,18 +103,59 @@ func WriteGitConfigString(name string) Writer[string] {
 var (
 	UserNameKey   = internal.NewKey[string]("user name")
 	GitHubUserKey = internal.NewKey[string]("github user")
+
+	customUserNameGuessers   []Provider[string]
+	customUserEmailGuessers  []Provider[string]
+	customGitHubUserGuessers []Provider[string]
 )
+
+func AddUserNameGuessers(guessers ...Provider[string]) {
+	customUserNameGuessers = append(customUserNameGuessers, guessers...)
+}
+
+func AddUserEmailGuessers(guessers ...Provider[string]) {
+	customUserEmailGuessers = append(customUserEmailGuessers, guessers...)
+}
+
+func AddGitHubUserGuessers(guessers ...Provider[string]) {
+	customGitHubUserGuessers = append(customGitHubUserGuessers, guessers...)
+}
 
 // UserNamePrompt prompts for the `user.name` git setting, guessing it from the
 // OS username.
 func UserNamePrompt() *Prompter[string] {
+	guessers := make([]Provider[string], 0, len(customUserNameGuessers)+1)
+	guessers = append(guessers, customUserNameGuessers...)
+	guessers = append(guessers, NameFromOS())
 	return TextPrompt(
 		UserNameKey,
 		"What's your full name?",
 		WithLoaders(ReadGitConfigString("user.name")),
-		WithGuessers(NameFromOS()),
+		WithGuessers(guessers...),
 		WithWriters(WriteGitConfigString("user.name")),
 	)
+}
+
+func guessUserEmailFromName(ctx context.Context) (string, bool, error) {
+	if userEmailGuesser != nil {
+		fullName, ok, err := ReadGitConfigString("user.name")(ctx)
+		if err != nil {
+			return "", false, err
+		}
+		if !ok || fullName == "" {
+			// try again with other guesser
+			if fullName, ok, err = NameFromOS()(ctx); err != nil {
+				return "", false, err
+			}
+		}
+		if ok && fullName != "" {
+			email := userEmailGuesser(fullName)
+			if email != "" {
+				return email, true, nil
+			}
+		}
+	}
+	return "", false, nil
 }
 
 // UserEmailPrompt prompts for the `user.email` git setting.
@@ -124,31 +165,14 @@ func UserNamePrompt() *Prompter[string] {
 // TODO: allow providing a custom guesser for this, since most companies will
 // have predictable emails from the person's name.
 func UserEmailPrompt() *Prompter[string] {
+	guessers := make([]Provider[string], 0, len(customUserEmailGuessers)+1)
+	guessers = append(guessers, customUserEmailGuessers...)
+	guessers = append(guessers, guessUserEmailFromName)
 	return TextPrompt(
 		internal.NewKey[string]("user email"),
 		"What's your email address (for git)?",
 		WithLoaders(ReadGitConfigString("user.email")),
-		WithGuessers(func(ctx context.Context) (string, bool, error) {
-			if userEmailGuesser != nil {
-				fullName, ok, err := ReadGitConfigString("user.name")(ctx)
-				if err != nil {
-					return "", false, err
-				}
-				if !ok || fullName == "" {
-					// try again with other guesser
-					if fullName, ok, err = NameFromOS()(ctx); err != nil {
-						return "", false, err
-					}
-				}
-				if ok && fullName != "" {
-					email := userEmailGuesser(fullName)
-					if email != "" {
-						return email, true, nil
-					}
-				}
-			}
-			return "", false, nil
-		}),
+		WithGuessers(guessers...),
 		WithValidator(func(email string) error {
 			// TODO: use "the" email regexp / parser rules instead of this simplistic stuff
 			local, domain, ok := strings.Cut(email, "@")
@@ -186,7 +210,7 @@ func GitHubUserPrompt() *Prompter[string] {
 		GitHubUserKey,
 		"What's your GitHub username?",
 		WithLoaders(ReadGitConfigString("github.user")),
-		// no good guessing rule here sadly
+		WithGuessers(customGitHubUserGuessers...),
 		WithWriters(WriteGitConfigString("github.user")),
 	)
 }
@@ -198,11 +222,11 @@ const StepNameUserInfo = "Get user info"
 //
 // TODO: add a way to customize the email guessing, see [UserEmailPrompt].
 func UserInfoStep() *bootstrap.Step {
-	return PromptStep(
+	return PromptFactoryStep(
 		StepNameUserInfo,
-		UserNamePrompt(),
-		UserEmailPrompt(),
-		GitHubUserPrompt(),
+		UserNamePrompt,
+		UserEmailPrompt,
+		GitHubUserPrompt,
 	).With(
 		bootstrap.AfterSteps(apt.StepNameInstall),
 	)
