@@ -1,4 +1,4 @@
-package dpkgcomp
+package dpkg
 
 import (
 	"errors"
@@ -14,8 +14,10 @@ type Version struct {
 	DebianRevision  string
 }
 
-var upstreamVersionAllowedSymbols = []rune{'.', '-', '+', '~', ':', '_'}
-var debianRevisionAllowedSymbols = []rune{'.', '+', '~', '_'}
+var (
+	upstreamVersionAllowedSymbols = []rune{'.', '-', '+', '~', ':', '_'}
+	debianRevisionAllowedSymbols  = []rune{'.', '+', '~', '_'}
+)
 
 // Compare function compares two Debian-like package version
 //
@@ -90,10 +92,10 @@ func StringToVersion(str string) (Version, error) {
 		if err == nil {
 			version.Epoch = intEpoch
 		} else {
-			return Version{}, errors.New("Epoch in version is not a number")
+			return Version{}, errors.New("epoch in version is not a number")
 		}
 		if intEpoch < 0 {
-			return Version{}, errors.New("Epoch in version is negative")
+			return Version{}, errors.New("epoch in version is negative")
 		}
 	} else {
 		version.Epoch = 0
@@ -110,21 +112,21 @@ func StringToVersion(str string) (Version, error) {
 	}
 	// Verify format
 	if len(version.UpstreamVersion) == 0 {
-		return Version{}, errors.New("No UpstreamVersion in version")
+		return Version{}, errors.New("no UpstreamVersion in version")
 	}
 
 	if !unicode.IsDigit(rune(version.UpstreamVersion[0])) {
 		return Version{}, errors.New("UpstreamVersion in version does not start with digit")
 	}
 
-	for i := 0; i < len(version.UpstreamVersion); i = i + 1 {
+	for i := range len(version.UpstreamVersion) {
 		r := rune(version.UpstreamVersion[i])
 		if !unicode.IsDigit(r) && !unicode.IsLetter(r) && !containsRune(upstreamVersionAllowedSymbols, r) {
 			return Version{}, errors.New("invalid character in UpstreamVersion")
 		}
 	}
 
-	for i := 0; i < len(version.DebianRevision); i = i + 1 {
+	for i := range len(version.DebianRevision) {
 		r := rune(version.DebianRevision[i])
 		if !unicode.IsDigit(r) && !unicode.IsLetter(r) && !containsRune(debianRevisionAllowedSymbols, r) {
 			return Version{}, errors.New("invalid character in DebianRevision")

@@ -1,12 +1,11 @@
-package dpkgcomp
+package dpkg
 
 import (
 	"strings"
 	"testing"
 )
 
-//TODO Refactor me ... I do my job but stewpidly ...
-
+// TODO Refactor me ... I do my job but stewpidly ...
 func TestCompareV(t *testing.T) {
 	var a, b Version
 
@@ -85,7 +84,7 @@ func TestCompareV(t *testing.T) {
 		t.Error("DebianRevision comparison failed")
 	}
 
-	//FIXME Complete me
+	// FIXME Complete me
 }
 
 func TestParse(t *testing.T) {
@@ -245,24 +244,33 @@ func TestParse(t *testing.T) {
 	}
 
 	// Test invalid characters in upstream version.
-	versym := []rune{'!', '#', '@', '$', '%', '&', '/', '|', '\\', '<', '>', '(', ')', '[', ']', '{', '}', ';', ',', '_', '=', '*', '^', '\''}
+	versym := []rune{
+		'!', '#', '@', '$', '%', '&', '/', '|', '\\', '<', '>', '(', ')', '[', ']',
+		'{', '}', ';', ',',
+		// underscore is now allowed in upstream version
+		//'_',
+		'=', '*', '^', '\'',
+	}
 	for _, r := range versym {
 		verstr := strings.Join([]string{"0:0", string(r), "-0"}, "")
 		if _, err = StringToVersion(verstr); err == nil {
-			t.Error("Parse with invalid characters in UpstreamVersion failed")
+			t.Errorf("Parse with invalid characters in UpstreamVersion should have failed: %q", verstr)
 		}
 	}
 
 	// Test invalid characters in revision
 	if _, err = StringToVersion("0:0-0:0"); err == nil {
-		t.Error("Parse with invalid characters in DebianRevision failed")
+		t.Errorf("Parse with invalid characters in DebianRevision should have failed: %q", "0:0-0:0")
 	}
 
-	versym = []rune{'!', '#', '@', '$', '%', '&', '/', '|', '\\', '<', '>', '(', ')', '[', ']', '{', '}', ':', ';', ',', '=', '*', '^', '\''}
+	versym = []rune{
+		'!', '#', '@', '$', '%', '&', '/', '|', '\\', '<', '>', '(', ')', '[', ']',
+		'{', '}', ':', ';', ',', '=', '*', '^', '\'',
+	}
 	for _, r := range versym {
 		verstr := strings.Join([]string{"0:0-", string(r)}, "")
 		if _, err = StringToVersion(verstr); err == nil {
-			t.Error("Parse with invalid characters in DebianRevision failed")
+			t.Errorf("Parse with invalid characters in DebianRevision should have failed: %q", verstr)
 		}
 	}
 }
@@ -354,7 +362,11 @@ func TestCompare(t *testing.T) {
 
 	for _, c := range cases {
 		if cmp, err := Compare(c.v1, c.v2); cmp != c.expect {
-			t.Error("Comparison test failed:", c.v1, "vs.", c.v2, "=", cmp, "while we expected", c.expect, "( Error:", err, ")")
+			t.Error(
+				"Comparison test failed:",
+				c.v1, "vs.", c.v2, "=", cmp,
+				"while we expected", c.expect, "( Error:", err, ")",
+			)
 		}
 	}
 
