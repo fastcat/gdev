@@ -10,6 +10,7 @@ import (
 	"github.com/jedib0t/go-pretty/v6/progress"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
+	"fastcat.org/go/gdev/addons/bootstrap/apt/dpkg"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/lib/httpx"
 )
@@ -120,10 +121,13 @@ func prepDownloadedPackage[R PackageRelease](
 				skip = false
 			}
 		}
-		// don't skip if the available version is different from the installed version
+		// don't skip if the available version is newer than the installed version
 		if skip {
 			if relVer := rel.PackageVersion(); relVer != "" && relVer != installedVer {
-				skip = false
+				// also treat parse errors on the versions as a reason to not skip
+				if cmp, err := dpkg.Compare(relVer, installedVer); err == nil && cmp > 0 {
+					skip = false
+				}
 			}
 		}
 	}
