@@ -315,9 +315,19 @@ func (c *child) start(
 	}
 	// set pgid so we can kill process groups
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	// TODO: logfiles
-	// for now let journalctl capture everything
-	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+	// if logfile is not set, pass output to stdout/stderr and let journalctl
+	// capture it. note that this only works if we're using systemd for isolation.
+	if e.Logfile == "" {
+		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+	} else {
+		lf, err := os.OpenFile(e.Logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+		if err != nil {
+			return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState
+		}
+		cmd.Stdout, cmd.Stderr = lf, lf
+		// the fd will be passed directly to the child, so we can close it when we return
+		defer lf.Close() //nolint:errcheck
+	}
 
 	if err := cmd.Start(); err != nil {
 		return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState

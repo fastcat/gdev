@@ -18,10 +18,11 @@ const (
 )
 
 type Exec struct {
-	Cmd  string            `json:"cmd" validate:"required"`
-	Args []string          `json:"args"`
-	Cwd  string            `json:"cwd,omitzero"`
-	Env  map[string]string `json:"env"`
+	Cmd     string            `json:"cmd" validate:"required"`
+	Args    []string          `json:"args"`
+	Cwd     string            `json:"cwd,omitzero"`
+	Env     map[string]string `json:"env"`
+	Logfile string            `json:"logfile,omitzero"`
 }
 
 type ExecState string
