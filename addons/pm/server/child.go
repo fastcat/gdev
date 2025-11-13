@@ -97,7 +97,7 @@ MANAGER:
 			switch cmd {
 			case childStart:
 				switch status.State {
-				case api.ChildStopped, api.ChildError, api.ChildInitError:
+				case api.ChildStopped, api.ChildError, api.ChildInitError, api.ChildDone:
 					// start over from scratch
 					curExec = 0
 					s := curStatus()
@@ -112,7 +112,7 @@ MANAGER:
 						curExec = 0
 						// cancel any restart
 						status.State = api.ChildStopped
-					case api.ChildStopped:
+					case api.ChildStopped, api.ChildDone:
 						// ok
 					default:
 						// this is weird
@@ -124,7 +124,7 @@ MANAGER:
 				kill = time.After(c.killDelay)
 				status.State = api.ChildStopping
 			case childDelete:
-				if status.State != api.ChildStopped {
+				if status.State != api.ChildStopped && status.State != api.ChildDone {
 					log.Printf("cannot delete child %s in state %s", c.def.Name, status.State)
 					break
 				}
@@ -178,11 +178,15 @@ MANAGER:
 					restart = time.After(c.restartDelay)
 				}
 			case api.ChildRunning:
-				// TODO: one-shot support
-				log.Printf("child %s service exited with code %d, will restart", c.def.Name, s.ExitCode)
-				// treat this as an error
-				status.State = api.ChildError
-				restart = time.After(c.restartDelay)
+				if c.def.OneShot {
+					log.Printf("child %s one-shot completed with code %d", c.def.Name, s.ExitCode)
+					status.State = api.ChildDone
+				} else {
+					log.Printf("child %s service exited with code %d, will restart", c.def.Name, s.ExitCode)
+					// treat this as an error
+					status.State = api.ChildError
+					restart = time.After(c.restartDelay)
+				}
 			default:
 				log.Printf("wtf? child %s got exit notification in state %s", c.def.Name, status.State)
 			}

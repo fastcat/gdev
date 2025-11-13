@@ -171,14 +171,21 @@ func (p *PM) Ready(ctx context.Context) (bool, error) {
 }
 
 func (p *PM) isReady(_ *api.Child, cur *api.ChildWithStatus) bool {
+	if cur.OneShot {
+		// one-shots are only ready once they complete, health checks are not
+		// relevant for them
+		return cur.Status.State == api.ChildDone
+	}
+
 	if cur.Status.State != api.ChildRunning {
-		// TODO: Done state for one-shot jobs
 		// TODO: say why it's unhealthy
 		return false
 	}
+
 	if cur.HealthCheck == nil {
 		// TODO: wait for it to run for a min amount of time?
 		return true
 	}
+
 	return cur.Status.Health.Healthy
 }

@@ -3,6 +3,7 @@ package server
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 	"time"
 
@@ -43,37 +44,7 @@ func TestChildSleeps(t *testing.T) {
 	t.Cleanup(c.Wait)
 
 	t.Log("initializing")
-	go c.run()
-	c.cmds <- childPing
-	t.Log("starting")
-	c.cmds <- childStart
-	c.cmds <- childPing // sync
-	for s := c.Status(); s.State != api.ChildRunning; s = c.Status() {
-		t.Logf("child is %s", s.State)
-		if !assert.Contains(t, []api.ChildState{api.ChildInitRunning, api.ChildRunning}, s.State) {
-			// try to kill the child
-			c.cmds <- childStop
-			c.cmds <- childDelete
-			t.FailNow()
-		}
-		time.Sleep(25 * time.Millisecond)
-	}
-	t.Logf("child is %s", c.Status().State)
-	c.cmds <- childStop
-	c.cmds <- childPing // sync
-	for s := c.Status(); s.State != api.ChildStopped; s = c.Status() {
-		t.Logf("child is %s", s.State)
-		// we'd like to do ... something ... if this assert fails, but not clear
-		// what we _can_ do
-		assert.Equal(t, api.ChildStopping, s.State)
-		time.Sleep(25 * time.Millisecond)
-	}
-	t.Logf("child is %s", c.Status().State)
-	c.cmds <- childDelete
-	c.Wait()
-	s := c.Status()
-	t.Logf("final: %#v", c.Status())
-	assert.Equal(t, api.ChildStopped, s.State)
+	runChild(t, c, 25*time.Millisecond)
 }
 
 func TestChildFails(t *testing.T) {
@@ -155,4 +126,90 @@ func TestChildFails(t *testing.T) {
 	s := c.Status()
 	t.Logf("final: %#v", c.Status())
 	assert.Equal(t, api.ChildStopped, s.State)
+}
+
+func TestChildLogs(t *testing.T) {
+	isolator, err := getIsolator()
+	require.NoError(t, err)
+	td := t.TempDir()
+	def := api.Child{
+		Name: "test1",
+		Main: api.Exec{
+			Cmd:     "sh",
+			Args:    []string{"-c", "echo hello ; echo world 1>&2"},
+			Logfile: filepath.Join(td, "test1-main.log"),
+		},
+		Init: []api.Exec{
+			{
+				Cmd:     "sh",
+				Args:    []string{"-c", "echo init1out ; echo init1err 1>&2"},
+				Logfile: filepath.Join(td, "test1-init1.log"),
+			},
+		},
+		// we need to use one-shot mode here because otherwise the children exit too
+		// fast and we see them failing
+		OneShot: true,
+	}
+	c := newChild(def, isolator)
+	t.Cleanup(c.Wait)
+	if !runChild(t, c, time.Millisecond) {
+		return
+	}
+
+	// check the logs we wrote
+	initLog1, err := os.ReadFile(filepath.Join(td, "test1-init1.log"))
+	require.NoError(t, err)
+	assert.Equal(t, "init1out\ninit1err\n", string(initLog1))
+
+	mainLog, err := os.ReadFile(filepath.Join(td, "test1-main.log"))
+	require.NoError(t, err)
+	assert.Equal(t, "hello\nworld\n", string(mainLog))
+}
+
+func runChild(t *testing.T, c *child, pollRate time.Duration) bool {
+	success := true
+	go c.run()
+	c.cmds <- childPing
+	c.cmds <- childStart
+	c.cmds <- childPing
+	startedStates := []api.ChildState{api.ChildRunning}
+	startingStates := append([]api.ChildState{api.ChildInitRunning}, startedStates...)
+	stoppedStates := []api.ChildState{api.ChildStopped}
+	if c.def.OneShot {
+		startedStates = append(startedStates, api.ChildDone)
+		startingStates = append(startingStates, api.ChildDone)
+		stoppedStates = append(stoppedStates, api.ChildDone)
+	}
+	for s := c.Status(); !slices.Contains(startedStates, s.State); s = c.Status() {
+		t.Logf("child is %s", s.State)
+		if !assert.Contains(t, startingStates, s.State) {
+			// try to kill the child
+			c.cmds <- childStop
+			c.cmds <- childDelete
+			success = false // doesn't matter because FailNow
+			t.FailNow()     // does not return
+		}
+		time.Sleep(pollRate)
+	}
+	t.Logf("child is %s", c.Status().State)
+	c.cmds <- childStop
+	c.cmds <- childPing // sync
+	for s := c.Status(); !slices.Contains(stoppedStates, s.State); s = c.Status() {
+		t.Logf("child is %s", s.State)
+		// we'd like to do ... something ... if this assert fails, but not clear
+		// what we _can_ do
+		success = assert.Equal(t, api.ChildStopping, s.State) && success
+		time.Sleep(pollRate)
+	}
+	t.Logf("child is %s", c.Status().State)
+	c.cmds <- childDelete
+	c.Wait()
+	s := c.Status()
+	t.Logf("final: %#v", c.Status())
+	if c.def.OneShot {
+		success = assert.Equal(t, api.ChildDone, s.State) && success
+	} else {
+		success = assert.Equal(t, api.ChildStopped, s.State) && success
+	}
+	return success
 }

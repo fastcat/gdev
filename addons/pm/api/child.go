@@ -8,6 +8,7 @@ type Child struct {
 	Init        []Exec            `json:"init"`
 	Main        Exec              `json:"main" validate:"required"`
 	HealthCheck *HealthCheck      `json:"healthCheck,omitempty"`
+	OneShot     bool              `json:"oneShot,omitempty"`
 }
 
 const (
@@ -63,6 +64,7 @@ const (
 	ChildInitError   ChildState = "init-error"
 	ChildRunning     ChildState = "running"
 	ChildStopping    ChildState = "stopping"
+	ChildDone        ChildState = "done"
 	ChildError       ChildState = "error"
 )
 
