@@ -39,6 +39,7 @@ type config struct {
 	skipLogin        bool
 	includeTransport bool
 	allowedDomains   []string
+	defaultProject   string
 }
 
 type option func(*config)
@@ -77,6 +78,12 @@ func WithAptTransport() option {
 	}
 }
 
+func WithDefaultProject(projectID string) option {
+	return func(c *config) {
+		c.defaultProject = projectID
+	}
+}
+
 func WithAllowedDomains(domains ...string) option {
 	return func(c *config) {
 		c.allowedDomains = domains
@@ -108,6 +115,16 @@ var (
 const ConfigureStepName = "Configure gcloud"
 
 func configureGcloud(ctx *bootstrap.Context) error {
+	if addon.Config.defaultProject != "" {
+		if _, err := shx.Run(
+			ctx,
+			[]string{"gcloud", "config", "set", "project", addon.Config.defaultProject},
+			shx.PassStdio(),
+			shx.WithCombinedError(),
+		); err != nil {
+			return err
+		}
+	}
 	if addon.Config.skipLogin {
 		return nil
 	}
