@@ -7,44 +7,14 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"sync"
 
-	"github.com/goccy/go-yaml"
-	"golang.org/x/mod/modfile"
+	"github.com/goccy/go-yaml" //cspell:ignore goccy
+
+	"fastcat.org/go/gdev/magefiles/mgx"
 )
 
-var workFile = sync.OnceValues(func() (*modfile.WorkFile, error) {
-	if wc, err := os.ReadFile("./go.work"); err != nil {
-		return nil, err
-	} else if w, err := modfile.ParseWork("go.work", wc, nil); err != nil {
-		return nil, err
-	} else {
-		return w, nil
-	}
-})
-
-// Generate `./dir/...` for each module in the work file, except the one(s)
-// listed.
-//
-// If you don't need to exclude any, then use the `work` pattern instead if the
-// tool supports it.
-func modSpreads(exclude ...string) []string {
-	w, err := workFile()
-	if err != nil {
-		panic(err)
-	}
-	spreads := make([]string, 0, len(w.Use))
-	for _, m := range w.Use {
-		if slices.Contains(exclude, m.Path) {
-			continue
-		}
-		spreads = append(spreads, m.Path+"/...")
-	}
-	return spreads
-}
-
 func GenerateVanityFiles(_ context.Context, root string) error {
-	w, err := workFile()
+	w, err := mgx.WorkFile()
 	if err != nil {
 		return err
 	}
@@ -99,7 +69,7 @@ func UpdateDependabotConfig(_ context.Context) error {
 	for _, u := range updates {
 		u := u.(yaml.MapSlice)
 		um := u.ToMap()
-		if um["package-ecosystem"] != "gomod" {
+		if um["package-ecosystem"] != "gomod" { //cspell:ignore gomod
 			continue
 		} else if dir := um["directory"].(string); dir == "/" {
 			root = u
@@ -111,7 +81,7 @@ func UpdateDependabotConfig(_ context.Context) error {
 		return fmt.Errorf("no root update found in dependabot config")
 	}
 	// add copies of the root for any mods we don't already have
-	w, err := workFile()
+	w, err := mgx.WorkFile()
 	if err != nil {
 		return err
 	}

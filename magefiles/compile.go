@@ -7,6 +7,7 @@ import (
 
 	"github.com/magefile/mage/mg"
 
+	"fastcat.org/go/gdev/magefiles/mgx"
 	"fastcat.org/go/gdev/magefiles/shx"
 )
 
@@ -14,7 +15,7 @@ func Compile(ctx context.Context) error {
 	fmt.Println("Compile: go build")
 	// have to tell go each module, else it will only build the root module
 	args := []string{"build", "-v"}
-	args = append(args, modSpreads("./magefiles")...)
+	args = append(args, mgx.ModSpreads("./magefiles")...)
 	return shx.Run(ctx, "go", args...)
 }
 

@@ -7,6 +7,7 @@ import (
 
 	"golang.org/x/mod/semver"
 
+	"fastcat.org/go/gdev/magefiles/mgx"
 	"fastcat.org/go/gdev/magefiles/shx"
 )
 
@@ -14,7 +15,7 @@ func TagSubModules(ctx context.Context, newVersion string) error {
 	if !semver.IsValid(newVersion) {
 		return fmt.Errorf("invalid version: %q", newVersion)
 	}
-	w, err := workFile()
+	w, err := mgx.WorkFile()
 	if err != nil {
 		return err
 	}

@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/magefile/mage/mg"
 	"golang.org/x/mod/modfile"
 
+	"fastcat.org/go/gdev/magefiles/mgx"
 	"fastcat.org/go/gdev/magefiles/shx"
 )
 
@@ -24,35 +23,6 @@ func LintDefault(ctx context.Context) error {
 
 type Lint mg.Namespace
 
-var findGCI = sync.OnceValue(func() string {
-	gb := os.Getenv("GOBIN")
-	if gb == "" {
-		gb = os.Getenv("GOPATH")
-		if gb == "" {
-			gb = os.Getenv("HOME") + "/go"
-		}
-		gb += "/bin"
-	}
-	gbInPath := false
-	pathVals := os.Getenv("PATH")
-	for _, dir := range filepath.SplitList(pathVals) {
-		if dir == gb {
-			gbInPath = true
-			break
-		}
-	}
-	if !gbInPath {
-		// add GOBIN to PATH so that we can find golangci-lint
-		pathVals += string(os.PathListSeparator) + gb
-		_ = os.Setenv("PATH", pathVals)
-	}
-
-	if p, err := exec.LookPath("golangci-lint-v2"); err == nil {
-		return p
-	}
-	return "golangci-lint"
-})
-
 func (Lint) Other(ctx context.Context) /* error */ {
 	mg.CtxDeps(ctx, lintOther...)
 	// return nil
@@ -61,7 +31,7 @@ func (Lint) Other(ctx context.Context) /* error */ {
 func (Lint) Golangci(ctx context.Context) error {
 	fmt.Println("Lint: golangci-lint")
 	// golangci-lint doesn't support the `work` pattern
-	return shx.Cmd(ctx, findGCI(), append([]string{"run"}, modSpreads()...)...).
+	return shx.Cmd(ctx, mgx.FindGCI(), append([]string{"run"}, mgx.ModSpreads()...)...).
 		With(
 			// getting told the linter failed without seeing why is useless
 			shx.WithOutput(),
@@ -77,11 +47,11 @@ func (Lint) Govulncheck(ctx context.Context) error {
 func Format(ctx context.Context) error {
 	fmt.Println("Format: golangci-lint")
 	// golangci-lint doesn't support the `work` pattern
-	return shx.Run(ctx, findGCI(), append([]string{"fmt"}, modSpreads()...)...)
+	return shx.Run(ctx, mgx.FindGCI(), append([]string{"fmt"}, mgx.ModSpreads()...)...)
 }
 
 func Tidy(ctx context.Context) error {
-	w, err := workFile()
+	w, err := mgx.WorkFile()
 	if err != nil {
 		return err
 	}
@@ -102,7 +72,7 @@ func Tidy(ctx context.Context) error {
 }
 
 func SyncSelf(ctx context.Context) error {
-	w, err := workFile()
+	w, err := mgx.WorkFile()
 	if err != nil {
 		return err
 	}
