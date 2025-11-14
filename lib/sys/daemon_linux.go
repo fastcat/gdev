@@ -34,11 +34,12 @@ func StartDaemon(
 		}
 	}
 	// run as a transient systemd service
-	conn, err := dbus.NewUserConnectionContext(ctx)
+	conn, err := SystemdUserConn(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Close() // nolint:errcheck
+
 	ch := make(chan string, 1)
 	props := []dbus.Property{
 		dbus.PropDescription(fmt.Sprintf("%s - %s", instance.AppName(), name)),

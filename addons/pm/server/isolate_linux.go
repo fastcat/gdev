@@ -14,6 +14,7 @@ import (
 	godbus "github.com/godbus/dbus/v5"
 
 	"fastcat.org/go/gdev/instance"
+	"fastcat.org/go/gdev/lib/sys"
 )
 
 func init() {
@@ -27,7 +28,7 @@ func init() {
 }
 
 func canSystemd(ctx context.Context) bool {
-	conn, err := dbus.NewUserConnectionContext(ctx)
+	conn, err := sys.SystemdUserConn(ctx)
 	if err != nil {
 		return false
 	}
@@ -50,7 +51,7 @@ func (s *systemdIsolator) getConn() (*dbus.Conn, error) {
 	if conn != nil {
 		return conn, nil
 	}
-	conn, err := dbus.NewUserConnectionContext(context.Background())
+	conn, err := sys.SystemdUserConn(context.Background())
 	if err != nil {
 		return nil, err
 	}
