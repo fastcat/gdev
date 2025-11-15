@@ -18,5 +18,6 @@ func AutoStart(ctx context.Context, client api.API) error {
 	path := os.Args[0]
 	args := []string{"pm", "daemon"}
 
+	// will become unit {appname}-pm.service
 	return sys.StartDaemon(ctx, "pm", path, args, nil)
 }

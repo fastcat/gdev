@@ -1,10 +1,11 @@
-package server
+package sys
 
 import (
 	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -12,13 +13,10 @@ import (
 	"github.com/containerd/cgroups/v3/cgroup2"
 	"github.com/coreos/go-systemd/v22/dbus"
 	godbus "github.com/godbus/dbus/v5"
-
-	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/lib/sys"
 )
 
 func init() {
-	getIsolator = sync.OnceValues(func() (isolator, error) {
+	GetIsolator = sync.OnceValues(func() (Isolator, error) {
 		if canSystemd(context.Background()) {
 			return &systemdIsolator{}, nil
 		} else {
@@ -28,7 +26,7 @@ func init() {
 }
 
 func canSystemd(ctx context.Context) bool {
-	conn, err := sys.SystemdUserConn(ctx)
+	conn, err := SystemdUserConn(ctx)
 	if err != nil {
 		return false
 	}
@@ -51,7 +49,7 @@ func (s *systemdIsolator) getConn() (*dbus.Conn, error) {
 	if conn != nil {
 		return conn, nil
 	}
-	conn, err := sys.SystemdUserConn(context.Background())
+	conn, err := SystemdUserConn(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -65,23 +63,29 @@ func (s *systemdIsolator) getConn() (*dbus.Conn, error) {
 	return conn, nil
 }
 
-func (s *systemdIsolator) isolateProcess(
+func (s *systemdIsolator) Isolate(
 	ctx context.Context,
 	name string,
 	process *os.Process,
 ) (string, error) {
+	// systemd won't allow moving an existing pid into a .service
+	if !strings.HasSuffix(name, ".scope") {
+		return "", fmt.Errorf("unit name %q must end with .scope or .service", name)
+	}
+
 	conn, err := s.getConn()
 	if err != nil {
 		return "", err
 	}
 	ch := make(chan string, 1)
-	unitName := instance.AppName() + "-pm-" + name + ".scope"
 	_, err = conn.StartTransientUnitContext(
 		ctx,
-		unitName,
+		name,
 		"fail", // error if unit already exists
 		[]dbus.Property{
-			dbus.PropDescription(fmt.Sprintf("%s pm service %s", instance.AppName(), name)),
+			// TODO: description is contextual and needs to be passed in not derived
+			// dbus.PropDescription(fmt.Sprintf("%s pm service %s", instance.AppName(), name)),
+
 			// auto-harvest the transient unit once all its processes exit
 			{Name: "CollectMode", Value: godbus.MakeVariant("inactive-or-failed")},
 			// put the given PID into it now
@@ -102,13 +106,13 @@ func (s *systemdIsolator) isolateProcess(
 		return "", ctx.Err()
 	case status := <-ch:
 		if status == "done" {
-			return unitName, nil
+			return name, nil
 		}
-		return unitName, fmt.Errorf("service isolation for %s (%d) failed: %s", name, process.Pid, status)
+		return name, fmt.Errorf("service isolation for %s (%d) failed: %s", name, process.Pid, status)
 	}
 }
 
-func (s *systemdIsolator) cleanup(ctx context.Context, group string) error {
+func (s *systemdIsolator) Cleanup(ctx context.Context, group string) error {
 	conn, err := s.getConn()
 	if err != nil {
 		return err
@@ -134,11 +138,16 @@ type cgroupsIsolator struct {
 	parentGroup string
 }
 
-func (c *cgroupsIsolator) isolateProcess(
+func (c *cgroupsIsolator) Isolate(
 	ctx context.Context,
 	name string,
 	process *os.Process,
 ) (string, error) {
+	// don't apply the same rules as systemd so we can fake a .service we would
+	// have started via it
+	if !strings.HasSuffix(name, ".scope") && !strings.HasSuffix(name, ".service") {
+		return "", fmt.Errorf("unit name %q must end with .scope or .service", name)
+	}
 	cur := c.parentGroup
 	if c.parentGroup == "" {
 		// default: put the new scope below whatever contains the current process
@@ -147,8 +156,10 @@ func (c *cgroupsIsolator) isolateProcess(
 		if err != nil {
 			return "", err
 		}
+		// TODO: harmless data race depending on usage
+		c.parentGroup = cur
 	}
-	groupPath := filepath.Join(cur, instance.AppName()+"-pm-"+name+".scope")
+	groupPath := filepath.Join(cur, name)
 	mgr, err := cgroup2.NewManager(
 		cgroupsMountPath,
 		// TODO: hierarchy?
@@ -165,7 +176,7 @@ func (c *cgroupsIsolator) isolateProcess(
 	return groupPath, nil
 }
 
-func (*cgroupsIsolator) cleanup(ctx context.Context, groupPath string) error {
+func (*cgroupsIsolator) Cleanup(ctx context.Context, groupPath string) error {
 	mgr, err := cgroup2.Load(groupPath)
 	if err != nil {
 		return err

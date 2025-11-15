@@ -1,6 +1,6 @@
 //go:build !linux
 
-package server
+package sys
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	getIsolator = func() (isolator, error) {
+	GetIsolator = func() (Isolator, error) {
 		return nil, fmt.Errorf("no process isolation defined for %s", runtime.GOOS)
 	}
 }

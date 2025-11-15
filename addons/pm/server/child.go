@@ -19,6 +19,8 @@ import (
 	"time"
 
 	"fastcat.org/go/gdev/addons/pm/api"
+	"fastcat.org/go/gdev/instance"
+	"fastcat.org/go/gdev/lib/sys"
 )
 
 type child struct {
@@ -26,7 +28,7 @@ type child struct {
 	status   atomic.Pointer[api.ChildStatus]
 	cmds     chan childCmd
 	wg       sync.WaitGroup
-	isolator isolator
+	isolator sys.Isolator
 
 	restartDelay               time.Duration
 	killDelay                  time.Duration
@@ -34,7 +36,7 @@ type child struct {
 	healthCheckInterval        time.Duration
 }
 
-func newChild(def api.Child, isolator isolator) *child {
+func newChild(def api.Child, isolator sys.Isolator) *child {
 	c := &child{
 		def:      def,
 		cmds:     make(chan childCmd), // important that this be un-buffered
@@ -345,7 +347,11 @@ func (c *child) start(
 		State: api.ExecRunning,
 		Pid:   cmd.Process.Pid,
 	}
-	if isolationGroup, err := c.isolator.isolateProcess(context.TODO(), name, cmd.Process); err != nil {
+	if isolationGroup, err := c.isolator.Isolate(
+		context.TODO(),
+		instance.AppName()+"-pm-"+name+".service",
+		cmd.Process,
+	); err != nil {
 		log.Printf("ERROR: failed to isolate process %d as %q: %v", cmd.Process.Pid, name, err)
 	} else {
 		eStat.Group = isolationGroup
@@ -367,7 +373,7 @@ func (c *child) kill(p *os.Process, s *api.ExecStatus) {
 		log.Printf("failed to kill %d: %v", p.Pid, err)
 	}
 	if s.Group != "" {
-		if err := c.isolator.cleanup(context.TODO(), s.Group); err != nil {
+		if err := c.isolator.Cleanup(context.TODO(), s.Group); err != nil {
 			log.Printf("failed to cleanup isolation group %q: %v", s.Group, err)
 		}
 	}
@@ -378,7 +384,7 @@ func (c *child) cleanup(s *api.ExecStatus) {
 	if s.Group == "" {
 		return
 	}
-	if err := c.isolator.cleanup(context.TODO(), s.Group); err != nil {
+	if err := c.isolator.Cleanup(context.TODO(), s.Group); err != nil {
 		log.Printf("failed to cleanup isolation group %q: %v", s.Group, err)
 	} else {
 		s.Group = ""

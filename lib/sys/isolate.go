@@ -1,22 +1,22 @@
-package server
+package sys
 
 import (
 	"context"
 	"os"
 )
 
-type isolator interface {
-	isolateProcess(
+type Isolator interface {
+	Isolate(
 		ctx context.Context,
 		name string,
 		process *os.Process,
 	) (group string, err error)
-	cleanup(
+	Cleanup(
 		ctx context.Context,
 		group string,
 	) error
 }
 
-// getIsolator is initialized in platform-specific files, and should generally
+// GetIsolator is initialized in platform-specific files, and should generally
 // be the result of [sync.OnceValues].
-var getIsolator func() (isolator, error)
+var GetIsolator func() (Isolator, error)

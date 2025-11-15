@@ -3,8 +3,10 @@ package sys
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
+	"syscall"
 
 	"github.com/coreos/go-systemd/v22/dbus"
 	godbus "github.com/godbus/dbus/v5"
@@ -33,10 +35,23 @@ func StartDaemon(
 			}
 		}
 	}
+
+	var envs []string
+	if len(env) != 0 {
+		envs = make([]string, 0, len(env))
+		for k, v := range env {
+			envs = append(envs, k+"="+v)
+		}
+	}
+	unitName := instance.AppName() + "-" + name + ".service"
 	// run as a transient systemd service
 	conn, err := SystemdUserConn(ctx)
 	if err != nil {
-		return err
+		fmt.Fprintln(os.Stderr,
+			"WARNING: can't start pm daemon via systemd, falling back on manual cgroups isolation:",
+			err,
+		)
+		return startDaemonNoSystemd(ctx, unitName, path, args, envs)
 	}
 	defer conn.Close() // nolint:errcheck
 
@@ -47,11 +62,7 @@ func StartDaemon(
 		dbus.PropType("exec"),
 		dbus.PropExecStart(append([]string{path}, args...), true),
 	}
-	if len(env) != 0 {
-		envs := make([]string, 0, len(env))
-		for k, v := range env {
-			envs = append(envs, k+"="+v)
-		}
+	if len(envs) != 0 {
 		props = append(props, dbus.Property{
 			Name:  "Environment",
 			Value: godbus.MakeVariant(envs),
@@ -59,7 +70,7 @@ func StartDaemon(
 	}
 	_, err = conn.StartTransientUnitContext(
 		ctx,
-		fmt.Sprintf("%s-%s.service", instance.AppName(), name),
+		unitName,
 		"fail", // error if already exists
 		props,
 		ch,
@@ -77,4 +88,47 @@ func StartDaemon(
 		}
 		return fmt.Errorf("daemon start for %s failed: %s", name, status)
 	}
+}
+
+func startDaemonNoSystemd(
+	ctx context.Context,
+	unitName string,
+	path string,
+	args []string,
+	envs []string,
+) error {
+	devNull, err := os.Open(os.DevNull)
+	if err != nil {
+		return fmt.Errorf("failed to open %s: %w", os.DevNull, err)
+	}
+	defer devNull.Close() //nolint:errcheck
+
+	proc, err := os.StartProcess(
+		path,
+		append([]string{path}, args...),
+		&os.ProcAttr{
+			Env: envs,
+			Files: []*os.File{
+				// no logging in this mode for now :(
+				devNull, // stdin
+				devNull, // stdout
+				devNull, // stderr
+			},
+			Sys: &syscall.SysProcAttr{
+				Setsid: true,
+				// can't setpgid if we are already setsid
+				// noctty is unnecessary since we have /dev/null as stdio
+				// PidFD: &pidFD,
+			},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	// TODO: re-use getIsolator() instance here, since it _should_ be a cgroups one
+	if _, err := (&cgroupsIsolator{}).Isolate(ctx, unitName, proc); err != nil {
+		return err
+	}
+
+	return nil
 }

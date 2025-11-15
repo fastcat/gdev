@@ -1,4 +1,4 @@
-package server
+package sys
 
 import (
 	"context"
@@ -13,8 +13,6 @@ import (
 	"github.com/containerd/cgroups/v3/cgroup2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"fastcat.org/go/gdev/instance"
 )
 
 func Test_systemdIsolator_isolateProcess(t *testing.T) {
@@ -31,7 +29,7 @@ func Test_systemdIsolator_isolateProcess(t *testing.T) {
 	t.Run("kill via cgroup", func(t *testing.T) {
 		cmd := startSleep(t)
 
-		unit, err := i.isolateProcess(t.Context(), "test-sleep", cmd.Process)
+		unit, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process)
 		require.NoError(t, err)
 		t.Logf("started unit %q", unit)
 		g, err := cgroup2.PidGroupPath(cmd.Process.Pid)
@@ -73,10 +71,10 @@ func Test_systemdIsolator_isolateProcess(t *testing.T) {
 	t.Run("kill via systemd", func(t *testing.T) {
 		cmd := startSleep(t)
 
-		unit, err := i.isolateProcess(t.Context(), "test-sleep", cmd.Process)
+		unit, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process)
 		require.NoError(t, err)
 		t.Logf("started unit %q", unit)
-		require.NoError(t, i.cleanup(t.Context(), unit))
+		require.NoError(t, i.Cleanup(t.Context(), unit))
 		// TODO: assert this takes roughly 0 time because the process is already exited
 		ps, err := cmd.Process.Wait()
 		if assert.NoError(t, err) {
@@ -107,20 +105,20 @@ func Test_cgroupsIsolator_isolateProcess(t *testing.T) {
 
 	t.Run("create and cleanup", func(t *testing.T) {
 		cmd := startSleep(t)
-		group, err := i.isolateProcess(t.Context(), "test-sleep", cmd.Process)
+		group, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process)
 		require.NoError(t, err)
 		t.Logf("started process in cgroup %q", group)
 		g, err := cgroup2.PidGroupPath(cmd.Process.Pid)
 		require.NoError(t, err)
 		assert.Equal(t, group, g)
-		assert.Equal(t, instance.AppName()+"-pm-test-sleep.scope", filepath.Base(g))
-		assert.NoError(t, i.cleanup(t.Context(), group))
+		assert.Equal(t, "test-sleep.scope", filepath.Base(g))
+		assert.NoError(t, i.Cleanup(t.Context(), group))
 	})
 	t.Run("double create", func(t *testing.T) {
 		// this test is to verify we can recover from an unclean shutdown that left
 		// the empty cgroup behind
 		cmd := startSleep(t)
-		group, err := i.isolateProcess(t.Context(), "test-double-sleep", cmd.Process)
+		group, err := i.Isolate(t.Context(), "test-double-sleep.service", cmd.Process)
 		require.NoError(t, err)
 		t.Logf("started first process in cgroup %q", group)
 		require.NoError(t, cmd.Process.Kill())
@@ -128,11 +126,11 @@ func Test_cgroupsIsolator_isolateProcess(t *testing.T) {
 		require.NoError(t, err)
 
 		cmd = startSleep(t)
-		group2, err := i.isolateProcess(t.Context(), "test-double-sleep", cmd.Process)
+		group2, err := i.Isolate(t.Context(), "test-double-sleep.service", cmd.Process)
 		require.NoError(t, err)
 		t.Logf("started second process in cgroup %q", group2)
 		assert.Equal(t, group, group2)
-		require.NoError(t, i.cleanup(t.Context(), group2))
+		require.NoError(t, i.Cleanup(t.Context(), group2))
 	})
 }
 

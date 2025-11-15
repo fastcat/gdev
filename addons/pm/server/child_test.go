@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"fastcat.org/go/gdev/addons/pm/api"
+	"fastcat.org/go/gdev/lib/sys"
 )
 
 func TestChildSleeps(t *testing.T) {
@@ -18,7 +19,7 @@ func TestChildSleeps(t *testing.T) {
 		t.SkipNow() // does not return
 	}
 
-	isolator, err := getIsolator()
+	isolator, err := sys.GetIsolator()
 	require.NoError(t, err)
 
 	// run a simple sequence of init containers followed by a process container
@@ -52,7 +53,7 @@ func TestChildFails(t *testing.T) {
 		t.SkipNow() // does not return
 	}
 
-	isolator, err := getIsolator()
+	isolator, err := sys.GetIsolator()
 	require.NoError(t, err)
 
 	td := t.TempDir()
@@ -129,7 +130,7 @@ func TestChildFails(t *testing.T) {
 }
 
 func TestChildLogs(t *testing.T) {
-	isolator, err := getIsolator()
+	isolator, err := sys.GetIsolator()
 	require.NoError(t, err)
 	td := t.TempDir()
 	def := api.Child{
@@ -192,7 +193,23 @@ func runChild(t *testing.T, c *child, pollRate time.Duration) bool {
 		time.Sleep(pollRate)
 	}
 	t.Logf("child is %s", c.Status().State)
-	c.cmds <- childStop
+	// don't stop one-shots, wait for them to exit instead
+	if c.def.OneShot {
+		for s := c.Status(); s.State != api.ChildDone; s = c.Status() {
+			t.Logf("child is %s", s.State)
+			if !assert.Contains(t, startingStates, s.State) {
+				// try to kill the child
+				c.cmds <- childStop
+				c.cmds <- childDelete
+				success = false // doesn't matter because FailNow
+				t.FailNow()     // does not return
+			}
+			time.Sleep(pollRate)
+		}
+		t.Logf("child is %s", c.Status().State)
+	} else {
+		c.cmds <- childStop
+	}
 	c.cmds <- childPing // sync
 	for s := c.Status(); !slices.Contains(stoppedStates, s.State); s = c.Status() {
 		t.Logf("child is %s", s.State)

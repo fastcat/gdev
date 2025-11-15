@@ -13,6 +13,7 @@ import (
 	"fastcat.org/go/gdev/addons/pm/api"
 	"fastcat.org/go/gdev/addons/pm/internal"
 	internalG "fastcat.org/go/gdev/internal"
+	"fastcat.org/go/gdev/lib/sys"
 )
 
 type daemon struct {
@@ -20,11 +21,11 @@ type daemon struct {
 	children    map[string]*child
 	onTerminate context.CancelFunc
 	tasks       []Task
-	isolator    isolator
+	isolator    sys.Isolator
 }
 
 func NewDaemon(tasks ...Task) (*daemon, error) {
-	isolator, err := getIsolator()
+	isolator, err := sys.GetIsolator()
 	if err != nil {
 		return nil, err
 	}
