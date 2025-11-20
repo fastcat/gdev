@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/containerd/cgroups/v3/cgroup2"
@@ -20,7 +21,11 @@ func init() {
 		if canSystemd(context.Background()) {
 			return &systemdIsolator{}, nil
 		} else {
-			return &cgroupsIsolator{}, nil
+			i := &cgroupsIsolator{}
+			if _, err := i.getParentGroup(); err != nil {
+				return nil, err
+			}
+			return i, nil
 		}
 	})
 }
@@ -148,16 +153,9 @@ func (c *cgroupsIsolator) Isolate(
 	if !strings.HasSuffix(name, ".scope") && !strings.HasSuffix(name, ".service") {
 		return "", fmt.Errorf("unit name %q must end with .scope or .service", name)
 	}
-	cur := c.parentGroup
-	if c.parentGroup == "" {
-		// default: put the new scope below whatever contains the current process
-		var err error
-		cur, err = cgroup2.PidGroupPath(os.Getpid())
-		if err != nil {
-			return "", err
-		}
-		// TODO: harmless data race depending on usage
-		c.parentGroup = cur
+	cur, err := c.getParentGroup()
+	if err != nil {
+		return "", err
 	}
 	groupPath := filepath.Join(cur, name)
 	mgr, err := cgroup2.NewManager(
@@ -201,6 +199,48 @@ func (*cgroupsIsolator) Cleanup(ctx context.Context, groupPath string) error {
 			}
 		}
 	}
+}
+
+func (c *cgroupsIsolator) getParentGroup() (string, error) {
+	if c.parentGroup == "" {
+		// default: put the new scope below whatever contains the current process
+		cur, err := cgroup2.PidGroupPath(os.Getpid())
+		if err != nil {
+			return cur, err
+		}
+		if err := c.tryParentGroup(cur); err != nil {
+			return cur, err
+		}
+	}
+	return c.parentGroup, nil
+}
+
+func (c *cgroupsIsolator) tryParentGroup(cur string) error {
+	// if we aren't root, we need to check permissions to see if we can
+	// manipulate our own cgroup
+	if uid, gid := os.Geteuid(), os.Getegid(); uid != 0 {
+		st, err := os.Stat(filepath.Join(cgroupsMountPath, cur))
+		if err != nil {
+			return err
+		}
+		if stt, ok := st.Sys().(*syscall.Stat_t); ok {
+			if stt.Uid != uint32(uid) &&
+				(stt.Gid != uint32(gid) || (stt.Mode&syscall.S_IWGRP) == 0) &&
+				(stt.Mode&syscall.S_IWOTH) == 0 {
+				// we probably can't create sub-groups here (unless there are ACLs)
+				return fmt.Errorf("insufficient permissions to create cgroup in %q: %w", cur, &os.PathError{
+					Op:   "cgroup",
+					Path: cur,
+					Err:  os.ErrPermission,
+				})
+			}
+		}
+	}
+
+	// TODO: harmless? data race depending on usage
+	c.parentGroup = cur
+
+	return nil
 }
 
 const cgroupsMountPath = "/sys/fs/cgroup"
