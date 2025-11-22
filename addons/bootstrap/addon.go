@@ -42,7 +42,7 @@ func Configure(opts ...Option) {
 }
 
 func initialize() error {
-	cmd := runnerCmd(addon.Config.plan)
+	cmd := RunPlanCmd(addon.Config.plan)
 	cmd.Use = "bootstrap"
 	instance.AddCommands(cmd)
 
@@ -124,7 +124,7 @@ func WithAlternatePlanCmd(
 	customize func(*cobra.Command),
 ) Option {
 	return WithChildCmdBuilders(func() *cobra.Command {
-		cmd := runnerCmd(pf())
+		cmd := RunPlanCmd(pf())
 		cmd.Use = name
 		cmd.Short = fmt.Sprintf("%s for %s", defaultCmdShort, name)
 		if customize != nil {

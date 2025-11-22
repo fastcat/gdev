@@ -8,7 +8,7 @@ import (
 
 const defaultCmdShort = "install & configure system dependencies"
 
-func runnerCmd(plan *Plan) *cobra.Command {
+func RunPlanCmd(plan *Plan) *cobra.Command {
 	dryRun := false
 	cmd := &cobra.Command{
 		Args:  cobra.NoArgs,
