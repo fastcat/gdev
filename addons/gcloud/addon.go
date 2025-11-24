@@ -130,7 +130,7 @@ func configureGcloud(ctx *bootstrap.Context) error {
 		if _, err := shx.Run(
 			ctx,
 			[]string{"gcloud", "config", "set", "project", addon.Config.defaultProject},
-			shx.PassStdio(),
+			shx.PassOutput(),
 			shx.WithCombinedError(),
 		); err != nil {
 			return err
