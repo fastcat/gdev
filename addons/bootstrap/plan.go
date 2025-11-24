@@ -118,7 +118,9 @@ func (p *Plan) prepare(ctx context.Context) (*Context, error) {
 		for _, s := range p.pending {
 			names = append(names, s.name)
 		}
-		p.debugCircularDeps()
+		if !p.debugCircularDeps() {
+			p.debugMissingDeps()
+		}
 		return nil, fmt.Errorf("plan has unresolved dependencies blocking %s", strings.Join(names, ", "))
 	}
 	if len(p.ordered) == 0 {
@@ -128,7 +130,7 @@ func (p *Plan) prepare(ctx context.Context) (*Context, error) {
 	return bc, nil
 }
 
-func (p *Plan) debugCircularDeps() {
+func (p *Plan) debugCircularDeps() bool {
 	isOrdered := make(map[string]bool, len(p.ordered))
 	for _, s := range p.ordered {
 		isOrdered[s.name] = true
@@ -176,11 +178,36 @@ func (p *Plan) debugCircularDeps() {
 		}
 		return false
 	}
+	found := false
 	for name := range afterByName {
 		if !visited[name] {
 			// don't stop after one cycle, find them all
-			visit(name, nil)
+			if visit(name, nil) {
+				found = true
+			}
 		}
+	}
+	return found
+}
+
+func (p *Plan) debugMissingDeps() {
+	isOrdered := make(map[string]bool, len(p.ordered))
+	for _, s := range p.ordered {
+		isOrdered[s.name] = true
+	}
+	for _, s := range p.pending {
+		m := maps.Clone(s.after)
+		// trim out satisfied deps
+		for n := range m {
+			if _, ok := isOrdered[n]; ok {
+				delete(m, n)
+			}
+		}
+		if len(m) == 0 {
+			continue
+		}
+		missing := slices.Sorted(maps.Keys(m))
+		fmt.Printf("step %s is missing dependencies: %s\n", s.name, strings.Join(missing, ", "))
 	}
 }
 
