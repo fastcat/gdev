@@ -73,6 +73,17 @@ func CaptureOutput() Option {
 	})
 }
 
+func CaptureError() Option {
+	return optionExecFunc(func(cmd *exec.Cmd, res *Result) {
+		if res.stderrCapture != nil {
+			_ = res.stderrCapture.Close()
+		}
+		res.stderrCapture = &outCapture{}
+		res.stderrCapture.init()
+		cmd.Stderr = res.stderrCapture
+	})
+}
+
 func CaptureCombined() Option {
 	return optionExecFunc(func(cmd *exec.Cmd, res *Result) {
 		if res.stdoutCapture != nil {

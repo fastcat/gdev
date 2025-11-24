@@ -143,10 +143,31 @@ func verifyStep() *bootstrap.Step {
 			if _, err := os.Stat(adcPath); err != nil {
 				return fmt.Errorf("gcloud ADC credentials not found at %s", adcPath)
 			}
-			// TODO: verify creds work and are for the expected domain
-			// validity is instance dependent, so we would require a hook to be
-			// registered to test them. expected domain requires the ability to
-			// bifurcate expectations depending on what bootstrap plan we are running.
+			// verify the active account is in the expected domain
+			accts, err := getAccounts(ctx)
+			if err != nil {
+				return fmt.Errorf("not logged into gcloud: %w", err)
+			}
+			activeAcct, err := activeAccount(accts, addon.Config.allowedDomains)
+			if err != nil {
+				return fmt.Errorf("gcloud active account invalid: %w", err)
+			}
+			// adc print-access-token generates a new one each time, and takes a
+			// moment, so presumably it's actually hitting the cloud and thus
+			// verifying the creds are not expired/revoked.
+			if _, err := shx.Run(
+				ctx,
+				[]string{"gcloud", "auth", "application-default", "print-access-token"},
+				// pass stderr so user can see it if it fails
+				shx.PassStderr(),
+				shx.WithCombinedError(),
+			); err != nil {
+				return fmt.Errorf("gcloud ADC credentials for %s invalid: %w", activeAcct.Account, err)
+			}
+			// TODO: verify creds are for the expected domain
+			// expected domain requires the ability to bifurcate expectations
+			// depending on whether the current plan is doing a user or service
+			// account login.
 			return nil
 		},
 		// the two auth steps mark themselves before this to order things
