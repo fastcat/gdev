@@ -135,14 +135,8 @@ func configureGcloud(ctx *bootstrap.Context) error {
 		); err != nil {
 			return err
 		}
-		if _, err := shx.Run(
-			ctx,
-			[]string{"gcloud", "auth", "application-default", "set-quota-project", addon.Config.defaultProject},
-			shx.PassStdio(),
-			shx.WithCombinedError(),
-		); err != nil {
-			return err
-		}
+		// can't set ADC quota-project here unless we know we're using user creds
+		// not a service account key
 	}
 	if addon.Config.skipLogin {
 		return nil
