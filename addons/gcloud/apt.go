@@ -85,7 +85,7 @@ func ArtifactRegistryAptSteps(
 		apt.SourceInstallStep(
 			ArtifactRegistryAptSource(location, project, repository),
 			// adding this apt source requires being logged in
-			bootstrap.AfterSteps(ConfigureStepName),
+			bootstrap.AfterSteps(VerifyStepName),
 		),
 	}
 	for _, s := range steps {

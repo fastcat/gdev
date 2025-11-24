@@ -108,11 +108,15 @@ var (
 				bootstrap.AfterSteps(apt.StepNameInstall),
 			)),
 		)
+		bootstrap.WithDefaultStepFactory(VerifyStepName, verifyStep)
 		configuredBootstrap = true
 	})
 )
 
-const ConfigureStepName = "Configure gcloud"
+const (
+	ConfigureStepName = "Configure gcloud"
+	VerifyStepName    = "Verify gcloud auth"
+)
 
 func configureGcloud(ctx *bootstrap.Context) error {
 	if addon.Config.defaultProject != "" {
@@ -129,6 +133,24 @@ func configureGcloud(ctx *bootstrap.Context) error {
 		return nil
 	}
 	return LoginUser(ctx)
+}
+
+func verifyStep() *bootstrap.Step {
+	return bootstrap.NewStep(VerifyStepName,
+		func(ctx *bootstrap.Context) error {
+			gcDir := filepath.Join(shx.HomeDir(), ".config", "gcloud")
+			adcPath := filepath.Join(gcDir, "application_default_credentials.json")
+			if _, err := os.Stat(adcPath); err != nil {
+				return fmt.Errorf("gcloud ADC credentials not found at %s", adcPath)
+			}
+			// TODO: verify creds work and are for the expected domain
+			// validity is instance dependent, so we would require a hook to be
+			// registered to test them. expected domain requires the ability to
+			// bifurcate expectations depending on what bootstrap plan we are running.
+			return nil
+		},
+		// the two auth steps mark themselves before this to order things
+	)
 }
 
 // LoginUser runs gcloud login steps if necessary.
