@@ -109,8 +109,8 @@ func BootstrapSteps() []*bootstrap.Step {
 	var steps []*bootstrap.Step
 	steps = append(steps, apt.PublicSourceInstallSteps(sources...)...)
 	// TODO: this is a bit ugly, might create weird behavior elsewhere
-	apt.WithPackages("Select gcloud packages", packages...)
 	steps = append(steps,
+		apt.AddPackagesStep("Select gcloud packages", packages...),
 		bootstrap.NewStep(
 			ConfigureStepName,
 			configureGcloud,
