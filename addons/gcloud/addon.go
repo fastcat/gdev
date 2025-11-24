@@ -93,25 +93,32 @@ func WithAllowedDomains(domains ...string) option {
 var (
 	configuredBootstrap bool
 	configureBootstrap  = sync.OnceFunc(func() {
-		sources := []*apt.SourceInstaller{CLISourceInstaller()}
-		packages := []string{"google-cloud-cli"}
-		if addon.Config.includeTransport {
-			sources = append(sources, AptTransportSourceInstaller())
-			packages = append(packages, "apt-transport-artifact-registry")
-		}
-		bootstrap.Configure(
-			bootstrap.WithSteps(apt.PublicSourceInstallSteps(sources...)...),
-			apt.WithPackages("Select gcloud packages", packages...),
-			bootstrap.WithSteps(bootstrap.NewStep(
-				ConfigureStepName,
-				configureGcloud,
-				bootstrap.AfterSteps(apt.StepNameInstall),
-			)),
-		)
+		bootstrap.Configure(bootstrap.WithSteps(BootstrapSteps()...))
 		bootstrap.WithDefaultStepFactory(VerifyStepName, verifyStep)
 		configuredBootstrap = true
 	})
 )
+
+func BootstrapSteps() []*bootstrap.Step {
+	sources := []*apt.SourceInstaller{CLISourceInstaller()}
+	packages := []string{"google-cloud-cli"}
+	if addon.Config.includeTransport {
+		sources = append(sources, AptTransportSourceInstaller())
+		packages = append(packages, "apt-transport-artifact-registry")
+	}
+	var steps []*bootstrap.Step
+	steps = append(steps, apt.PublicSourceInstallSteps(sources...)...)
+	// TODO: this is a bit ugly, might create weird behavior elsewhere
+	apt.WithPackages("Select gcloud packages", packages...)
+	steps = append(steps,
+		bootstrap.NewStep(
+			ConfigureStepName,
+			configureGcloud,
+			bootstrap.AfterSteps(apt.StepNameInstall),
+		),
+	)
+	return steps
+}
 
 const (
 	ConfigureStepName = "Configure gcloud"
@@ -123,6 +130,14 @@ func configureGcloud(ctx *bootstrap.Context) error {
 		if _, err := shx.Run(
 			ctx,
 			[]string{"gcloud", "config", "set", "project", addon.Config.defaultProject},
+			shx.PassStdio(),
+			shx.WithCombinedError(),
+		); err != nil {
+			return err
+		}
+		if _, err := shx.Run(
+			ctx,
+			[]string{"gcloud", "auth", "application-default", "set-quota-project", addon.Config.defaultProject},
 			shx.PassStdio(),
 			shx.WithCombinedError(),
 		); err != nil {
