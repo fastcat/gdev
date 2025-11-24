@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strings"
+	"sync"
 
 	"fastcat.org/go/gdev/internal"
 )
@@ -171,15 +173,34 @@ func FeedStdin(in io.Reader) Option {
 	})
 }
 
+var usingSudoRS = sync.OnceValue(func() bool {
+	// sudo-rs formats auth prompts differently, adjust how we set SUDO_PROMPT
+	// based on whether we are using "traditional" sudo (aka sudo.ws) or sudo-rs.
+	out, err := exec.Command("sudo", "--version").CombinedOutput()
+	if err != nil {
+		// assume traditional sudo if we can't determine otherwise
+		return false
+	}
+	return strings.HasPrefix(string(out), "sudo-rs ")
+})
+
 func WithSudo(purpose string) Option {
 	return optionCmdFunc(func(c *Cmd) {
 		c.cmdAndArgs = append([]string{"sudo"}, c.cmdAndArgs...)
 		c.env["SUDO_ASKPASS"] = "1"
-		c.env["SUDO_PROMPT"] = fmt.Sprintf(
-			"%s needs the password for %%p to %s: ",
-			internal.AppName(),
-			purpose,
-		)
+		if usingSudoRS() {
+			c.env["SUDO_PROMPT"] = fmt.Sprintf(
+				"%s needs the password for %%p to %s",
+				internal.AppName(),
+				purpose,
+			)
+		} else {
+			c.env["SUDO_PROMPT"] = fmt.Sprintf(
+				"%s needs the password for %%p to %s: ",
+				internal.AppName(),
+				purpose,
+			)
+		}
 	})
 }
 
