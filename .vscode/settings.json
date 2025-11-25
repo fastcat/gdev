@@ -19,6 +19,7 @@
 		"libc",
 		"nolint",
 		"NOPASSWD",
+		"pflag",
 		"pg_isready",
 		"pgid",
 		"pids",
