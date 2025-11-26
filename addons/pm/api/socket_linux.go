@@ -10,7 +10,7 @@ import (
 
 func ListenAddr() net.Addr {
 	return &net.UnixAddr{
-		Net:  "unixpacket",
+		Net:  "unix",
 		Name: fmt.Sprintf("/run/user/%d/%s-pm", os.Getuid(), instance.AppName()),
 	}
 }
