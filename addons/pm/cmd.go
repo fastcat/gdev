@@ -150,7 +150,10 @@ func PMStatusTable(ctx context.Context, client api.API) error {
 	tw.SetOutputMirror(os.Stdout)
 	tw.AppendHeader(table.Row{"Name", "State", "Pid", "Healthy"})
 	tw.AppendSeparator()
-	for _, c := range summary {
+	cmpByName := func(a, b api.ChildSummary) int {
+		return strings.Compare(a.Name, b.Name)
+	}
+	for _, c := range slices.SortedFunc(slices.Values(summary), cmpByName) {
 		h := "❔"
 		if c.Healthy != nil {
 			h = healthEmoji(*c.Healthy)
