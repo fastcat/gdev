@@ -2,18 +2,31 @@ package stack
 
 import (
 	"fmt"
+	"sync/atomic"
 
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/service"
 )
 
 var (
+	servicesLocked           atomic.Bool
 	allServices              = map[string]service.Service{}
 	infraOrder, serviceOrder []string
 )
 
+func checkCanAddServices() {
+	if servicesLocked.Load() {
+		panic(fmt.Errorf("cannot add services after they have been locked"))
+	}
+}
+
+func lockServices() {
+	internal.CheckLockedDown()
+	servicesLocked.Store(true)
+}
+
 func AddService(svc service.Service) {
-	internal.CheckCanCustomize()
+	checkCanAddServices()
 	name := svc.Name()
 	if _, ok := allServices[name]; ok {
 		panic(fmt.Errorf("already registered service %s", name))
@@ -23,7 +36,7 @@ func AddService(svc service.Service) {
 }
 
 func AddInfrastructure(svc service.Service) {
-	internal.CheckCanCustomize()
+	checkCanAddServices()
 	name := svc.Name()
 	if _, ok := allServices[name]; ok {
 		panic(fmt.Errorf("already registered service %s", name))
@@ -33,7 +46,7 @@ func AddInfrastructure(svc service.Service) {
 }
 
 func AllInfrastructure() []service.Service {
-	internal.CheckLockedDown()
+	lockServices()
 	ret := make([]service.Service, 0, len(infraOrder))
 	for _, n := range infraOrder {
 		ret = append(ret, allServices[n])
@@ -42,7 +55,7 @@ func AllInfrastructure() []service.Service {
 }
 
 func AllServices() []service.Service {
-	internal.CheckLockedDown()
+	lockServices()
 	ret := make([]service.Service, 0, len(serviceOrder))
 	for _, n := range serviceOrder {
 		ret = append(ret, allServices[n])
@@ -54,6 +67,6 @@ func AllServices() []service.Service {
 //
 // If the service does not exist, it returns nil.
 func ServiceByName(name string) service.Service {
-	internal.CheckLockedDown()
+	lockServices()
 	return allServices[name]
 }

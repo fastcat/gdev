@@ -19,6 +19,10 @@ func (b *buildBeforeStart) Name() string {
 	return "build-before-start"
 }
 
+func (b *buildBeforeStart) LoadServices(context.Context) error {
+	return nil
+}
+
 func (b *buildBeforeStart) BeforeServices(ctx context.Context, infra, svcs []service.Service) error {
 	// make sure initial state is clean
 	b.repoDirs = make(map[string][]string)
