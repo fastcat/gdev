@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -20,7 +21,26 @@ func Config() *cobra.Command {
 	cfg.AddCommand(&cobra.Command{
 		Use:  "mode",
 		Args: cobra.RangeArgs(0, 2),
-		// TODO: service name autocomplete
+		ValidArgsFunction: func(
+			_ *cobra.Command,
+			args []string,
+			toComplete string,
+		) ([]string, cobra.ShellCompDirective) {
+			var candidates []string
+			if len(args) == 0 {
+				allServices := append(stack.AllInfrastructure(), stack.AllServices()...)
+				candidates = make([]string, 0, len(allServices))
+				for _, s := range allServices {
+					candidates = append(candidates, s.Name())
+				}
+			} else if len(args) == 1 {
+				candidates = service.ValidModeNames()
+			}
+			candidates = slices.DeleteFunc(candidates, func(candidate string) bool {
+				return !strings.HasPrefix(candidate, toComplete)
+			})
+			return candidates, cobra.ShellCompDirectiveNoFileComp
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			allServices := append(stack.AllInfrastructure(), stack.AllServices()...)
 			findSvc := func(name string) (service.Service, bool) {

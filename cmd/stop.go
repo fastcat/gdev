@@ -22,10 +22,14 @@ func StackStop(ctx context.Context, opts StackStopOptions) error {
 
 func init() {
 	var opts StackStopOptions
+	scd := cobra.ShellCompDirectiveNoFileComp
 	cmd := &cobra.Command{
 		Use:   "stop",
 		Short: "stop the stack",
 		Args:  cobra.NoArgs,
+		CompletionOptions: cobra.CompletionOptions{
+			DefaultShellCompDirective: &scd,
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return StackStop(cmd.Context(), opts)
 		},
