@@ -328,6 +328,7 @@ func (c *child) start(
 	} else {
 		lf, err := os.OpenFile(e.Logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 		if err != nil {
+			log.Printf("failed to start %s, unable to open logfile %q: %v", c.def.Name, e.Logfile, err)
 			return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState
 		}
 		cmd.Stdout, cmd.Stderr = lf, lf
@@ -336,6 +337,7 @@ func (c *child) start(
 	}
 
 	if err := cmd.Start(); err != nil {
+		log.Printf("failed to start %s: %v", c.def.Name, err)
 		return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState
 	}
 	log.Printf("started %s as pid %d", name, cmd.Process.Pid)

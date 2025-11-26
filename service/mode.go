@@ -19,6 +19,22 @@ const (
 
 //go:generate go tool stringer -type=Mode -linecomment
 
+func ValidModes() []Mode {
+	modes := make([]Mode, 0, len(_Mode_index)-1)
+	for i := range len(_Mode_index) - 1 {
+		modes = append(modes, Mode(i))
+	}
+	return modes
+}
+
+func ValidModeNames() []string {
+	names := make([]string, 0, len(_Mode_index)-1)
+	for i := range len(_Mode_index) - 1 {
+		names = append(names, Mode(i).String())
+	}
+	return names
+}
+
 func (m Mode) Valid() bool {
 	return m >= 0 && m < Mode(len(_Mode_index)-1)
 }

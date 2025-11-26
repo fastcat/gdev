@@ -14,6 +14,14 @@ import (
 	"fastcat.org/go/gdev/instance"
 )
 
+// FallbackLogFileEnv is an environment variable that can be set to provide
+// a fallback log file path for daemons started without systemd support.
+//
+// This will not be passed to the actual daemon.
+//
+// TODO: this is ugly
+const FallbackLogFileEnv = "__FALLBACK_LOG_FILE"
+
 func StartDaemon(
 	ctx context.Context,
 	name string,
@@ -37,9 +45,14 @@ func StartDaemon(
 	}
 
 	var envs []string
+	var fallbackLogFile string
 	if len(env) != 0 {
 		envs = make([]string, 0, len(env))
 		for k, v := range env {
+			if k == FallbackLogFileEnv {
+				fallbackLogFile = v
+				continue
+			}
 			envs = append(envs, k+"="+v)
 		}
 	}
@@ -51,7 +64,7 @@ func StartDaemon(
 			"WARNING: can't start pm daemon via systemd, falling back on manual cgroups isolation:",
 			err,
 		)
-		return startDaemonNoSystemd(ctx, unitName, path, args, envs)
+		return startDaemonNoSystemd(ctx, unitName, path, args, envs, fallbackLogFile)
 	}
 	defer conn.Close() // nolint:errcheck
 
@@ -96,6 +109,7 @@ func startDaemonNoSystemd(
 	path string,
 	args []string,
 	envs []string,
+	fallbackLogFile string,
 ) error {
 	devNull, err := os.Open(os.DevNull)
 	if err != nil {
@@ -103,16 +117,25 @@ func startDaemonNoSystemd(
 	}
 	defer devNull.Close() //nolint:errcheck
 
+	out := devNull
+	if fallbackLogFile != "" {
+		lf, err := os.OpenFile(fallbackLogFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+		if err != nil {
+			return fmt.Errorf("failed to open fallback log file %q: %w", fallbackLogFile, err)
+		}
+		defer lf.Close() //nolint:errcheck
+		out = lf
+	}
+
 	proc, err := os.StartProcess(
 		path,
 		append([]string{path}, args...),
 		&os.ProcAttr{
 			Env: envs,
 			Files: []*os.File{
-				// no logging in this mode for now :(
 				devNull, // stdin
-				devNull, // stdout
-				devNull, // stderr
+				out,     // stdout
+				out,     // stderr
 			},
 			Sys: &syscall.SysProcAttr{
 				Setsid: true,
