@@ -38,9 +38,9 @@ func Start(ctx context.Context, opts ...any) error {
 	if err != nil {
 		return err
 	}
-	infra, svcs := AllInfrastructure(), AllServices()
-	if err := preStart(ctx, infra, svcs); err != nil {
-		return fmt.Errorf("error running pre-start hooks: %w", err)
+	infra, svcs, err := preStart(ctx)
+	if err != nil {
+		return fmt.Errorf("error preparing services: %w", err)
 	}
 	if err := StartServices(ctx, "infrastructure", infra...); err != nil {
 		return err
