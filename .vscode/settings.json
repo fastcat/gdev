@@ -17,6 +17,7 @@
 		"journalctl",
 		"kubelet",
 		"libc",
+		"noctty",
 		"nolint",
 		"NOPASSWD",
 		"pflag",

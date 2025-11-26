@@ -52,6 +52,12 @@ func AddPreStartHook(fn func() PreStartHook) {
 	preStartHookFactories = append(preStartHookFactories, fn)
 }
 
+// AddPreStartHookType is a helper to register a [PreStartHook] implementation
+// for a type T where *T implements [PreStartHook]. When running the pre-start
+// process, a new(T) will be created and used.
+//
+// This is useful for a type that stores state between the pre-start stages, but
+// which does not need initialization before the first stage.
 func AddPreStartHookType[T any, P interface {
 	*T
 	PreStartHook
@@ -59,6 +65,9 @@ func AddPreStartHookType[T any, P interface {
 	AddPreStartHook(func() PreStartHook { return P(new(T)) })
 }
 
+// PreStartHookFuncs creates a PreStartHook built from the given functions. Any
+// of them may be nil if no action is needed. A hook with all nil functions is
+// silly, but not an error.
 func PreStartHookFuncs(
 	name string,
 	beforeServices func(ctx context.Context, infra, svcs []service.Service) error,
