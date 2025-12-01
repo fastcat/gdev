@@ -20,10 +20,10 @@ cloud.google.com/go/storage v1.57.2 h1:sVlym3cHGYhrp6XZKkKb+92I1V42ks2qKKpB0CF5M
 cloud.google.com/go/storage v1.57.2/go.mod h1:n5ijg4yiRXXpCu0sJTD6k+eMf7GRrJmPyr9YxLXGHOk=
 cloud.google.com/go/trace v1.11.6 h1:2O2zjPzqPYAHrn3OKl029qlqG6W8ZdYaOWRyr8NgMT4=
 cloud.google.com/go/trace v1.11.6/go.mod h1:GA855OeDEBiBMzcckLPE2kDunIpC72N+Pq8WFieFjnI=
-fastcat.org/go/gdev v0.8.0 h1:kKRwvxweqE9adYtUl9g56CNXB8xNSJDa1b1HGcGzuZc=
-fastcat.org/go/gdev v0.8.0/go.mod h1:Toc2PMzp0RN29yF8ORAwTK8AM/KZBuaU26Xeu2O8PrQ=
-fastcat.org/go/gdev/addons/gocache v0.8.0 h1:ka5M1t+epjuUJWrG+05Pt+JpprhSlGTS6EHIjsw2qwQ=
-fastcat.org/go/gdev/addons/gocache v0.8.0/go.mod h1:UVOIIiqEJZWSAMiEd0dkxdtb1Ua5I4/VBd6sSieqhrk=
+fastcat.org/go/gdev v0.10.0 h1:qeppY2BCf3zCliomc8d24N6QVbV94TJrysQhYLQUUsU=
+fastcat.org/go/gdev v0.10.0/go.mod h1:zH8QxSJKyDcNQ3dVNnIMS9/f+7fDNhGefWBDDNnrCpI=
+fastcat.org/go/gdev/addons/gocache v0.10.0 h1:RNsfdJB9Lb+fbg8L/nPl1vIWoOz65ElphvDfbecxc6c=
+fastcat.org/go/gdev/addons/gocache v0.10.0/go.mod h1:qqU+MUZi7MgxRdfFIjE8vV20SzNtm8Lp+L0j0v4vX4w=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.29.0 h1:UQUsRi8WTzhZntp5313l+CHIAT95ojUI2lpP/ExlZa4=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.29.0/go.mod h1:Cz6ft6Dkn3Et6l2v2a9/RpN7epQ1GtDlO6lj8bEcOvw=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.53.0 h1:owcC2UnmsZycprQ5RfRgjydWhuoxg71LUfyiQdijZuM=
@@ -109,7 +109,9 @@ go.opentelemetry.io/otel/sdk/metric v1.38.0/go.mod h1:dg9PBnW9XdQ1Hd6ZnRz689Cbtr
 go.opentelemetry.io/otel/trace v1.38.0 h1:Fxk5bKrDZJUH+AMyyIXGcFAPah0oRcT+LuNtJrmcNLE=
 go.opentelemetry.io/otel/trace v1.38.0/go.mod h1:j1P9ivuFsTceSWe1oY+EeW3sc+Pp42sO++GHkg4wwhs=
 golang.org/x/crypto v0.45.0 h1:jMBrvKuj23MTlT0bQEOBcAE0mjg8mK9RXFhRH6nyF3Q=
+golang.org/x/crypto v0.45.0/go.mod h1:XTGrrkGJve7CYK7J8PEww4aY7gM3qMCElcJQ8n8JdX4=
 golang.org/x/net v0.47.0 h1:Mx+4dIFzqraBXUugkia1OOvlD6LemFo1ALMHjrXDOhY=
+golang.org/x/net v0.47.0/go.mod h1:/jNxtkgq5yWUGYkaZGqo27cfGZ1c5Nen03aYrrKpVRU=
 golang.org/x/oauth2 v0.33.0 h1:4Q+qn+E5z8gPRJfmRy7C2gGG3T4jIprK6aSYgTXGRpo=
 golang.org/x/oauth2 v0.33.0/go.mod h1:lzm5WQJQwKZ3nwavOZ3IS5Aulzxi68dUSgRHujetwEA=
 golang.org/x/sync v0.18.0 h1:kr88TuHDroi+UVf+0hZnirlk8o8T+4MrK6mr60WkH/I=
