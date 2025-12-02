@@ -4,11 +4,11 @@ go 1.25
 
 require (
 	entgo.io/ent v0.14.5
-	fastcat.org/go/gdev v0.8.0
-	fastcat.org/go/gdev/addons/docker v0.8.0
-	fastcat.org/go/gdev/addons/k3s v0.8.0
-	fastcat.org/go/gdev/addons/k8s v0.8.0
-	fastcat.org/go/gdev/addons/postgres v0.8.0
+	fastcat.org/go/gdev v0.10.0
+	fastcat.org/go/gdev/addons/docker v0.10.0
+	fastcat.org/go/gdev/addons/k3s v0.10.0
+	fastcat.org/go/gdev/addons/k8s v0.10.0
+	fastcat.org/go/gdev/addons/postgres v0.10.0
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/mattn/go-sqlite3 v1.14.24
@@ -109,7 +109,6 @@ require (
 	golang.org/x/text v0.31.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
 	golang.org/x/tools v0.38.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251103181224-f26f9409b101 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
