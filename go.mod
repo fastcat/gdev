@@ -6,9 +6,9 @@ require (
 	github.com/containerd/cgroups/v3 v3.1.0
 	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/go-playground/validator/v10 v10.28.0
-	github.com/goccy/go-yaml v1.18.0
+	github.com/goccy/go-yaml v1.19.0
 	github.com/godbus/dbus/v5 v5.2.0
-	github.com/jedib0t/go-pretty/v6 v6.7.3
+	github.com/jedib0t/go-pretty/v6 v6.7.5
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
