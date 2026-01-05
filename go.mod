@@ -5,10 +5,10 @@ go 1.25
 require (
 	github.com/containerd/cgroups/v3 v3.1.2
 	github.com/coreos/go-systemd/v22 v22.6.0
-	github.com/go-playground/validator/v10 v10.29.0
-	github.com/goccy/go-yaml v1.19.0
-	github.com/godbus/dbus/v5 v5.2.0
-	github.com/jedib0t/go-pretty/v6 v6.7.7
+	github.com/go-playground/validator/v10 v10.30.1
+	github.com/goccy/go-yaml v1.19.1
+	github.com/godbus/dbus/v5 v5.2.2
+	github.com/jedib0t/go-pretty/v6 v6.7.8
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
@@ -18,12 +18,13 @@ require (
 )
 
 require (
-	github.com/cilium/ebpf v0.16.0 // indirect
-	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
+	github.com/cilium/ebpf v0.20.0 // indirect
+	github.com/clipperhouse/stringish v0.1.1 // indirect
+	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/gabriel-vasile/mimetype v1.4.11 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -37,10 +38,10 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	go.uber.org/goleak v1.3.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // indirect
+	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/term v0.38.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
