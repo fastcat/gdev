@@ -2,13 +2,10 @@ package docker
 
 import (
 	"fmt"
-	"os/user"
-	"slices"
 	"sync"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
-	"fastcat.org/go/gdev/lib/shx"
 )
 
 var configureBootstrap = sync.OnceFunc(func() {
@@ -42,9 +39,11 @@ var configureBootstrap = sync.OnceFunc(func() {
 		),
 		bootstrap.WithSteps(bootstrap.NewStep(
 			"Add user to docker group",
-			addUserToDockerGroup,
+			func(ctx *bootstrap.Context) error {
+				return bootstrap.EnsureCurrentUserInGroup(ctx, dockerGroupName)
+			},
 			bootstrap.SimFunc(func(*bootstrap.Context) error {
-				if inGroup, un, err := userInDockerGroup(); err != nil {
+				if inGroup, un, err := bootstrap.IsCurrentUserInGroup(dockerGroupName); err != nil {
 					return err
 				} else if inGroup {
 					fmt.Printf("User %s is already in group %s\n", un, dockerGroupName)
@@ -60,51 +59,3 @@ var configureBootstrap = sync.OnceFunc(func() {
 })
 
 const dockerGroupName = "docker"
-
-func userInDockerGroup() (inGroup bool, userName string, err error) {
-	u, err := user.Current()
-	if err != nil {
-		return false, "", err
-	}
-	dg, err := user.LookupGroup(dockerGroupName)
-	if err != nil {
-		return false, u.Username, err
-	}
-	ug, err := u.GroupIds()
-	if err != nil {
-		return false, u.Username, err
-	}
-	if slices.Contains(ug, dg.Gid) {
-		return true, u.Username, nil
-	}
-	return false, u.Username, nil
-}
-
-func addUserToDockerGroup(ctx *bootstrap.Context) error {
-	inGroup, un, err := userInDockerGroup()
-	if err != nil {
-		return err
-	}
-	if inGroup {
-		fmt.Printf("User %s is already in group %s\n", un, dockerGroupName)
-		return nil
-	}
-
-	fmt.Printf("Adding user %s to group %s\n", un, dockerGroupName)
-	bootstrap.SetNeedsReboot(ctx)
-
-	res, err := shx.Run(
-		ctx,
-		[]string{"usermod", "-aG", dockerGroupName, un},
-		shx.WithSudo("add user to docker group"),
-		shx.PassStdio(),
-		shx.WithCombinedError(),
-	)
-	if res != nil {
-		defer res.Close() //nolint:errcheck
-	}
-	if err != nil {
-		return err
-	}
-	return nil
-}
