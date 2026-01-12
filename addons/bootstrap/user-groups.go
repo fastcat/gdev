@@ -40,3 +40,14 @@ func EnsureCurrentUserInGroup(ctx *Context, groupName string) error {
 
 	return addUserToGroup(ctx, userName, groupName)
 }
+
+func SimCurrentUserInGroup(groupName string) error {
+	if inGroup, userName, err := IsCurrentUserInGroup(groupName); err != nil {
+		return err
+	} else if inGroup {
+		fmt.Printf("User %s is already in group %s\n", userName, groupName)
+	} else {
+		fmt.Printf("Would add user %s to group %s\n", userName, groupName)
+	}
+	return nil
+}
