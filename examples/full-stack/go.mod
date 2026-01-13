@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/examples/full-stack
 go 1.25.0
 
 require (
-	entgo.io/ent v0.14.5
+	entgo.io/ent v0.14.6-0.20251003170342-01063ef6395c
 	fastcat.org/go/gdev v0.10.0
 	fastcat.org/go/gdev/addons/docker v0.10.0
 	fastcat.org/go/gdev/addons/k3s v0.10.0
