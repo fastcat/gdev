@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/containerd
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.10.0
+	fastcat.org/go/gdev v0.11.0
 	github.com/containerd/containerd/v2 v2.2.1
 )
 
