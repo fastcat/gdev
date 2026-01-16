@@ -67,6 +67,7 @@ func GHLoginStep(opts GHLoginOpts) *bootstrap.Step {
 			return nil
 		},
 		bootstrap.AfterSteps(apt.StepNameInstall),
+		bootstrap.SkipIfNoLogins(),
 	)
 }
 

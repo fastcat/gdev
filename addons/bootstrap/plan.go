@@ -111,7 +111,7 @@ func (p *Plan) Run(ctx context.Context) error {
 func (p *Plan) prepare(ctx context.Context) (*Context, error) {
 	bc, ok := ctx.(*Context)
 	if !ok {
-		bc = NewContext(ctx)
+		bc = NewContextWithDefaults(ctx)
 	}
 	if !p.Ready() {
 		names := make([]string, 0, len(p.pending))

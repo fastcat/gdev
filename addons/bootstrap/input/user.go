@@ -229,5 +229,6 @@ func UserInfoStep() *bootstrap.Step {
 		GitHubUserPrompt,
 	).With(
 		bootstrap.AfterSteps(apt.StepNameInstall),
+		bootstrap.SkipIfNoLogins(),
 	)
 }

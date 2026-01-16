@@ -13,8 +13,8 @@ type (
 	InfoKey[T any] = internal.InfoKey[T]
 )
 
-func NewContext(ctx context.Context) *Context {
-	return internal.NewContext(ctx)
+func NewContextWithDefaults(ctx context.Context) *Context {
+	return internal.NewContextWithDefaults(ctx)
 }
 
 func NewKey[T any](name string) InfoKey[T] {

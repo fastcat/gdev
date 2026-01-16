@@ -115,6 +115,7 @@ func BootstrapSteps() []*bootstrap.Step {
 			ConfigureStepName,
 			configureGcloud,
 			bootstrap.AfterSteps(apt.StepNameInstall),
+			bootstrap.SkipIfNoLogins(),
 		),
 	)
 	return steps
@@ -180,6 +181,7 @@ func verifyStep() *bootstrap.Step {
 			return nil
 		},
 		// the two auth steps mark themselves before this to order things
+		bootstrap.SkipIfNoLogins(),
 	)
 }
 

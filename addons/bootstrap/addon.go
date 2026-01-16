@@ -2,10 +2,12 @@ package bootstrap
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
 	"fastcat.org/go/gdev/addons"
+	b_internal "fastcat.org/go/gdev/addons/bootstrap/internal"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
 )
@@ -44,6 +46,17 @@ func Configure(opts ...Option) {
 func initialize() error {
 	cmd := RunPlanCmd(addon.Config.plan)
 	cmd.Use = "bootstrap"
+	pf := cmd.PersistentFlags()
+	pf.BoolFunc("skip-logins", "skip logging into any accounts", func(s string) error {
+		if s == "" {
+			b_internal.SetDefault(skipLoginsKey, true)
+		} else if v, err := strconv.ParseBool(s); err != nil {
+			return err
+		} else {
+			b_internal.SetDefault(skipLoginsKey, v)
+		}
+		return nil
+	})
 	instance.AddCommands(cmd)
 
 	for _, f := range addon.Config.cmdFactories {

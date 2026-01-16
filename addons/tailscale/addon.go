@@ -1,6 +1,7 @@
 package tailscale
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
 	"sync"
@@ -95,6 +96,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 			configureTailscale,
 			bootstrap.AfterSteps(apt.StepNameInstall),
 			bootstrap.SkipInContainer(),
+			bootstrap.SkipIfNoLogins(),
 		)),
 	)
 })
@@ -108,7 +110,7 @@ func configureTailscale(ctx *bootstrap.Context) error {
 	return TailscaleUp(ctx)
 }
 
-func TailscaleUp(ctx *bootstrap.Context) error {
+func TailscaleUp(ctx context.Context) error {
 	fmt.Println("Bringing up tailscale...")
 	_, err := shx.Run(
 		ctx,

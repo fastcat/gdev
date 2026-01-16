@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"maps"
 )
 
 type Context struct {
@@ -10,7 +11,19 @@ type Context struct {
 	info map[AnyInfoKey]any
 }
 
-func NewContext(ctx context.Context) *Context {
+var defaults = map[AnyInfoKey]any{}
+
+// NewContextWithDefaults creates a new Context with default InfoKey values as
+// configured with SetDefault.
+func NewContextWithDefaults(ctx context.Context) *Context {
+	bCtx := NewEmptyContext(ctx)
+	maps.Copy(bCtx.info, defaults)
+	return bCtx
+}
+
+// NewEmptyContext creates a new empty Context without any default InfoKey
+// values set.
+func NewEmptyContext(ctx context.Context) *Context {
 	return &Context{
 		Context: ctx,
 		info:    map[AnyInfoKey]any{},
@@ -30,6 +43,13 @@ func Save[T any](ctx *Context, k InfoKey[T], v T) {
 // Set is like save, but it will overwrite any existing value as well.
 func Set[T any](ctx *Context, k InfoKey[T], v T) {
 	ctx.info[k] = v
+}
+
+func SetDefault[T any](k InfoKey[T], v T) {
+	if _, ok := defaults[k]; ok {
+		panic(fmt.Errorf("already saved default %s for %v", k.k, k.typ()))
+	}
+	defaults[k] = v
 }
 
 func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
