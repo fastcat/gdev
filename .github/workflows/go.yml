@@ -28,7 +28,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '~1.25.5'
+        go-version: '~1.25.6'
 
     - name: Setup Mage
       run: go tool mage -l
