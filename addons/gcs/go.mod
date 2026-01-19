@@ -3,11 +3,11 @@ module fastcat.org/go/gdev/addons/gcs
 go 1.25.0
 
 require (
-	cloud.google.com/go/storage v1.59.0
+	cloud.google.com/go/storage v1.59.1
 	fastcat.org/go/gdev v0.11.0
 	fastcat.org/go/gdev/addons/docker v0.11.0
 	fastcat.org/go/gdev/addons/k8s v0.11.0
-	google.golang.org/api v0.259.0
+	google.golang.org/api v0.260.0
 	k8s.io/api v0.35.0
 	k8s.io/apimachinery v0.35.0
 	k8s.io/client-go v0.35.0
@@ -69,7 +69,7 @@ require (
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.7 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.9 // indirect
 	github.com/googleapis/gax-go/v2 v2.16.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect

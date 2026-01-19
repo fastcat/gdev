@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/gocache/gcs
 go 1.25
 
 require (
-	cloud.google.com/go/storage v1.59.0
+	cloud.google.com/go/storage v1.59.1
 	fastcat.org/go/gdev v0.11.0
 	fastcat.org/go/gdev/addons/gocache v0.11.0
 )
