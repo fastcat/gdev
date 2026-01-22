@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
@@ -239,7 +240,8 @@ func LoginServiceAccount(ctx context.Context, email string) (finalErr error) {
 	fmt.Println("Temporarily logging into gcloud as user to create service account key")
 	if _, err := shx.Run(
 		ctx,
-		[]string{"gcloud", "auth", "login", "--update-adc"},
+		// no ADC here, we don't want to have to revoke them later
+		[]string{"gcloud", "auth", "login"},
 		shx.PassStdio(),
 		shx.WithCombinedError(),
 	); err != nil {
@@ -294,14 +296,27 @@ func LoginServiceAccount(ctx context.Context, email string) (finalErr error) {
 	); err != nil {
 		return err
 	}
-	fmt.Println("Logging into gcloud as service account")
-	if _, err := shx.Run(
-		ctx,
-		[]string{"gcloud", "auth", "activate-service-account", "--key-file", kp},
-		shx.PassStdio(),
-		shx.WithCombinedError(),
-	); err != nil {
-		return err
+	fmt.Println("Logging into gcloud as service account, this might take a couple attempts ...")
+	var loginErr error
+	for i := range 10 {
+		if i > 0 {
+			fmt.Println("Will retry in a moment...")
+			select {
+			case <-time.After(time.Second):
+			default:
+			}
+		}
+		if _, loginErr = shx.Run(
+			ctx,
+			[]string{"gcloud", "auth", "activate-service-account", "--key-file", kp},
+			shx.PassStdio(),
+			shx.WithCombinedError(),
+		); loginErr == nil {
+			break
+		}
+	}
+	if loginErr != nil {
+		return loginErr
 	}
 	if err := copyADC(ctx); err != nil {
 		return err
