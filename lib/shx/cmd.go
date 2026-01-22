@@ -11,7 +11,6 @@ import (
 
 type Cmd struct {
 	cmdAndArgs        []string
-	envReset          bool
 	combineExecErrors bool
 	env               map[string]string
 	onStarted         func(*os.Process)
@@ -80,12 +79,7 @@ func (c *Cmd) Run(ctx context.Context) (*Result, error) {
 }
 
 func (c *Cmd) applyEnv(cmd *exec.Cmd) {
-	if c.envReset {
-		cmd.Env = make([]string, 0, len(c.env))
-		for k, v := range c.env {
-			cmd.Env = append(cmd.Env, k+"="+v)
-		}
-	} else if len(c.env) > 0 {
+	if len(c.env) > 0 {
 		curEnv := os.Environ()
 		fullEnv := make(map[string]string, len(curEnv)+len(c.env))
 		for _, e := range curEnv {

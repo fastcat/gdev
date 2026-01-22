@@ -3,8 +3,10 @@ package shx
 import (
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"os/exec"
+	"slices"
 	"strings"
 	"sync"
 
@@ -30,7 +32,6 @@ func (f optionExecFunc) applyExec(cmd *exec.Cmd, res *Result) {
 	f(cmd, res)
 }
 
-/*
 type optionFuncs struct {
 	cmd  optionCmdFunc
 	exec optionExecFunc
@@ -47,7 +48,6 @@ func (f optionFuncs) applyExec(cmd *exec.Cmd, res *Result) {
 		f.exec(cmd, res)
 	}
 }
-*/
 
 // WithCombinedError changes the behavior of Run to return all errors in the
 // error return, instead of only returning errors starting the process there,
@@ -185,35 +185,64 @@ var usingSudoRS = sync.OnceValue(func() bool {
 })
 
 func WithSudo(purpose string) Option {
-	return optionCmdFunc(func(c *Cmd) {
-		c.cmdAndArgs = append([]string{"sudo"}, c.cmdAndArgs...)
-		c.env["SUDO_ASKPASS"] = "1"
-		if usingSudoRS() {
-			c.env["SUDO_PROMPT"] = fmt.Sprintf(
-				"%s needs the password for %%p to %s",
-				internal.AppName(),
-				purpose,
-			)
-		} else {
-			c.env["SUDO_PROMPT"] = fmt.Sprintf(
-				"%s needs the password for %%p to %s: ",
-				internal.AppName(),
-				purpose,
-			)
-		}
-	})
+	return WithSudoUser("", purpose)
 }
 
 func WithSudoUser(user, purpose string) Option {
-	return optionCmdFunc(func(c *Cmd) {
-		c.cmdAndArgs = append([]string{"sudo", "-u", user}, c.cmdAndArgs...)
-		c.env["SUDO_ASKPASS"] = "1"
-		c.env["SUDO_PROMPT"] = fmt.Sprintf(
-			"%s needs the password for %%p to %s: ",
-			internal.AppName(),
-			purpose,
-		)
-	})
+	var shxCmd *Cmd
+	return optionFuncs{
+		cmd: func(c *Cmd) {
+			// -u and -E args will get inserted later
+			c.cmdAndArgs = append([]string{"sudo"}, c.cmdAndArgs...)
+			shxCmd = c
+		},
+		exec: func(cmd *exec.Cmd, _ *Result) {
+			// insert options after sudo
+			var newOpts []string
+			if user != "" {
+				newOpts = append(newOpts, "-u", user)
+			}
+			// any WithEnv needs to get passed through sudo. depending on which sudo
+			// we're using, there's different ways. prefer the more secure way that
+			// "original" sudo supports if we can, else the insecure way that sudo-rs
+			// requires if we can't.
+			if usingSudoRS() {
+				// sudo-rs doesn't support a list of env names to pass through, requires
+				// the values to be exposed on the CLI where they are visible to any
+				// process/user on the system
+				for k, v := range shxCmd.env {
+					newOpts = append(newOpts, fmt.Sprintf("%s=%s", k, v))
+				}
+			} else {
+				if len(shxCmd.env) > 0 {
+					newOpts = append(newOpts,
+						"--preserve-env="+strings.Join(slices.Collect(maps.Keys(shxCmd.env)), ","),
+					)
+				}
+			}
+			if len(newOpts) > 0 {
+				newArgs := make([]string, 0, len(cmd.Args)+len(newOpts))
+				newArgs = append(newArgs, cmd.Args[0])
+				newArgs = append(newArgs, newOpts...)
+				newArgs = append(newArgs, cmd.Args[1:]...)
+				cmd.Args = newArgs
+			}
+			cmd.Env = append(cmd.Env, "SUDO_ASKPASS=1")
+			if usingSudoRS() {
+				cmd.Env = append(cmd.Env, fmt.Sprintf(
+					"SUDO_PROMPT=%s needs the password for %%p to %s",
+					internal.AppName(),
+					purpose,
+				))
+			} else {
+				cmd.Env = append(cmd.Env, fmt.Sprintf(
+					"SUDO_PROMPT=%s needs the password for %%p to %s: ",
+					internal.AppName(),
+					purpose,
+				))
+			}
+		},
+	}
 }
 
 func WithUmask(umask os.FileMode) Option {
