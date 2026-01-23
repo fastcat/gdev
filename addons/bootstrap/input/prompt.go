@@ -36,7 +36,7 @@ type Writer[T any] func(context.Context, T) error
 //  7. If any writers are set, write the value out with each of them,
 //     returning any errors joined
 type Prompter[T any] struct {
-	key         internal.InfoKey[T]
+	infoKey     internal.InfoKey[T]
 	prompt      string
 	description string
 	help        string
@@ -60,7 +60,7 @@ func TextPrompt(
 	opts ...PrompterOpt[string],
 ) *Prompter[string] {
 	p := &Prompter[string]{
-		key:      key,
+		infoKey:  key,
 		prompt:   prompt,
 		stringer: strIdent,
 		parser:   strIdentP,
@@ -77,7 +77,7 @@ func SecretPrompt(
 	opts ...PrompterOpt[string],
 ) *Prompter[string] {
 	p := &Prompter[string]{
-		key:      key,
+		infoKey:  key,
 		prompt:   prompt,
 		password: true,
 		stringer: strIdent,
@@ -99,8 +99,8 @@ func NewPrompter[T any](
 	opts ...PrompterOpt[T],
 ) *Prompter[T] {
 	p := &Prompter[T]{
-		key:    key,
-		prompt: prompt,
+		infoKey: key,
+		prompt:  prompt,
 	}
 	for _, opt := range opts {
 		opt(p)
@@ -171,12 +171,12 @@ func WithValidator[T any](validator func(T) error) PrompterOpt[T] {
 func strIdent(s string) string           { return s }
 func strIdentP(s string) (string, error) { return s, nil }
 
-func (p *Prompter[T]) _key() internal.AnyInfoKey {
-	return p.key
+func (p *Prompter[T]) key() internal.AnyInfoKey {
+	return p.infoKey
 }
 
 func (p *Prompter[T]) init(ctx *internal.Context) (value T, ok, guessed bool, err error) {
-	value, ok = internal.Get(ctx, p.key)
+	value, ok = internal.Get(ctx, p.infoKey)
 	if ok && p.validator != nil {
 		if p.validator(value) == nil {
 			return value, true, false, nil
@@ -244,7 +244,7 @@ func (p *Prompter[T]) field(ctx *internal.Context) (huh.Field, error) {
 	if err != nil {
 		return nil, err
 	} else if ok && !guessed {
-		internal.Save(ctx, p.key, value)
+		internal.Save(ctx, p.infoKey, value)
 		return nil, nil
 	}
 
@@ -255,7 +255,7 @@ func (p *Prompter[T]) field(ctx *internal.Context) (huh.Field, error) {
 
 	helpActive := false
 	i := huh.NewInput().
-		Key(fmt.Sprintf("%s", p.key)).
+		Key(fmt.Sprintf("%s", p.infoKey)).
 		Title(p.prompt).
 		Value(&str).
 		DescriptionFunc(func() string {
@@ -296,7 +296,7 @@ func (p *Prompter[T]) finishForm(
 			return fmt.Errorf("invalid value: %w", err)
 		}
 	}
-	internal.Set(ctx, p.key, value)
+	internal.Set(ctx, p.infoKey, value)
 	var errs []error
 	for _, writer := range p.writers {
 		if err := writer(ctx, value); err != nil {
@@ -341,11 +341,11 @@ func (p *Prompter[T]) Sim(ctx *internal.Context) error {
 	}
 	// in a sim (dry run), assume the user would confirm the guess as far as the
 	// in-memory storage
-	internal.Save(ctx, p.key, value)
+	internal.Save(ctx, p.infoKey, value)
 	if guessed {
-		fmt.Printf("Would confirm guessed value for %s: %s\n", p.key, p.stringer(value))
+		fmt.Printf("Would confirm guessed value for %s: %s\n", p.infoKey, p.stringer(value))
 	} else {
-		fmt.Printf("Would use existing value for %s: %s\n", p.key, p.stringer(value))
+		fmt.Printf("Would use existing value for %s: %s\n", p.infoKey, p.stringer(value))
 	}
 	return nil
 }
@@ -354,7 +354,7 @@ type HuhPrompter interface {
 	field(*internal.Context) (huh.Field, error)
 	finishForm(*internal.Context, huh.Field) error
 	Sim(*internal.Context) error
-	_key() internal.AnyInfoKey
+	key() internal.AnyInfoKey
 }
 
 func RunPrompts(
@@ -365,12 +365,17 @@ func RunPrompts(
 		return nil
 	}
 	fields := make([]huh.Field, 0, len(prompts))
+	// not every prompt may generate a field, so we need to store an index mapping
+	p2f := make([]int, 0, len(prompts))
 	for _, p := range prompts {
 		fld, err := p.field(ctx)
 		if err != nil {
 			return fmt.Errorf("error creating field: %w", err)
 		} else if fld != nil {
+			p2f = append(p2f, len(fields))
 			fields = append(fields, fld)
+		} else {
+			p2f = append(p2f, -1)
 		}
 	}
 	if len(fields) == 0 {
@@ -383,11 +388,26 @@ func RunPrompts(
 	}
 
 	var errs []error
+	var collected []string
 	for i, p := range prompts {
-		if err := p.finishForm(ctx, fields[i]); err != nil {
-			errs = append(errs, fmt.Errorf("error finishing form: %w", err))
+		ok := false
+		if j := p2f[i]; j < 0 {
+			// no field for this prompt
+			ok = true
+		} else if err := p.finishForm(ctx, fields[j]); err != nil {
+			errs = append(errs, fmt.Errorf("error finishing form for %v: %w", p.key(), err))
+		} else {
+			ok = true
+		}
+		if ok {
+			collected = append(collected, fmt.Sprintf("%v=%v", p.key(), ctx.Value(p.key())))
 		}
 	}
+
+	if len(collected) > 0 {
+		fmt.Printf("Collected values:\n%s\n", strings.Join(collected, "\n"))
+	}
+
 	return errors.Join(errs...)
 }
 
@@ -397,7 +417,7 @@ func SimPrompts(
 ) error {
 	for _, p := range prompts {
 		if err := p.Sim(ctx); err != nil {
-			return fmt.Errorf("error simulating prompt %s: %w", p._key(), err)
+			return fmt.Errorf("error simulating prompt %s: %w", p.key(), err)
 		}
 	}
 	return nil
