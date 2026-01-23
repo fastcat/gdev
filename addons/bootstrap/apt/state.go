@@ -132,10 +132,6 @@ func AptAvailable(ctx *bootstrap.Context) (map[string]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse apt-cache dumpavail stanza: %w", err)
 		}
-		lines := len(bytes.Split(stanza, []byte{'\n'}))
-		if lines > 50 {
-			return nil, fmt.Errorf("apt-cache dumpavail stanza too long (%d lines), expected at most 50", lines)
-		}
 		pkg, ok := parsed["Package"]
 		if !ok {
 			return nil, fmt.Errorf("missing Package field in apt-cache dumpavail stanza")
