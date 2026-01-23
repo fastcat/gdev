@@ -14,6 +14,14 @@ var configureBootstrap = sync.OnceFunc(func() {
 			"Select common Docker packages",
 			"docker.io",
 			"docker-buildx",
+			// docker-ce packages conflict with docker.io packages
+			"docker-ce-",
+			"docker-ce-cli-",
+			"docker-buildx-plugin-",
+			"docker-compose-plugin-",
+			// confusingly while docker.io is the vendor package, containerd.io is the
+			// docker-ce package
+			"containerd.io-",
 		),
 		bootstrap.WithSteps(
 			apt.AddPackagesStep(
