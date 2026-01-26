@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/valkey
 go 1.25.0
 
 require (
-	fastcat.org/go/gdev v0.11.0
-	fastcat.org/go/gdev/addons/k8s v0.11.0
+	fastcat.org/go/gdev v0.11.1
+	fastcat.org/go/gdev/addons/k8s v0.11.1
 	k8s.io/api v0.35.0
 	k8s.io/client-go v0.35.0
 )

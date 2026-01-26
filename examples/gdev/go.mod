@@ -3,18 +3,18 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.25.0
 
 require (
-	fastcat.org/go/gdev v0.11.0
-	fastcat.org/go/gdev/addons/bootstrap/input v0.11.0
-	fastcat.org/go/gdev/addons/containerd v0.11.0
-	fastcat.org/go/gdev/addons/docker v0.11.0
-	fastcat.org/go/gdev/addons/gcs v0.11.0
-	fastcat.org/go/gdev/addons/gocache v0.11.0
-	fastcat.org/go/gdev/addons/gocache/gcs v0.11.0
-	fastcat.org/go/gdev/addons/gocache/s3 v0.11.0
-	fastcat.org/go/gdev/addons/k3s v0.11.0
-	fastcat.org/go/gdev/addons/k8s v0.11.0
-	fastcat.org/go/gdev/addons/postgres v0.11.0
-	fastcat.org/go/gdev/addons/valkey v0.11.0
+	fastcat.org/go/gdev v0.11.1
+	fastcat.org/go/gdev/addons/bootstrap/input v0.11.1
+	fastcat.org/go/gdev/addons/containerd v0.11.1
+	fastcat.org/go/gdev/addons/docker v0.11.1
+	fastcat.org/go/gdev/addons/gcs v0.11.1
+	fastcat.org/go/gdev/addons/gocache v0.11.1
+	fastcat.org/go/gdev/addons/gocache/gcs v0.11.1
+	fastcat.org/go/gdev/addons/gocache/s3 v0.11.1
+	fastcat.org/go/gdev/addons/k3s v0.11.1
+	fastcat.org/go/gdev/addons/k8s v0.11.1
+	fastcat.org/go/gdev/addons/postgres v0.11.1
+	fastcat.org/go/gdev/addons/valkey v0.11.1
 )
 
 require (
@@ -182,7 +182,6 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.47.0 // indirect
-	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // indirect
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect

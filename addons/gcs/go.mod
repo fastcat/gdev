@@ -4,9 +4,9 @@ go 1.25.0
 
 require (
 	cloud.google.com/go/storage v1.59.1
-	fastcat.org/go/gdev v0.11.0
-	fastcat.org/go/gdev/addons/docker v0.11.0
-	fastcat.org/go/gdev/addons/k8s v0.11.0
+	fastcat.org/go/gdev v0.11.1
+	fastcat.org/go/gdev/addons/docker v0.11.1
+	fastcat.org/go/gdev/addons/k8s v0.11.1
 	google.golang.org/api v0.260.0
 	k8s.io/api v0.35.0
 	k8s.io/apimachinery v0.35.0
