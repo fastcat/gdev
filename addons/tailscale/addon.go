@@ -111,16 +111,51 @@ func configureTailscale(ctx *bootstrap.Context) error {
 }
 
 func TailscaleUp(ctx context.Context) error {
+	fmt.Println("Enabling tailscale local user control...")
+	if _, err := shx.Run(
+		ctx,
+		[]string{"tailscale", "set", "--operator", shx.UserName()},
+		shx.WithSudo("allow "+shx.UserName()+" to administer tailscale client"),
+		shx.PassStdio(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return fmt.Errorf("failed to allow local user to administer tailscale client: %w", err)
+	}
 	fmt.Println("Bringing up tailscale...")
-	_, err := shx.Run(
+	if _, err := shx.Run(
 		ctx,
 		[]string{"tailscale", "up"},
 		shx.WithSudo("bring up tailscale"),
 		shx.PassStdio(),
 		shx.WithCombinedError(),
-	)
-	if err != nil {
+	); err != nil {
 		return fmt.Errorf("failed to bring up tailscale: %w", err)
+	}
+	fmt.Println("Enabling tailscale system tray app...")
+	if _, err := shx.Run(
+		ctx,
+		[]string{"tailscale", "configure", "systray", "--enable-startup=systemd"},
+		// produces noise on stdout we don't want/need to print
+		shx.PassStderr(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return fmt.Errorf("failed to configure tailscale system tray app: %w", err)
+	}
+	if _, err := shx.Run(
+		ctx,
+		[]string{"systemctl", "--user", "daemon-reload"},
+		shx.PassStderr(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return fmt.Errorf("failed to reload systemd user instance: %w", err)
+	}
+	if _, err := shx.Run(
+		ctx,
+		[]string{"systemctl", "--user", "enable", "--now", "tailscale-systray.service"},
+		shx.PassStderr(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return fmt.Errorf("failed to enable & start tailscale systray service: %w", err)
 	}
 	return nil
 }
