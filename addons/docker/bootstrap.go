@@ -14,16 +14,37 @@ var configureBootstrap = sync.OnceFunc(func() {
 			"Select common Docker packages",
 			"docker.io",
 			"docker-buildx",
-			// docker-ce packages conflict with docker.io packages
-			"docker-ce-",
-			"docker-ce-cli-",
-			"docker-buildx-plugin-",
-			"docker-compose-plugin-",
-			// confusingly while docker.io is the vendor package, containerd.io is the
-			// docker-ce package
-			"containerd.io-",
 		),
 		bootstrap.WithSteps(
+			bootstrap.NewStep(
+				"Select docker-ce packages for removal",
+				func(ctx *bootstrap.Context) error {
+					// asking for removal of packages that are neither installed nor
+					// available creates an error
+					toRemove := []string{
+						// docker-ce packages conflict with docker.io packages
+						"docker-ce",
+						"docker-ce-cli",
+						"docker-buildx-plugin",
+						"docker-compose-plugin",
+						// confusingly while docker.io is the vendor package, containerd.io is the
+						// docker-ce package
+						"containerd.io",
+					}
+					aptAvail, err := apt.AptAvailable(ctx)
+					if err != nil {
+						return err
+					}
+					for _, pkg := range toRemove {
+						if _, ok := aptAvail[pkg]; ok {
+							// "-" suffix tells apt to remove the package instead of installing it
+							apt.AddPackages(ctx, pkg+"-")
+						}
+					}
+					return nil
+				},
+				bootstrap.BeforeSteps(apt.StepNameInstall),
+			),
 			apt.AddPackagesStep(
 				"Select docker credential helper(s)",
 				"golang-docker-credential-helpers",
