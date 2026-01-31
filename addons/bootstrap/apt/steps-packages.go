@@ -47,7 +47,9 @@ func DoUpdate(ctx *bootstrap.Context) error {
 	}
 	if _, err := shx.Run(
 		ctx,
-		[]string{"apt", "update"},
+		// printing the list of sources being fetched is not interesting, need two
+		// `-q` to achieve that
+		[]string{"apt", "update", "-qq"},
 		shx.WithSudo("update available packages"),
 		shx.PassStdio(),
 	); err != nil {
