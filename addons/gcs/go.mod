@@ -3,11 +3,11 @@ module fastcat.org/go/gdev/addons/gcs
 go 1.25.0
 
 require (
-	cloud.google.com/go/storage v1.59.1
+	cloud.google.com/go/storage v1.59.2
 	fastcat.org/go/gdev v0.11.1
 	fastcat.org/go/gdev/addons/docker v0.11.1
 	fastcat.org/go/gdev/addons/k8s v0.11.1
-	google.golang.org/api v0.262.0
+	google.golang.org/api v0.264.0
 	k8s.io/api v0.35.0
 	k8s.io/apimachinery v0.35.0
 	k8s.io/client-go v0.35.0
@@ -35,7 +35,7 @@ require (
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
-	github.com/coreos/go-systemd/v22 v22.6.0 // indirect
+	github.com/coreos/go-systemd/v22 v22.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/docker v28.5.2+incompatible // indirect

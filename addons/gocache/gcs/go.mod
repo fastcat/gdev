@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/gocache/gcs
 go 1.25
 
 require (
-	cloud.google.com/go/storage v1.59.1
+	cloud.google.com/go/storage v1.59.2
 	fastcat.org/go/gdev v0.11.1
 	fastcat.org/go/gdev/addons/gocache v0.11.1
 )
@@ -52,7 +52,7 @@ require (
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
-	google.golang.org/api v0.262.0 // indirect
+	google.golang.org/api v0.264.0 // indirect
 	google.golang.org/genproto v0.0.0-20260126211449-d11affda4bed // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260126211449-d11affda4bed // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260126211449-d11affda4bed // indirect
