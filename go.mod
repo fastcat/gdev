@@ -4,7 +4,7 @@ go 1.25
 
 require (
 	github.com/containerd/cgroups/v3 v3.1.2
-	github.com/coreos/go-systemd/v22 v22.6.0
+	github.com/coreos/go-systemd/v22 v22.7.0
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/goccy/go-yaml v1.19.2
 	github.com/godbus/dbus/v5 v5.2.2

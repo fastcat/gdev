@@ -3,11 +3,11 @@ module fastcat.org/go/gdev/addons/gcs
 go 1.25.0
 
 require (
-	cloud.google.com/go/storage v1.59.1
+	cloud.google.com/go/storage v1.59.2
 	fastcat.org/go/gdev v0.11.1
 	fastcat.org/go/gdev/addons/docker v0.11.1
 	fastcat.org/go/gdev/addons/k8s v0.11.1
-	google.golang.org/api v0.262.0
+	google.golang.org/api v0.264.0
 	k8s.io/api v0.35.0
 	k8s.io/apimachinery v0.35.0
 	k8s.io/client-go v0.35.0
