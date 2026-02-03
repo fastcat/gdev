@@ -3,18 +3,18 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.25.0
 
 require (
-	fastcat.org/go/gdev v0.11.1
-	fastcat.org/go/gdev/addons/bootstrap/input v0.11.1
-	fastcat.org/go/gdev/addons/containerd v0.11.1
-	fastcat.org/go/gdev/addons/docker v0.11.1
-	fastcat.org/go/gdev/addons/gcs v0.11.1
-	fastcat.org/go/gdev/addons/gocache v0.11.1
-	fastcat.org/go/gdev/addons/gocache/gcs v0.11.1
-	fastcat.org/go/gdev/addons/gocache/s3 v0.11.1
-	fastcat.org/go/gdev/addons/k3s v0.11.1
-	fastcat.org/go/gdev/addons/k8s v0.11.1
-	fastcat.org/go/gdev/addons/postgres v0.11.1
-	fastcat.org/go/gdev/addons/valkey v0.11.1
+	fastcat.org/go/gdev v0.11.2
+	fastcat.org/go/gdev/addons/bootstrap/input v0.11.2
+	fastcat.org/go/gdev/addons/containerd v0.11.2
+	fastcat.org/go/gdev/addons/docker v0.11.2
+	fastcat.org/go/gdev/addons/gcs v0.11.2
+	fastcat.org/go/gdev/addons/gocache v0.11.2
+	fastcat.org/go/gdev/addons/gocache/gcs v0.11.2
+	fastcat.org/go/gdev/addons/gocache/s3 v0.11.2
+	fastcat.org/go/gdev/addons/k3s v0.11.2
+	fastcat.org/go/gdev/addons/k8s v0.11.2
+	fastcat.org/go/gdev/addons/postgres v0.11.2
+	fastcat.org/go/gdev/addons/valkey v0.11.2
 )
 
 require (
@@ -54,6 +54,7 @@ require (
 	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
+	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7 // indirect
 	github.com/charmbracelet/bubbletea v1.3.10 // indirect
@@ -123,7 +124,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20260115054156-294ebfa9ad83 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.11 // indirect
@@ -176,15 +176,16 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.64.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.64.0 // indirect
 	go.opentelemetry.io/otel v1.39.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.39.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.39.0 // indirect
 	go.opentelemetry.io/otel/metric v1.39.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.39.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.39.0 // indirect
 	go.opentelemetry.io/otel/trace v1.39.0 // indirect
+	go.opentelemetry.io/proto/otlp v1.9.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.47.0 // indirect
-	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
+	golang.org/x/mod v0.32.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect

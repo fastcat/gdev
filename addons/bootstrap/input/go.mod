@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/bootstrap/input
 go 1.25
 
 require (
-	fastcat.org/go/gdev v0.11.1
+	fastcat.org/go/gdev v0.11.2
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/huh v0.8.0
 	golang.org/x/sys v0.40.0
@@ -47,7 +47,6 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
-	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/term v0.39.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
