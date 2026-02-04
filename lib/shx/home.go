@@ -15,7 +15,7 @@ var User = sync.OnceValue(func() *user.User {
 })
 
 var UserName = sync.OnceValue(func() string {
-	return User().Name
+	return User().Username
 })
 
 var HomeDir = sync.OnceValue(func() string {
