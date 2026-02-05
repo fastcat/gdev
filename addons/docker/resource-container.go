@@ -17,7 +17,7 @@ import (
 	"fastcat.org/go/gdev/resource"
 )
 
-type containerResource struct {
+type ContainerResource struct {
 	Name       string
 	Image      string
 	Entrypoint []string
@@ -35,28 +35,28 @@ type containerResource struct {
 //
 // This is a convenience tool for extremely simple use cases, and should not be
 // used in more complex scenarios.
-func Container(name, image string) *containerResource {
-	return &containerResource{
+func Container(name, image string) *ContainerResource {
+	return &ContainerResource{
 		Name:  name,
 		Image: image,
 	}
 }
 
 // WithEntrypoint **overwrites** the entrypoint of the container.
-func (c *containerResource) WithEntrypoint(entrypoint ...string) *containerResource {
+func (c *ContainerResource) WithEntrypoint(entrypoint ...string) *ContainerResource {
 	c.Entrypoint = entrypoint
 	return c
 }
 
 // WithCmd **overwrites** the command (or entrypoint args) of the container.
-func (c *containerResource) WithCmd(cmd ...string) *containerResource {
+func (c *ContainerResource) WithCmd(cmd ...string) *ContainerResource {
 	c.Cmd = append(c.Cmd, cmd...)
 	return c
 }
 
 // WithEnv **appends** the environment variables to the container, or overwrites
 // any existing env vars of the same names.
-func (c *containerResource) WithEnv(env map[string]string) *containerResource {
+func (c *ContainerResource) WithEnv(env map[string]string) *ContainerResource {
 	if c.Env == nil {
 		c.Env = make(map[string]string, len(env))
 	}
@@ -65,17 +65,17 @@ func (c *containerResource) WithEnv(env map[string]string) *containerResource {
 }
 
 // WithPort **appends** the specified port(s) to the container.
-func (c *containerResource) WithPorts(port ...string) *containerResource {
+func (c *ContainerResource) WithPorts(port ...string) *ContainerResource {
 	c.Ports = append(c.Ports, port...)
 	return c
 }
 
-func (c *containerResource) WithMounts(mounts ...mount.Mount) *containerResource {
+func (c *ContainerResource) WithMounts(mounts ...mount.Mount) *ContainerResource {
 	c.Mounts = append(c.Mounts, mounts...)
 	return c
 }
 
-func (c *containerResource) WithVolumeMount(name, path string) *containerResource {
+func (c *ContainerResource) WithVolumeMount(name, path string) *ContainerResource {
 	c.Mounts = append(c.Mounts, mount.Mount{
 		Type:   mount.TypeVolume,
 		Source: name,
@@ -85,23 +85,23 @@ func (c *containerResource) WithVolumeMount(name, path string) *containerResourc
 }
 
 // ContainerImages implements resource.ContainerResource.
-func (c *containerResource) ContainerImages(context.Context) ([]string, error) {
+func (c *ContainerResource) ContainerImages(context.Context) ([]string, error) {
 	return []string{c.Image}, nil
 }
 
 // ID implements resource.ContainerResource.
-func (c *containerResource) ID() string {
+func (c *ContainerResource) ID() string {
 	return "docker/container/" + c.Name
 }
 
 // Ready implements resource.ContainerResource.
-func (c *containerResource) Ready(context.Context) (bool, error) {
+func (c *ContainerResource) Ready(context.Context) (bool, error) {
 	// TODO
 	return true, nil
 }
 
 // Start implements resource.ContainerResource.
-func (c *containerResource) Start(ctx context.Context) error {
+func (c *ContainerResource) Start(ctx context.Context) error {
 	cli := resource.ContextValue[client.APIClient](ctx)
 	if cli == nil {
 		return fmt.Errorf("docker client not found in context")
@@ -154,7 +154,7 @@ func (c *containerResource) Start(ctx context.Context) error {
 }
 
 // Stop implements resource.ContainerResource.
-func (c *containerResource) Stop(ctx context.Context) error {
+func (c *ContainerResource) Stop(ctx context.Context) error {
 	cli := resource.ContextValue[client.APIClient](ctx)
 	if cli == nil {
 		return fmt.Errorf("docker client not found in context")
@@ -173,6 +173,6 @@ func (c *containerResource) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (c *containerResource) realName() string {
+func (c *ContainerResource) realName() string {
 	return instance.AppName() + "-" + c.Name
 }
