@@ -68,6 +68,16 @@ func WithDryRun() ContextOption {
 	}
 }
 
+func WithValue[T any](val T) ContextOption {
+	key := ctxKeyVal[T]{}
+	return func(ctx *Context) {
+		if _, ok := ctx.entries[key]; ok {
+			panic(fmt.Errorf("type %v already has a value in context", key.typ()))
+		}
+		ctx.entries[key] = val
+	}
+}
+
 // NewContext creates a new [Context] with the given parent context and options.
 //
 // All context entries registered with [AddContextEntry] will be initialized
