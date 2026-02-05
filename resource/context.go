@@ -137,9 +137,6 @@ func (ctx *Context) Value(key any) any {
 // will also panic.
 func ContextValue[T any](ctx context.Context) T {
 	key := ctxKeyVal[T]{}
-	if _, ok := ctxEntries[key]; !ok {
-		panic(fmt.Errorf("type %v not registered", key.typ()))
-	}
 	if rc, ok := ctx.(*Context); ok {
 		val, ok := rc.entries[key]
 		if !ok {
@@ -152,8 +149,9 @@ func ContextValue[T any](ctx context.Context) T {
 					rc.entries[key] = val
 					return val.(T)
 				}
+			} else {
+				panic(fmt.Errorf("type %v not registered", key.typ()))
 			}
-			panic(fmt.Errorf("type %v not initialized", key.typ()))
 		}
 		return val.(T)
 	}

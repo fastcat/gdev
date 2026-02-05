@@ -25,6 +25,8 @@ type ContainerResource struct {
 	Env        map[string]string
 	Ports      []string
 	Mounts     []mount.Mount
+
+	hostConfigFn []func(*container.HostConfig) error
 }
 
 // Container creates a new container resource with the specified name and
@@ -75,12 +77,28 @@ func (c *ContainerResource) WithMounts(mounts ...mount.Mount) *ContainerResource
 	return c
 }
 
+func (c *ContainerResource) WithBindMount(source, target string) *ContainerResource {
+	c.Mounts = append(c.Mounts, mount.Mount{
+		Type:   mount.TypeBind,
+		Source: source,
+		Target: target,
+	})
+	// if the caller wants more options, they can construct the mount.Mount
+	// themselves and use WithMounts.
+	return c
+}
+
 func (c *ContainerResource) WithVolumeMount(name, path string) *ContainerResource {
 	c.Mounts = append(c.Mounts, mount.Mount{
 		Type:   mount.TypeVolume,
 		Source: name,
 		Target: path,
 	})
+	return c
+}
+
+func (c *ContainerResource) WithCustomHostConfig(fn func(*container.HostConfig) error) *ContainerResource {
+	c.hostConfigFn = append(c.hostConfigFn, fn)
 	return c
 }
 
@@ -134,6 +152,11 @@ func (c *ContainerResource) Start(ctx context.Context) error {
 		}
 		cc.ExposedPorts = exposed
 		hc.PortBindings = bindings
+	}
+	for _, fn := range c.hostConfigFn {
+		if err := fn(&hc); err != nil {
+			return fmt.Errorf("custom HostConfig failed: %w", err)
+		}
 	}
 	cr, err := cli.ContainerCreate(
 		ctx,
