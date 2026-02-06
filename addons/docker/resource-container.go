@@ -26,6 +26,8 @@ type ContainerResource struct {
 	Ports      []string
 	Mounts     []mount.Mount
 
+	StopOptions *container.StopOptions
+
 	hostConfigFn []func(*container.HostConfig) error
 }
 
@@ -99,6 +101,11 @@ func (c *ContainerResource) WithVolumeMount(name, path string) *ContainerResourc
 
 func (c *ContainerResource) WithCustomHostConfig(fn func(*container.HostConfig) error) *ContainerResource {
 	c.hostConfigFn = append(c.hostConfigFn, fn)
+	return c
+}
+
+func (c *ContainerResource) WithStopOptions(opts container.StopOptions) *ContainerResource {
+	c.StopOptions = &opts
 	return c
 }
 
@@ -181,6 +188,12 @@ func (c *ContainerResource) Stop(ctx context.Context) error {
 	cli := resource.ContextValue[client.APIClient](ctx)
 	if cli == nil {
 		return fmt.Errorf("docker client not found in context")
+	}
+	if c.StopOptions != nil {
+		// attempt a graceful stop first
+		// TODO: warn if graceful stop fails. for now we're going to forcibly remove
+		// it, so this doesn't matter much
+		_ = cli.ContainerStop(ctx, c.realName(), *c.StopOptions)
 	}
 	err := cli.ContainerRemove(
 		ctx,
