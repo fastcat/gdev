@@ -6,7 +6,7 @@ require (
 	fastcat.org/go/gdev v0.11.2
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/huh v0.8.0
-	golang.org/x/sys v0.40.0
+	golang.org/x/sys v0.41.0
 )
 
 require (
