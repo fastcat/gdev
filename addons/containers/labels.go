@@ -18,6 +18,10 @@ var LabelCreatedAt = sync.OnceValue(func() string {
 	return LabelDomain() + "/created-at"
 })
 
+var LabelInstanceVersion = sync.OnceValue(func() string {
+	return LabelDomain() + "/instance-version"
+})
+
 // var timeFormat = strings.ReplaceAll(time.RFC3339Nano, ":", "-")
 
 func DefaultLabels() map[string]string {

@@ -25,6 +25,7 @@ type ContainerResource struct {
 	Env        map[string]string
 	Ports      []string
 	Mounts     []mount.Mount
+	Labels     map[string]string
 
 	StopOptions *container.StopOptions
 
@@ -109,6 +110,12 @@ func (c *ContainerResource) WithStopOptions(opts container.StopOptions) *Contain
 	return c
 }
 
+func (c *ContainerResource) WithInstanceVersionLabel() *ContainerResource {
+	return c.WithEnv(map[string]string{
+		containers.LabelInstanceVersion(): instance.Version(),
+	})
+}
+
 // ContainerImages implements resource.ContainerResource.
 func (c *ContainerResource) ContainerImages(context.Context) ([]string, error) {
 	return []string{c.Image}, nil
@@ -135,6 +142,7 @@ func (c *ContainerResource) Start(ctx context.Context) error {
 		Image:  c.Image,
 		Labels: containers.DefaultLabels(),
 	}
+	maps.Copy(cc.Labels, c.Labels)
 	if len(c.Cmd) > 0 {
 		cc.Cmd = c.Cmd
 	}
