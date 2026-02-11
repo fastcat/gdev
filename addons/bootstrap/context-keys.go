@@ -14,3 +14,12 @@ func SkipIfNoLogins() StepOpt {
 		return SkipLogins(ctx), nil
 	})
 }
+
+var headlessKey = NewKey[bool]("bootstrap.headless")
+
+// Headless returns whether steps should run in headless mode. This is set by a
+// command line argument. Custom bootstrap steps/plans should obey this.
+func Headless(ctx *Context) bool {
+	v, ok := Get(ctx, headlessKey)
+	return ok && v
+}

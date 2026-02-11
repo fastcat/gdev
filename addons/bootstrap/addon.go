@@ -57,6 +57,18 @@ func initialize() error {
 		}
 		return nil
 	})
+	pf.BoolFunc("headless", "force steps to run in terminal instead of spawning browsers, etc.",
+		func(s string) error {
+			if s == "" {
+				b_internal.SetDefault(headlessKey, true)
+			} else if v, err := strconv.ParseBool(s); err != nil {
+				return err
+			} else {
+				b_internal.SetDefault(headlessKey, v)
+			}
+			return nil
+		},
+	)
 	instance.AddCommands(cmd)
 
 	for _, f := range addon.Config.cmdFactories {

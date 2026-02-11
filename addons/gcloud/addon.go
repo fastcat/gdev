@@ -192,7 +192,7 @@ func verifyStep() *bootstrap.Step {
 // If it is not nill but empty, then it will accept any already logged in
 // account as sufficient. Otherwise it will only skip the login if an active
 // acccount in one of the given domains is found.
-func LoginUser(ctx context.Context) error {
+func LoginUser(ctx *bootstrap.Context) error {
 	// check current accounts
 	accounts, err := getAccounts(ctx)
 	if err != nil {
@@ -207,9 +207,17 @@ func LoginUser(ctx context.Context) error {
 		return nil
 	}
 
+	cmd := []string{"gcloud", "auth", "login", "--update-adc"}
+	if bootstrap.Headless(ctx) {
+		// NOTE: there are both `--no-browser` and `--no-launch-browser` flags, but
+		// they do different things. `--no-browser` requires another machine with
+		// gcloud already logged in, whereas `--no-launch-browser` just requires
+		// another machine with a browser. The latter is what we want here.
+		cmd = append(cmd, "--no-launch-browser")
+	}
 	if _, err := shx.Run(
 		ctx,
-		[]string{"gcloud", "auth", "login", "--update-adc"},
+		cmd,
 		shx.PassStdio(),
 		shx.WithCombinedError(),
 	); err != nil {
@@ -221,7 +229,7 @@ func LoginUser(ctx context.Context) error {
 	return nil
 }
 
-func LoginServiceAccount(ctx context.Context, email string) (finalErr error) {
+func LoginServiceAccount(ctx *bootstrap.Context, email string) (finalErr error) {
 	if !strings.HasSuffix(email, ".iam.gserviceaccount.com") {
 		return fmt.Errorf("service email must be in .iam.gserviceaccount.com domain")
 	}
@@ -237,11 +245,17 @@ func LoginServiceAccount(ctx context.Context, email string) (finalErr error) {
 	// creating a service account key requires us to log in as a user, use that
 	// user to create the key, and then revoke that user login
 
+	// no ADC here, we don't want to have to revoke them later
+	cmd := []string{"gcloud", "auth", "login"}
+	if bootstrap.Headless(ctx) {
+		// see NOTE above
+		cmd = append(cmd, "--no-launch-browser")
+	}
+
 	fmt.Println("Temporarily logging into gcloud as user to create service account key")
 	if _, err := shx.Run(
 		ctx,
-		// no ADC here, we don't want to have to revoke them later
-		[]string{"gcloud", "auth", "login"},
+		cmd,
 		shx.PassStdio(),
 		shx.WithCombinedError(),
 	); err != nil {

@@ -54,12 +54,12 @@ func GHLoginStep(opts GHLoginOpts) *bootstrap.Step {
 					}
 				}
 			}
-			if res, err := shx.Run(
-				ctx,
-				loginCmd,
-				shx.PassStdio(),
-				shx.WithCombinedError(),
-			); err != nil {
+			opts := []shx.Option{shx.PassStdio(), shx.WithCombinedError()}
+			if bootstrap.Headless(ctx) {
+				// force gh not to try to open a browser
+				opts = append(opts, shx.WithEnv("BROWSER", "false"))
+			}
+			if res, err := shx.Run(ctx, loginCmd, opts...); err != nil {
 				return err
 			} else if err := res.Close(); err != nil {
 				return err

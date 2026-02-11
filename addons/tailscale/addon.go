@@ -122,6 +122,7 @@ func TailscaleUp(ctx context.Context) error {
 		return fmt.Errorf("failed to allow local user to administer tailscale client: %w", err)
 	}
 	fmt.Println("Bringing up tailscale...")
+	// TODO: do we need to do anything to _force_ `tailscale up` to run headless?
 	if _, err := shx.Run(
 		ctx,
 		[]string{"tailscale", "up"},
