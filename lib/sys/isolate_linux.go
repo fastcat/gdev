@@ -75,7 +75,7 @@ func (s *systemdIsolator) Isolate(
 ) (string, error) {
 	// systemd won't allow moving an existing pid into a .service
 	if !strings.HasSuffix(name, ".scope") {
-		return "", fmt.Errorf("unit name %q must end with .scope or .service", name)
+		return "", fmt.Errorf("unit name %q must end with .scope", name)
 	}
 
 	conn, err := s.getConn()
@@ -113,6 +113,7 @@ func (s *systemdIsolator) Isolate(
 		if status == "done" {
 			return name, nil
 		}
+		// NOTE: this is a pretty common error if the process exits fast
 		return name, fmt.Errorf("service isolation for %s (%d) failed: %s", name, process.Pid, status)
 	}
 }
@@ -125,6 +126,11 @@ func (s *systemdIsolator) Cleanup(ctx context.Context, group string) error {
 	ch := make(chan string, 1)
 	_, err = conn.StopUnitContext(ctx, group, "fail", ch)
 	if err != nil {
+		// suppress a common error where systemd has already removed the empty scope
+		// on exit
+		if err.Error() == "Unit "+group+" not loaded." {
+			return nil
+		}
 		return err
 	}
 	select {

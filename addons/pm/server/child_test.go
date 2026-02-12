@@ -56,41 +56,35 @@ func TestChildFails(t *testing.T) {
 	isolator, err := sys.GetIsolator()
 	require.NoError(t, err)
 
-	td := t.TempDir()
-
 	// run a simple sequence of init containers followed by a process container
-	def := api.Child{
-		Name: "sleeps",
-		Init: []api.Exec{
-			{
-				Cmd:  "test",
-				Args: []string{"-f", "init1"},
+	newTestChild := func(t *testing.T) *child {
+		td := t.TempDir()
+		def := api.Child{
+			Name: "sleeps",
+			Init: []api.Exec{
+				{
+					Cmd:  "/bin/sh",
+					Args: []string{"-c", "sleep 0.1s && test -f init1"},
+					Cwd:  td,
+				},
+			},
+			Main: api.Exec{
+				Cmd: "/bin/sh",
+				// sleep if the test succeeds so we don't get child error and can kill it
+				// off
+				Args: []string{"-c", "sleep 0.1s && test -f main && sleep 1h"},
 				Cwd:  td,
 			},
-		},
-		Main: api.Exec{
-			Cmd: "/bin/sh",
-			// sleep if the test succeeds so we don't get child error and can kill it
-			// off
-			Args: []string{"-c", "test -f main && sleep 1h"},
-			Cwd:  td,
-		},
+		}
+		c := newChild(def, isolator)
+		// speed up the restart timers to make this test not so slow
+		c.restartDelay = 20 * time.Millisecond
+		// TODO: this will hang if something goes wrong
+		t.Cleanup(c.Wait)
+		return c
 	}
-	c := newChild(def, isolator)
-	// speed up the restart timers to make this test not so slow
-	c.restartDelay = 20 * time.Millisecond
 
-	// TODO: this will hang if something goes wrong
-	t.Cleanup(c.Wait)
-
-	t.Log("initializing")
-	go c.run()
-	c.cmds <- childPing
-	t.Log("starting")
-	c.cmds <- childStart
-	c.cmds <- childPing // sync
-
-	waitState := func(want api.ChildState, allowed ...api.ChildState) {
+	waitState := func(c *child, want api.ChildState, allowed ...api.ChildState) {
 		t.Logf("waiting for child to be %s", want)
 		var last api.ChildState
 		for s := c.Status(); s.State != want; s = c.Status() {
@@ -110,23 +104,75 @@ func TestChildFails(t *testing.T) {
 		}
 	}
 
-	// we expect the init process to fail, wait for that and then "touch" the file
-	// that will allow it to succeed
-	waitState(api.ChildInitError, api.ChildInitRunning)
-	require.NoError(t, os.WriteFile(filepath.Join(td, "init1"), nil, 0o644))
-	// wait for it to restart and move on to the main process failing
-	waitState(api.ChildError, api.ChildInitError, api.ChildInitRunning, api.ChildRunning)
-	// let the main process move forwards
-	require.NoError(t, os.WriteFile(filepath.Join(td, "main"), nil, 0o644))
-	waitState(api.ChildRunning, api.ChildError)
-	// TODO: make sure it stays there
-	c.cmds <- childStop
-	waitState(api.ChildStopped, api.ChildStopping, api.ChildRunning)
-	c.cmds <- childDelete
-	c.Wait()
-	s := c.Status()
-	t.Logf("final: %#v", c.Status())
-	assert.Equal(t, api.ChildStopped, s.State)
+	t.Run("auto-restart", func(t *testing.T) {
+		c := newTestChild(t)
+
+		t.Log("initializing")
+		go c.run()
+		c.cmds <- childPing
+		t.Log("starting")
+		c.cmds <- childStart
+		c.cmds <- childPing // sync
+
+		// we expect the init process to fail, wait for that and then "touch" the file
+		// that will allow it to succeed
+		waitState(c, api.ChildInitError, api.ChildInitRunning)
+		require.NoError(t, os.WriteFile(filepath.Join(c.def.Main.Cwd, "init1"), nil, 0o644))
+		// wait for it to restart and move on to the main process failing
+		waitState(c, api.ChildError, api.ChildInitError, api.ChildInitRunning, api.ChildRunning)
+		// let the main process move forwards
+		require.NoError(t, os.WriteFile(filepath.Join(c.def.Main.Cwd, "main"), nil, 0o644))
+		waitState(c, api.ChildRunning, api.ChildError)
+		// TODO: make sure it stays there
+		c.cmds <- childStop
+		waitState(c, api.ChildStopped, api.ChildStopping, api.ChildRunning)
+		c.cmds <- childDelete
+		c.Wait()
+		s := c.Status()
+		t.Logf("final: %#v", c.Status())
+		assert.Equal(t, api.ChildStopped, s.State)
+	})
+
+	// try again with NoRestart set, verify the distinct behavior that creates
+	t.Run("no-restart", func(t *testing.T) {
+		c := newTestChild(t)
+		c.def.NoRestart = true
+		go c.run()
+
+		c.cmds <- childPing
+		t.Log("starting")
+		c.cmds <- childStart
+		c.cmds <- childPing // sync
+
+		// we expect the init process to fail, wait for that and then "touch" the file
+		// that will allow it to succeed
+		waitState(c, api.ChildInitError, api.ChildInitRunning)
+		time.Sleep(2 * c.restartDelay)
+		assert.Equal(t, api.ChildInitError, c.Status().State, "child init should not have restarted")
+
+		// make init pass and try again
+		require.NoError(t, os.WriteFile(filepath.Join(c.def.Main.Cwd, "init1"), nil, 0o644))
+		c.cmds <- childStart
+		c.cmds <- childPing // sync
+		// wait for it to restart and move on to the main process failing
+		waitState(c, api.ChildError, api.ChildInitRunning, api.ChildRunning)
+		time.Sleep(2 * c.restartDelay)
+		assert.Equal(t, api.ChildError, c.Status().State, "child should not have restarted")
+
+		// let the main process move forwards
+		require.NoError(t, os.WriteFile(filepath.Join(c.def.Main.Cwd, "main"), nil, 0o644))
+		c.cmds <- childStart
+		c.cmds <- childPing // sync
+		waitState(c, api.ChildRunning, api.ChildInitRunning)
+		// TODO: make sure it stays there
+		c.cmds <- childStop
+		waitState(c, api.ChildStopped, api.ChildStopping, api.ChildRunning)
+		c.cmds <- childDelete
+		c.Wait()
+		s := c.Status()
+		t.Logf("final: %#v", c.Status())
+		assert.Equal(t, api.ChildStopped, s.State)
+	})
 }
 
 func TestChildLogs(t *testing.T) {

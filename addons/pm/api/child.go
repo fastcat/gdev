@@ -8,7 +8,17 @@ type Child struct {
 	Init        []Exec            `json:"init"`
 	Main        Exec              `json:"main" validate:"required"`
 	HealthCheck *HealthCheck      `json:"healthCheck,omitempty"`
-	OneShot     bool              `json:"oneShot,omitempty"`
+	// OneShot indicates that the child is expected to run and exit relatively
+	// quickly. OneShot children will not be reported healthy until they _exit_.
+	//
+	// For children that should not be restarted, but otherwise have normal health
+	// checks, use the NoRestart field.
+	OneShot bool `json:"oneShot,omitempty"`
+	// NoRestart indicates that the child should not be automatically restarted if
+	// it exits. This is can be helpful for launch configurations where the stack
+	// should be started and then waited upon, or where special interventions are
+	// required to restart the child.
+	NoRestart bool `json:"noRestart,omitempty"`
 }
 
 const (

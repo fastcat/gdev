@@ -175,19 +175,29 @@ MANAGER:
 					s := curStatus()
 					curProc, *s, status.State = c.start(curExec, procExited)
 				} else {
-					log.Printf("child %s init %d failed with code %d, will restart", c.def.Name, curExec, s.ExitCode)
 					status.State = api.ChildInitError
-					restart = time.After(c.restartDelay)
+					if c.def.NoRestart {
+						log.Printf("child %s init %d failed with code %d, will not automatically restart",
+							c.def.Name, curExec, s.ExitCode,
+						)
+					} else {
+						log.Printf("child %s init %d failed with code %d, will restart", c.def.Name, curExec, s.ExitCode)
+						restart = time.After(c.restartDelay)
+					}
 				}
 			case api.ChildRunning:
 				if c.def.OneShot {
 					log.Printf("child %s one-shot completed with code %d", c.def.Name, s.ExitCode)
 					status.State = api.ChildDone
 				} else {
-					log.Printf("child %s service exited with code %d, will restart", c.def.Name, s.ExitCode)
 					// treat this as an error
 					status.State = api.ChildError
-					restart = time.After(c.restartDelay)
+					if c.def.NoRestart {
+						log.Printf("child %s exited with code %d, will not automatically restart", c.def.Name, s.ExitCode)
+					} else {
+						log.Printf("child %s service exited with code %d, will restart", c.def.Name, s.ExitCode)
+						restart = time.After(c.restartDelay)
+					}
 				}
 			default:
 				log.Printf("wtf? child %s got exit notification in state %s", c.def.Name, status.State)
@@ -351,7 +361,7 @@ func (c *child) start(
 	}
 	if isolationGroup, err := c.isolator.Isolate(
 		context.TODO(),
-		instance.AppName()+"-pm-"+name+".service",
+		instance.AppName()+"-pm-"+name+".scope",
 		cmd.Process,
 	); err != nil {
 		log.Printf("ERROR: failed to isolate process %d as %q: %v", cmd.Process.Pid, name, err)
