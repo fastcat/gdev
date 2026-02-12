@@ -22,6 +22,16 @@ import (
 // TODO: this is ugly
 const FallbackLogFileEnv = "__FALLBACK_LOG_FILE"
 
+var expectSystemdAbsent = false
+
+// ExpectSystemdAbsent can be called from apps that know they are running in an
+// environment where the systemd user instance is not expected to be available.
+// It will not prevent attempting to use it, but it will suppress warnings if it
+// is absent.
+func ExpectSystemdAbsent() {
+	expectSystemdAbsent = true
+}
+
 func StartDaemon(
 	ctx context.Context,
 	name string,
@@ -60,10 +70,12 @@ func StartDaemon(
 	// run as a transient systemd service
 	conn, err := SystemdUserConn(ctx)
 	if err != nil {
-		fmt.Fprintln(os.Stderr,
-			"WARNING: can't start pm daemon via systemd, falling back on manual cgroups isolation:",
-			err,
-		)
+		if !expectSystemdAbsent {
+			fmt.Fprintf(os.Stderr,
+				"WARNING: can't start %s daemon via systemd, falling back on manual cgroups isolation: %v\n",
+				name, err,
+			)
+		}
 		return startDaemonNoSystemd(ctx, unitName, path, args, envs, fallbackLogFile)
 	}
 	defer conn.Close() // nolint:errcheck
