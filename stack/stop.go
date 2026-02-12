@@ -2,6 +2,7 @@ package stack
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 
@@ -43,16 +44,21 @@ func Stop(
 func StopServices(ctx context.Context, svcs ...service.Service) error {
 	fmt.Printf("Stopping %d services...\n", len(svcs))
 	resources := make([]resource.Resource, 0, len(svcs))
+	var errs []error
 	for _, svc := range svcs {
-		resources = append(resources, svc.Resources(ctx)...)
+		r, err := svc.Resources(ctx)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		resources = append(resources, r...)
 	}
-	// stop things in reverse order
+	// stop everything we can, in reverse order, don't return errors until the end
 	slices.Reverse(resources)
 	for _, r := range resources {
 		fmt.Printf("Stopping %s...\n", r.ID())
 		if err := r.Stop(ctx); err != nil {
-			return fmt.Errorf("failed to stop %s: %w", r.ID(), err)
+			errs = append(errs, fmt.Errorf("failed to stop %s: %w", r.ID(), err))
 		}
 	}
-	return nil
+	return errors.Join(errs...)
 }

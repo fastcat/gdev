@@ -2,6 +2,7 @@ package stack
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -57,8 +58,12 @@ func StartServices(ctx context.Context, kind string, svcs ...service.Service) er
 	}
 	fmt.Printf("Starting %d services (%s)...\n", len(svcs), kind)
 	resources := make([]resource.Resource, 0, len(svcs))
+	var errs []error
 	for _, svc := range svcs {
-		rs := svc.Resources(ctx)
+		rs, err := svc.Resources(ctx)
+		if err != nil {
+			errs = append(errs, err)
+		}
 		// if this service is disabled, force all its resources to be stopped
 		if m, _ := service.ServiceMode(ctx, svc.Name()); m == service.ModeDisabled {
 			for i, r := range rs {
@@ -68,6 +73,9 @@ func StartServices(ctx context.Context, kind string, svcs ...service.Service) er
 			}
 		}
 		resources = append(resources, rs...)
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 	for _, r := range resources {
 		fmt.Printf("Starting %s...\n", r.ID())

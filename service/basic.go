@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"unicode"
@@ -11,7 +12,7 @@ import (
 
 type basicService struct {
 	name      string
-	resources []func(context.Context) []resource.Resource
+	resources []func(context.Context) ([]resource.Resource, error)
 	hasModal  map[Mode]bool
 }
 
@@ -23,12 +24,17 @@ func (s *basicService) Name() string {
 }
 
 // Resources implements Service.
-func (s *basicService) Resources(ctx context.Context) []resource.Resource {
+func (s *basicService) Resources(ctx context.Context) ([]resource.Resource, error) {
 	ret := make([]resource.Resource, 0, len(s.resources))
+	var errs []error
 	for _, r := range s.resources {
-		ret = append(ret, r(ctx)...)
+		if res, err := r(ctx); err != nil {
+			errs = append(errs, err)
+		} else {
+			ret = append(ret, res...)
+		}
 	}
-	return ret
+	return ret, errors.Join(errs...)
 }
 
 func (s *basicService) HasModal(mode Mode) bool {
@@ -62,14 +68,14 @@ type BasicOpt func(Service, *basicService) Service
 func WithResources(resources ...resource.Resource) BasicOpt {
 	return func(svc Service, bs *basicService) Service {
 		bs.hasModal[ModeDefault] = true
-		bs.resources = append(bs.resources, func(context.Context) []resource.Resource {
-			return resources
+		bs.resources = append(bs.resources, func(context.Context) ([]resource.Resource, error) {
+			return resources, nil
 		})
 		return svc
 	}
 }
 
-func WithResourceFuncs(funcs ...func(context.Context) []resource.Resource) BasicOpt {
+func WithResourceFuncs(funcs ...func(context.Context) ([]resource.Resource, error)) BasicOpt {
 	return func(svc Service, bs *basicService) Service {
 		bs.hasModal[ModeDefault] = true
 		bs.resources = append(bs.resources, funcs...)
@@ -85,23 +91,30 @@ func WithModalResources(
 	mode Mode,
 	resources ...resource.Resource,
 ) BasicOpt {
-	return WithModalResourceFuncs(mode, func(ctx context.Context) []resource.Resource { return resources })
+	return WithModalResourceFuncs(mode, func(ctx context.Context) ([]resource.Resource, error) {
+		return resources, nil
+	})
 }
 
 func WithModalResourceFuncs(
 	mode Mode,
-	funcs ...func(context.Context) []resource.Resource,
+	funcs ...func(context.Context) ([]resource.Resource, error),
 ) BasicOpt {
 	if !mode.Valid() || mode == ModeDisabled {
 		panic(fmt.Errorf("invalid mode %s for modal resources", mode))
 	}
 	return func(svc Service, bs *basicService) Service {
 		bs.hasModal[mode] = true
-		bs.resources = append(bs.resources, func(ctx context.Context) []resource.Resource {
+		bs.resources = append(bs.resources, func(ctx context.Context) ([]resource.Resource, error) {
 			m, _ := ServiceMode(ctx, svc.Name())
 			ret := make([]resource.Resource, 0, len(funcs))
+			var errs []error
 			for _, f := range funcs {
-				for _, r := range f(ctx) {
+				fr, err := f(ctx)
+				if err != nil {
+					errs = append(errs, err)
+				}
+				for _, r := range fr {
 					// convert to anti resources if the mode doesn't match
 					if m != mode && !resource.IsAnti(r) {
 						r = resource.Anti(r)
@@ -109,7 +122,7 @@ func WithModalResourceFuncs(
 					ret = append(ret, r)
 				}
 			}
-			return ret
+			return ret, errors.Join(errs...)
 		})
 		return svc
 	}

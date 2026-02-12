@@ -70,7 +70,7 @@ var svcDirs = sync.OnceValues(func() (string, string) {
 	return svcRepo, svcSubdir
 })
 
-func svcDefaultResources(context.Context) []resource.Resource {
+func svcDefaultResources(context.Context) ([]resource.Resource, error) {
 	k8sDSN := fmt.Sprintf(
 		"postgresql://postgres-17:%d/ent-blog?sslmode=disable",
 		postgres.DefaultPort,
@@ -145,10 +145,10 @@ func svcDefaultResources(context.Context) []resource.Resource {
 		),
 	)
 
-	return []resource.Resource{d, s}
+	return []resource.Resource{d, s}, nil
 }
 
-func svcLocalResources(context.Context) []resource.Resource {
+func svcLocalResources(context.Context) ([]resource.Resource, error) {
 	svcRepo, svcSubdir := svcDirs()
 	s := pm_resource.PMStatic(api.Child{
 		Name: svcName,
@@ -172,5 +172,5 @@ func svcLocalResources(context.Context) []resource.Resource {
 		},
 	})
 
-	return []resource.Resource{s}
+	return []resource.Resource{s}, nil
 }

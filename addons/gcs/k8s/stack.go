@@ -26,7 +26,7 @@ func setupK8SService(cfg *internal.Config) error {
 	appSelector := k8s.AppSelector("fake-gcs-server")
 	stack.AddInfrastructure(service.New(
 		"fake-gcs-server",
-		service.WithResourceFuncs(func(ctx context.Context) []resource.Resource {
+		service.WithResourceFuncs(func(ctx context.Context) ([]resource.Resource, error) {
 			pvc := k8s.PersistentVolumeClaim(coreApplyV1.PersistentVolumeClaim("gcs-storage", "").
 				WithSpec(coreApplyV1.PersistentVolumeClaimSpec().
 					WithAccessModes(coreV1.ReadWriteOnce).
@@ -88,7 +88,7 @@ func setupK8SService(cfg *internal.Config) error {
 					),
 				),
 			)
-			return []resource.Resource{pvc, sr, dr}
+			return []resource.Resource{pvc, sr, dr}, nil
 		}),
 	))
 	return nil

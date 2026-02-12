@@ -8,7 +8,7 @@ import (
 
 type Service interface {
 	Name() string
-	Resources(context.Context) []resource.Resource
+	Resources(context.Context) ([]resource.Resource, error)
 	HasModal(Mode) bool
 }
 

@@ -21,7 +21,7 @@ func setupDockerService(cfg *internal.Config) error {
 	name := "fake-gcs-server"
 	stack.AddInfrastructure(service.New(
 		name,
-		service.WithResourceFuncs(func(ctx context.Context) []resource.Resource {
+		service.WithResourceFuncs(func(ctx context.Context) ([]resource.Resource, error) {
 			dv := docker.Volume("gcs-data")
 			dc := docker.Container(name, cfg.FakeServerImage).
 				WithPorts(strconv.Itoa(cfg.ExposedPort)).
@@ -32,7 +32,7 @@ func setupDockerService(cfg *internal.Config) error {
 			return []resource.Resource{
 				dv,
 				dc,
-			}
+			}, nil
 		}),
 	))
 	return nil
