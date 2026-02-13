@@ -6,9 +6,20 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spf13/pflag"
+
+	"fastcat.org/go/gdev/cmd"
+	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/service"
 )
+
+var startFlaggers []func(*pflag.FlagSet, cmd.FlagCompletionRegistrar) error
+
+func AddStartFlaggers(fns ...func(*pflag.FlagSet, cmd.FlagCompletionRegistrar) error) {
+	instance.CheckCanCustomize()
+	startFlaggers = append(startFlaggers, fns...)
+}
 
 // Start starts the stack with the given options.
 //

@@ -7,8 +7,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"fastcat.org/go/gdev/addons/stack"
 	"fastcat.org/go/gdev/service"
-	"fastcat.org/go/gdev/stack"
 )
 
 func makeCmd() *cobra.Command {

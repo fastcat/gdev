@@ -6,8 +6,8 @@ import (
 	"slices"
 
 	"fastcat.org/go/gdev/addons"
+	"fastcat.org/go/gdev/addons/stack"
 	"fastcat.org/go/gdev/instance"
-	"fastcat.org/go/gdev/stack"
 )
 
 var addon = addons.Addon[config]{
@@ -39,6 +39,8 @@ func Configure(opts ...option) {
 	for _, o := range opts {
 		o(&addon.Config)
 	}
+
+	stack.Configure()
 
 	addon.RegisterIfNeeded()
 }

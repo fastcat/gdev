@@ -11,9 +11,9 @@ import (
 
 	"fastcat.org/go/gdev/addons/gcs/internal"
 	"fastcat.org/go/gdev/addons/k8s"
+	"fastcat.org/go/gdev/addons/stack"
 	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/service"
-	"fastcat.org/go/gdev/stack"
 )
 
 func WithK8SService() internal.Option {

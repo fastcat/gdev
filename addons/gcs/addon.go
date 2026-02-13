@@ -3,6 +3,7 @@ package gcs
 import (
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/gcs/internal"
+	"fastcat.org/go/gdev/addons/stack"
 	"fastcat.org/go/gdev/resource"
 )
 
@@ -23,6 +24,9 @@ func Configure(opts ...internal.Option) {
 	addon.CheckNotInitialized()
 	for _, opt := range opts {
 		opt(&addon.Config)
+	}
+	if len(addon.Config.StackHooks) > 0 {
+		stack.Configure()
 	}
 	addon.RegisterIfNeeded()
 }

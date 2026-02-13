@@ -20,12 +20,12 @@ import (
 	"fastcat.org/go/gdev/addons/pm"
 	"fastcat.org/go/gdev/addons/pm/api"
 	pmResource "fastcat.org/go/gdev/addons/pm/resource"
+	"fastcat.org/go/gdev/addons/stack"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/lib/sys"
 	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/service"
-	"fastcat.org/go/gdev/stack"
 )
 
 var addon = addons.Addon[config]{
@@ -68,6 +68,7 @@ func Configure(opts ...option) {
 		panic(errors.New("must select a k3s container provider (containerd or docker)"))
 	}
 
+	stack.Configure()
 	configurePM()
 	// don't once this, overwrite the settings if they change
 	k8s.Configure(

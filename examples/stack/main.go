@@ -10,11 +10,11 @@ import (
 	"fastcat.org/go/gdev/addons/pm"
 	"fastcat.org/go/gdev/addons/pm/api"
 	"fastcat.org/go/gdev/addons/pm/resource"
+	"fastcat.org/go/gdev/addons/stack"
 	"fastcat.org/go/gdev/cmd"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/lib/shx"
 	"fastcat.org/go/gdev/service"
-	"fastcat.org/go/gdev/stack"
 )
 
 // When you have many services using a common pattern, defining a recipe

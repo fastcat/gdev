@@ -10,6 +10,17 @@ import (
 	"fastcat.org/go/gdev/service"
 )
 
+type StackStopOptions struct {
+	IncludeInfrastructure bool
+	Exclude               []string
+}
+
+func StackStop(ctx context.Context, opts StackStopOptions) error {
+	// TODO: use go-pretty/v6/progress
+	return Stop(ctx, opts.IncludeInfrastructure, opts.Exclude)
+	// TODO: mechanism for full stop wait?
+}
+
 // TODO: make progress printing pluggable
 func Stop(
 	ctx context.Context,

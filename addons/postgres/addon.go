@@ -6,8 +6,8 @@ import (
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
+	"fastcat.org/go/gdev/addons/stack"
 	"fastcat.org/go/gdev/internal"
-	"fastcat.org/go/gdev/stack"
 )
 
 var addon = addons.Addon[config]{
@@ -40,6 +40,7 @@ func Configure(opts ...option) {
 		o(&addon.Config)
 	}
 
+	stack.Configure()
 	configureBootstrap()
 
 	addon.RegisterIfNeeded()
