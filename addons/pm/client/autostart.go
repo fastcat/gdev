@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strings"
 
@@ -14,7 +13,8 @@ var DaemonFallbackLogFile string
 
 func AutoStart(ctx context.Context, client api.API) error {
 	if err := client.Ping(ctx); err == nil {
-		fmt.Println("pm is already running")
+		// this is an uninteresting common case, no need to print a message here
+		// fmt.Println("pm is already running")
 		return nil
 	}
 
