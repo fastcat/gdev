@@ -188,10 +188,18 @@ MANAGER:
 			case api.ChildRunning:
 				if c.def.OneShot {
 					log.Printf("child %s one-shot completed with code %d", c.def.Name, s.ExitCode)
-					status.State = api.ChildDone
+					if s.ExitCode == 0 {
+						status.State = api.ChildDone
+					} else {
+						status.State = api.ChildError
+					}
 				} else {
-					// treat this as an error
-					status.State = api.ChildError
+					// treat this as an error except if no-restart exits successfully
+					if s.ExitCode == 0 && c.def.NoRestart {
+						status.State = api.ChildStopped
+					} else {
+						status.State = api.ChildError
+					}
 					if c.def.NoRestart {
 						log.Printf("child %s exited with code %d, will not automatically restart", c.def.Name, s.ExitCode)
 					} else {
