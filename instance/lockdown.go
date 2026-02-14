@@ -1,6 +1,10 @@
 package instance
 
-import "fastcat.org/go/gdev/internal"
+import (
+	"os"
+
+	"fastcat.org/go/gdev/internal"
+)
 
 // re-exports of some internal functions that we want to be accessible. the main
 // reason for hiding the "original" versions of these is to hide the mutator.
@@ -23,4 +27,16 @@ func CheckCanCustomize() {
 // may be modified later and thus break or prevent those future modifications.
 func CheckLockedDown() {
 	internal.CheckLockedDown()
+}
+
+// TestMain is an implementation you can use for your own TestMain, to get the
+// app initialized before running the tests.
+//
+// Use this if you're struggling in tests with
+// "cannot instantiate customizations until app start and lockdown"
+//
+// You still need to call [instance.SetAppName] before calling this.
+func TestMain(m interface{ Run() int }) {
+	internal.LockCustomizations()
+	os.Exit(m.Run()) //nolint:forbidigo // entrypoint
 }
