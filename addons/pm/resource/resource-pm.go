@@ -96,10 +96,15 @@ func (p *PM) Start(ctx context.Context) error {
 		ticker := time.NewTicker(100 * time.Millisecond)
 		defer ticker.Stop()
 		first := true
-		for !p.isReady(child, cur) {
+		for {
 			if first {
 				fmt.Printf("Waiting for child %s to be ready...\n", child.Name)
 				first = false
+			}
+			if ready, err := p.isReady(child, cur); err != nil {
+				return fmt.Errorf("child %s failed: %w", child.Name, err)
+			} else if ready {
+				break
 			}
 			select {
 			case <-ctx.Done():
@@ -167,25 +172,49 @@ func (p *PM) Ready(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed checking child %s status: %w", child.Name, err)
 	}
-	return p.isReady(child, cur), nil
+	return p.isReady(child, cur)
 }
 
-func (p *PM) isReady(_ *api.Child, cur *api.ChildWithStatus) bool {
+func (p *PM) isReady(_ *api.Child, cur *api.ChildWithStatus) (bool, error) {
 	if cur.OneShot {
 		// one-shots are only ready once they complete, health checks are not
 		// relevant for them
-		return cur.Status.State == api.ChildDone
+		switch cur.Status.State {
+		case api.ChildError, api.ChildInitError:
+			return false, fmt.Errorf("one-shot child %s in error state: %s",
+				cur.Name, cur.Status.State,
+			)
+		case api.ChildDone:
+			return true, nil
+		default:
+			return false, nil
+		}
+	} else if cur.NoRestart {
+		// no-restart are similar to one-shot
+		switch cur.Status.State {
+		case api.ChildError, api.ChildInitError:
+			return false, fmt.Errorf("no-restart child %s in error state: %s",
+				cur.Name, cur.Status.State,
+			)
+		case api.ChildDone, api.ChildStopped:
+			return false, fmt.Errorf("no-restart child %s exited unexpectedly: %s",
+				cur.Name, cur.Status.State,
+			)
+		case api.ChildRunning:
+			return true, nil
+		default:
+			return false, nil
+		}
 	}
 
 	if cur.Status.State != api.ChildRunning {
-		// TODO: say why it's unhealthy
-		return false
+		return false, nil
 	}
 
 	if cur.HealthCheck == nil {
 		// TODO: wait for it to run for a min amount of time?
-		return true
+		return true, nil
 	}
 
-	return cur.Status.Health.Healthy
+	return cur.Status.Health.Healthy, nil
 }
