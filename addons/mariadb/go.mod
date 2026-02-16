@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/mariadb
 go 1.25.0
 
 require (
-	fastcat.org/go/gdev v0.11.2
+	fastcat.org/go/gdev v0.11.3-0.20260214071451-c7c01d2cfb35
 	fastcat.org/go/gdev/addons/k8s v0.11.2
 	github.com/go-sql-driver/mysql v1.9.3
 	k8s.io/api v0.35.0
@@ -16,7 +16,7 @@ require (
 	github.com/cilium/ebpf v0.20.0 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
-	github.com/containerd/cgroups/v3 v3.1.2 // indirect
+	github.com/containerd/cgroups/v3 v3.1.3 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

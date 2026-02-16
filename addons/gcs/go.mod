@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	cloud.google.com/go/storage v1.59.2
-	fastcat.org/go/gdev v0.11.2
+	fastcat.org/go/gdev v0.11.3-0.20260214071451-c7c01d2cfb35
 	fastcat.org/go/gdev/addons/docker v0.11.2
 	fastcat.org/go/gdev/addons/k8s v0.11.2
 	google.golang.org/api v0.265.0
@@ -32,7 +32,7 @@ require (
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20251022180443-0feb69152e9f // indirect
-	github.com/containerd/cgroups/v3 v3.1.2 // indirect
+	github.com/containerd/cgroups/v3 v3.1.3 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
