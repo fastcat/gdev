@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/mariadb
 go 1.25.0
 
 require (
-	fastcat.org/go/gdev v0.11.3-0.20260214071451-c7c01d2cfb35
-	fastcat.org/go/gdev/addons/k8s v0.11.2
+	fastcat.org/go/gdev v0.12.0
+	fastcat.org/go/gdev/addons/k8s v0.12.0
 	github.com/go-sql-driver/mysql v1.9.3
 	k8s.io/api v0.35.0
 	k8s.io/apimachinery v0.35.0
@@ -55,7 +55,6 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect

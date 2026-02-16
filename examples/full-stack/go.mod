@@ -4,11 +4,11 @@ go 1.25.0
 
 require (
 	entgo.io/ent v0.14.6-0.20251003170342-01063ef6395c
-	fastcat.org/go/gdev v0.11.3-0.20260214071451-c7c01d2cfb35
-	fastcat.org/go/gdev/addons/docker v0.11.3-0.20260214071451-c7c01d2cfb35
-	fastcat.org/go/gdev/addons/k3s v0.11.3-0.20260214071451-c7c01d2cfb35
-	fastcat.org/go/gdev/addons/k8s v0.11.3-0.20260214071451-c7c01d2cfb35
-	fastcat.org/go/gdev/addons/postgres v0.11.3-0.20260214071451-c7c01d2cfb35
+	fastcat.org/go/gdev v0.12.0
+	fastcat.org/go/gdev/addons/docker v0.12.0
+	fastcat.org/go/gdev/addons/k3s v0.12.0
+	fastcat.org/go/gdev/addons/k8s v0.12.0
+	fastcat.org/go/gdev/addons/postgres v0.12.0
 	github.com/go-chi/chi/v5 v5.2.4
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/mattn/go-sqlite3 v1.14.33

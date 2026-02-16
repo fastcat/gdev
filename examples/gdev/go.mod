@@ -3,18 +3,18 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.25.0
 
 require (
-	fastcat.org/go/gdev v0.11.2
-	fastcat.org/go/gdev/addons/bootstrap/input v0.11.2
-	fastcat.org/go/gdev/addons/containerd v0.11.2
-	fastcat.org/go/gdev/addons/docker v0.11.2
-	fastcat.org/go/gdev/addons/gcs v0.11.2
-	fastcat.org/go/gdev/addons/gocache v0.11.2
-	fastcat.org/go/gdev/addons/gocache/gcs v0.11.2
-	fastcat.org/go/gdev/addons/gocache/s3 v0.11.2
-	fastcat.org/go/gdev/addons/k3s v0.11.2
-	fastcat.org/go/gdev/addons/k8s v0.11.2
-	fastcat.org/go/gdev/addons/postgres v0.11.2
-	fastcat.org/go/gdev/addons/valkey v0.11.2
+	fastcat.org/go/gdev v0.12.0
+	fastcat.org/go/gdev/addons/bootstrap/input v0.12.0
+	fastcat.org/go/gdev/addons/containerd v0.12.0
+	fastcat.org/go/gdev/addons/docker v0.12.0
+	fastcat.org/go/gdev/addons/gcs v0.12.0
+	fastcat.org/go/gdev/addons/gocache v0.12.0
+	fastcat.org/go/gdev/addons/gocache/gcs v0.12.0
+	fastcat.org/go/gdev/addons/gocache/s3 v0.12.0
+	fastcat.org/go/gdev/addons/k3s v0.12.0
+	fastcat.org/go/gdev/addons/k8s v0.12.0
+	fastcat.org/go/gdev/addons/postgres v0.12.0
+	fastcat.org/go/gdev/addons/valkey v0.12.0
 )
 
 require (
@@ -54,7 +54,6 @@ require (
 	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/catppuccin/go v0.3.0 // indirect
-	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7 // indirect
 	github.com/charmbracelet/bubbletea v1.3.10 // indirect
@@ -176,16 +175,13 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.64.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.64.0 // indirect
 	go.opentelemetry.io/otel v1.40.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.40.0 // indirect
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.40.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
-	go.opentelemetry.io/proto/otlp v1.9.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect

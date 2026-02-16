@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/k3s
 go 1.25.0
 
 require (
-	fastcat.org/go/gdev v0.11.3-0.20260214071451-c7c01d2cfb35
-	fastcat.org/go/gdev/addons/k8s v0.11.2
+	fastcat.org/go/gdev v0.12.0
+	fastcat.org/go/gdev/addons/k8s v0.12.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/sync v0.19.0
 	k8s.io/api v0.35.0
@@ -59,7 +59,6 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
