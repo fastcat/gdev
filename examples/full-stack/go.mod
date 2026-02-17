@@ -13,9 +13,9 @@ require (
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/mattn/go-sqlite3 v1.14.33
 	github.com/stretchr/testify v1.11.1
-	k8s.io/api v0.35.0
-	k8s.io/apimachinery v0.35.0
-	k8s.io/client-go v0.35.0
+	k8s.io/api v0.35.1
+	k8s.io/apimachinery v0.35.1
+	k8s.io/client-go v0.35.1
 )
 
 require (
@@ -116,7 +116,7 @@ require (
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
-	golang.org/x/oauth2 v0.34.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/term v0.40.0 // indirect
@@ -124,6 +124,8 @@ require (
 	golang.org/x/time v0.14.0 // indirect
 	golang.org/x/tools v0.41.0 // indirect
 	golang.org/x/tools/go/expect v0.1.1-deprecated // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260203192932-546029d2fa20 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260203192932-546029d2fa20 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect

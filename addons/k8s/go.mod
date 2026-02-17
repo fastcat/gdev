@@ -4,9 +4,9 @@ go 1.25.0
 
 require (
 	fastcat.org/go/gdev v0.12.0
-	k8s.io/api v0.35.0
-	k8s.io/apimachinery v0.35.0
-	k8s.io/client-go v0.35.0
+	k8s.io/api v0.35.1
+	k8s.io/apimachinery v0.35.1
+	k8s.io/client-go v0.35.1
 )
 
 require (
@@ -45,7 +45,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/net v0.49.0 // indirect
-	golang.org/x/oauth2 v0.34.0 // indirect
+	golang.org/x/oauth2 v0.35.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
 	golang.org/x/term v0.40.0 // indirect
