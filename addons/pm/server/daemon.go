@@ -72,7 +72,7 @@ func (d *daemon) DeleteChild(ctx context.Context, name string) (*api.ChildWithSt
 	}
 	s := c.Status()
 	switch s.State {
-	case api.ChildError, api.ChildInitError, api.ChildStopped:
+	case api.ChildError, api.ChildInitError, api.ChildStopped, api.ChildDone:
 		// ok
 	default:
 		return nil, internal.WithStatus(
