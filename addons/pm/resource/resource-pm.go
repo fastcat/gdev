@@ -141,7 +141,7 @@ func (p *PM) Stop(ctx context.Context) error {
 			return fmt.Errorf("failed checking child %s status: %w", child.Name, err)
 		}
 		switch cur.Status.State {
-		case api.ChildStopped:
+		case api.ChildStopped, api.ChildDone:
 			cur, err = client.DeleteChild(ctx, child.Name)
 			// check cur/err again at the top
 		case api.ChildError, api.ChildInitError, api.ChildInitRunning, api.ChildRunning:
