@@ -238,10 +238,13 @@ func (d *daemon) Terminate(context.Context) error {
 			child.cmds <- childStop
 			// wait for it to stop
 			// TODO: avoid polling
+			// TODO: add a final timeout?
 			check := time.NewTicker(10 * time.Millisecond)
 			defer check.Stop()
 			for range check.C {
-				if s := child.Status().State; s == api.ChildError || s == api.ChildStopped {
+				if s := child.Status().State; s == api.ChildError ||
+					s == api.ChildStopped ||
+					s == api.ChildDone {
 					break
 				}
 			}
