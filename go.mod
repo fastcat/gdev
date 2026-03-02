@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/containerd/cgroups/v3 v3.1.3
@@ -38,7 +38,7 @@ require (
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	go.uber.org/goleak v1.3.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/term v0.40.0 // indirect
 	golang.org/x/text v0.34.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
