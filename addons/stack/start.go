@@ -94,6 +94,17 @@ func StartServices(ctx context.Context, kind string, svcs ...service.Service) er
 			return fmt.Errorf("failed to start %s: %w", r.ID(), err)
 		}
 	}
+
+	if kind != "infrastructure" && !service.NoServiceWait(ctx) {
+		if err := waitResources(ctx, resources); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func waitResources(ctx context.Context, resources []resource.Resource) error {
 	fmt.Printf("Waiting for ready ...\n")
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()

@@ -9,7 +9,8 @@ import (
 
 type Context struct {
 	context.Context
-	serviceModes map[string]Mode
+	serviceModes  map[string]Mode
+	noServiceWait bool
 }
 
 func NewContext(
@@ -44,11 +45,23 @@ func WithServiceModes(modes map[string]Mode) ContextOption {
 	}
 }
 
-type modesKey struct{}
+// WithoutServiceWait requests that the final wait for non-infrastructure services to be ready be skipped.
+func WithoutServiceWait() ContextOption {
+	return func(ctx *Context) {
+		ctx.noServiceWait = true
+	}
+}
+
+type (
+	modesKey         struct{}
+	noServiceWaitKey struct{}
+)
 
 func (ctx *Context) Value(key any) any {
 	if _, ok := key.(modesKey); ok {
 		return ctx.serviceModes
+	} else if _, ok := key.(noServiceWaitKey); ok {
+		return ctx.noServiceWait
 	}
 	return ctx.Context.Value(key)
 }
@@ -59,4 +72,9 @@ func ServiceMode(ctx context.Context, svc string) (Mode, bool) {
 		return mode, true
 	}
 	return ModeDefault, false
+}
+
+func NoServiceWait(ctx context.Context) bool {
+	noServiceWait, ok := ctx.Value(noServiceWaitKey{}).(bool)
+	return ok && noServiceWait
 }
