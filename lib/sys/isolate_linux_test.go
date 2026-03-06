@@ -1,6 +1,7 @@
 package sys
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/containerd/cgroups/v3/cgroup2"
+	"github.com/containerd/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -133,6 +135,31 @@ func Test_cgroupsIsolator_isolateProcess(t *testing.T) {
 		assert.Equal(t, group, group2)
 		require.NoError(t, i.Cleanup(t.Context(), group2))
 	})
+}
+
+func Test_cgroupsIsolator_Cleanup_Noise(t *testing.T) {
+	i := cgroupsIsolator{}
+	// see notes above for why this might fail
+	if _, err := i.getParentGroup(); err != nil {
+		t.SkipNow()
+	}
+
+	// spy on the logger the containerd lib uses
+	origLogger := log.L.Logger
+	t.Cleanup(func() { log.L.Logger = origLogger })
+	var buf bytes.Buffer
+	log.L.Logger.SetOutput(&buf)
+
+	cmd := startSleep(t)
+	group, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process)
+	require.NoError(t, err)
+
+	assert.NoError(t, i.Cleanup(t.Context(), group))
+
+	// cleanup again and make sure it doesn't log errors
+	assert.NoError(t, i.Cleanup(t.Context(), group))
+
+	assert.Empty(t, buf.String(), "double cleanup should not log")
 }
 
 func startSleep(t *testing.T) *exec.Cmd {

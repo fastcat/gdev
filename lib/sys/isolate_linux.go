@@ -2,6 +2,7 @@ package sys
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -184,6 +185,13 @@ func (*cgroupsIsolator) Cleanup(ctx context.Context, groupPath string) error {
 	mgr, err := cgroup2.Load(groupPath)
 	if err != nil {
 		return err
+	}
+	// the cgroups library produces yucky console warnings if we try to clean
+	// up a cgroup that is already gone (e.g. the child has already exited). We
+	// do a read (what we read doesn't really matter) to produce the ErrNotExist
+	// to detect this case and skip the cleanup logic.
+	if _, err := mgr.GetType(); err != nil && errors.Is(err, os.ErrNotExist) {
+		return nil
 	}
 	if err := mgr.Kill(); err != nil {
 		return err
