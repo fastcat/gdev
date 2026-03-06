@@ -142,28 +142,24 @@ func (d *daemon) StopChild(ctx context.Context, name string) (*api.ChildWithStat
 		return nil, internal.WithStatus(http.StatusNotFound, fmt.Errorf("child %s not found", name))
 	}
 	s := c.Status()
+	sendStop := true
 	switch s.State {
 	case api.ChildInitRunning, api.ChildRunning:
 		// ok
 	case api.ChildError, api.ChildInitError:
 		// also ok
-	case api.ChildStopped:
-		return nil, internal.WithStatus(
-			http.StatusPreconditionFailed,
-			fmt.Errorf("child %s already stopped", name),
-		)
-	case api.ChildStopping:
-		return nil, internal.WithStatus(
-			http.StatusPreconditionFailed,
-			fmt.Errorf("child %s already stopping", name),
-		)
+	case api.ChildStopping, api.ChildStopped:
+		// already stopping or stopped, just sync / wait for it to finish stopping
+		sendStop = false
 	default:
 		return nil, internal.WithStatus(
 			http.StatusPreconditionFailed,
 			fmt.Errorf("cannot stop child %s from state %s", name, s.State),
 		)
 	}
-	c.cmds <- childStop
+	if sendStop {
+		c.cmds <- childStop
+	}
 	// wait for it to stop
 	t := time.NewTicker(10 * time.Millisecond)
 	defer t.Stop()
