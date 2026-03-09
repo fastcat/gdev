@@ -5,8 +5,8 @@ go 1.25.0
 require (
 	fastcat.org/go/gdev v0.12.0
 	github.com/charmbracelet/bubbletea v1.3.10
-	github.com/charmbracelet/huh v0.8.0
-	golang.org/x/sys v0.41.0
+	github.com/charmbracelet/huh v1.0.0
+	golang.org/x/sys v0.42.0
 )
 
 require (

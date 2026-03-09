@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/containerd/cgroups/v3 v3.1.3
+	github.com/containerd/log v0.1.0
 	github.com/coreos/go-systemd/v22 v22.7.0
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/goccy/go-yaml v1.19.2
@@ -13,15 +14,14 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.48.0
-	golang.org/x/sync v0.19.0
-	golang.org/x/sys v0.41.0
+	golang.org/x/sync v0.20.0
+	golang.org/x/sys v0.42.0
 )
 
 require (
 	github.com/cilium/ebpf v0.20.0 // indirect
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
-	github.com/containerd/log v0.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
