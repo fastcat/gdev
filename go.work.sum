@@ -58,6 +58,7 @@ cloud.google.com/go/aiplatform v1.102.0/go.mod h1:4rwKOMdubQOND81AlO3EckcskvEFCY
 cloud.google.com/go/aiplatform v1.109.0 h1:A1on/tr2Y7EwhW4M1dtuVMWioxFD5oiacZ85MOi9HH8=
 cloud.google.com/go/aiplatform v1.109.0/go.mod h1:4rwKOMdubQOND81AlO3EckcskvEFCYSzXKfn42GMm8k=
 cloud.google.com/go/aiplatform v1.113.0/go.mod h1:B8fcWtC2vSadapIQqweJrTATJe/odNDjk2uIA5kmXog=
+cloud.google.com/go/aiplatform v1.114.0 h1:TCrSLci+NFEAx0PZMv8btGe5j68RivArmDJbBLIc/3o=
 cloud.google.com/go/aiplatform v1.114.0/go.mod h1:W5yMrpIuHG/CSK8iF7XnwIfCJu6dcLRQ0cTqGR5vwwE=
 cloud.google.com/go/analytics v0.23.0 h1:Q+y94XH84jM8SK8O7qiY/PJRexb6n7dRbQ6PiUa4YGM=
 cloud.google.com/go/analytics v0.23.0/go.mod h1:YPd7Bvik3WS95KBok2gPXDqQPHy08TsCQG6CdUCb+u0=
@@ -95,6 +96,7 @@ cloud.google.com/go/artifactregistry v1.17.1 h1:A20kj2S2HO9vlyBVyVFHPxArjxkXvLP5
 cloud.google.com/go/artifactregistry v1.17.1/go.mod h1:06gLv5QwQPWtaudI2fWO37gfwwRUHwxm3gA8Fe568Hc=
 cloud.google.com/go/artifactregistry v1.17.2 h1:Gx5vsnIFEx+obM1VdtMF2AuTraYESRCrBxvc9+6jBZg=
 cloud.google.com/go/artifactregistry v1.17.2/go.mod h1:h4CIl9TJZskg9c9u1gC9vTsOTo1PrAnnxntprqS3AjM=
+cloud.google.com/go/artifactregistry v1.19.0 h1:DaOHWeURq93K27/6Sa2fy3rJoftrVXKeT3tonM4fxtI=
 cloud.google.com/go/artifactregistry v1.19.0/go.mod h1:UEAPCgHDFC1q+A8nnVxXHPEy9KCVOeavFBF1fEChQvU=
 cloud.google.com/go/asset v1.17.2 h1:xgFnBP3luSbUcC9RWJvb3Zkt+y/wW6PKwPHr3ssnIP8=
 cloud.google.com/go/asset v1.17.2/go.mod h1:SVbzde67ehddSoKf5uebOD1sYw8Ab/jD/9EIeWg99q4=
@@ -133,6 +135,7 @@ cloud.google.com/go/batch v1.12.2 h1:gWQdvdPplptpvrkqF6ibtxZkOsYKLTFbxYawHa/TvCg
 cloud.google.com/go/batch v1.12.2/go.mod h1:tbnuTN/Iw59/n1yjAYKV2aZUjvMM2VJqAgvUgft6UEU=
 cloud.google.com/go/batch v1.13.0 h1:6gmnNhJhm+Y598CZE6x+CeNZNIPCkYa4vkF58S5abHo=
 cloud.google.com/go/batch v1.13.0/go.mod h1:yHFeqBn8wUjmJs4sYbwZ7N3HdeGA+FkPAXjoCKMwGak=
+cloud.google.com/go/batch v1.14.0 h1:r5DEMPNXZk1as36Le3DaNQTRhhnR+E95a99SFxwF52o=
 cloud.google.com/go/batch v1.14.0/go.mod h1:oeQveyG6NDS/ks2ilOP4LzKRmuIaI7GLe0CkR7WF6pk=
 cloud.google.com/go/beyondcorp v1.0.4 h1:qs0J0O9Ol2h1yA0AU+r7l3hOCPzs2MjE1d6d/kaHIKo=
 cloud.google.com/go/beyondcorp v1.0.4/go.mod h1:Gx8/Rk2MxrvWfn4WIhHIG1NV7IBfg14pTKv1+EArVcc=
@@ -160,6 +163,7 @@ cloud.google.com/go/bigtable v1.39.0 h1:NF0aaSend+Z5CKND2vWY9fgDwaeZ4bDgzUdgw8rk
 cloud.google.com/go/bigtable v1.39.0/go.mod h1:zgL2Vxux9Bx+TcARDJDUxVyE+BCUfP2u4Zm9qeHF+g0=
 cloud.google.com/go/bigtable v1.40.1 h1:k8HfpUOvn7sQwc6oNKqjvD/yjkwynf4qBuyKwh5cU08=
 cloud.google.com/go/bigtable v1.40.1/go.mod h1:LtPzCcrAFaGRZ82Hs8xMueUeYW9Jw12AmNdUTMfDnh4=
+cloud.google.com/go/bigtable v1.41.0 h1:99KOWShm/MUyuIbXBeVscdWJFV7GdgiYwFUrB5Iu4BI=
 cloud.google.com/go/bigtable v1.41.0/go.mod h1:JlaltP06LEFXaxQdZiarGR9tKsX/II0IkNAKMDrWspI=
 cloud.google.com/go/billing v1.18.2 h1:oWUEQvuC4JvtnqLZ35zgzdbuHt4Itbftvzbe6aEyFdE=
 cloud.google.com/go/billing v1.18.2/go.mod h1:PPIwVsOOQ7xzbADCwNe8nvK776QpfrOAUkvKjCUcpSE=
@@ -183,6 +187,7 @@ cloud.google.com/go/channel v1.17.5 h1:/omiBnyFjm4S1ETHoOmJbL7LH7Ljcei4rYG6Sj3hc
 cloud.google.com/go/channel v1.17.5/go.mod h1:FlpaOSINDAXgEext0KMaBq/vwpLMkkPAw9b2mApQeHc=
 cloud.google.com/go/channel v1.20.0 h1:EeUa6SnD3+EL9B06G6N9Ud5/p/NtT6PC7lv5kmaUiHs=
 cloud.google.com/go/channel v1.20.0/go.mod h1:nBR1Lz+/1TjSA16HTllvW9Y+QULODj3o3jEKrNNeOp4=
+cloud.google.com/go/channel v1.21.0 h1:ThoAmHBd9WkX2SSuF6n6uEOvbBNoTuhBT7Rk6bFS5ho=
 cloud.google.com/go/channel v1.21.0/go.mod h1:8v3TwHtgLmFxTpL2U+e10CLFOQN8u/Vr9RhYcJUS3y8=
 cloud.google.com/go/cloudbuild v1.15.1 h1:ZB6oOmJo+MTov9n629fiCrO9YZPOg25FZvQ7gIHu5ng=
 cloud.google.com/go/cloudbuild v1.15.1/go.mod h1:gIofXZSu+XD2Uy+qkOrGKEx45zd7s28u/k8f99qKals=
@@ -192,6 +197,7 @@ cloud.google.com/go/cloudbuild v1.23.0 h1:ycLO1q8CdpDqWKpcqlcP+RMbkUguXqwvO//Q0v
 cloud.google.com/go/cloudbuild v1.23.0/go.mod h1:BkxnZUIHUHkl+oNpEbwc7n9id4pZRDQRVKIa6sDCuJI=
 cloud.google.com/go/cloudbuild v1.23.1 h1:Kl4QBrOPXcHVTic6XeRMp9YgLCy3b/ifGx8i29A3pYs=
 cloud.google.com/go/cloudbuild v1.23.1/go.mod h1:Gh/k1NnFRw1DkhekO2BaR4MTg30Op6EQQHCUZCIyTAg=
+cloud.google.com/go/cloudbuild v1.25.0 h1:Fkg+iJdN7bfICZJzLr/XV+k9aVxXS/hakIlhjDIRIDw=
 cloud.google.com/go/cloudbuild v1.25.0/go.mod h1:lCu+T6IPkobPo2Nw+vCE7wuaAl9HbXLzdPx/tcF+oWo=
 cloud.google.com/go/clouddms v1.7.4 h1:Sr0Zo5EAcPQiCBgHWICg3VGkcdS/LLP1d9SR7qQBM/s=
 cloud.google.com/go/clouddms v1.7.4/go.mod h1:RdrVqoFG9RWI5AvZ81SxJ/xvxPdtcRhFotwdE79DieY=
@@ -333,6 +339,7 @@ cloud.google.com/go/dialogflow v1.69.1/go.mod h1:mP4XrpgDvPYBP+cdLxFC1WJJlkwuy0H
 cloud.google.com/go/dialogflow v1.71.0 h1:P2VLpdyxu1gxsocyVWGfLzxvZ8Esxh2KULHhNuZ3FXI=
 cloud.google.com/go/dialogflow v1.71.0/go.mod h1:mP4XrpgDvPYBP+cdLxFC1WJJlkwuy0H8L1Lada9No/M=
 cloud.google.com/go/dialogflow v1.73.0/go.mod h1:vFkeDO7ishnfakWVLlbgIynQGTFJ/YaVMlYmSn5M+1o=
+cloud.google.com/go/dialogflow v1.74.0 h1:YtSrYLd6CpRS1NZ67r4Drvm1gafUEGDm/8vVBRYEv+I=
 cloud.google.com/go/dialogflow v1.74.0/go.mod h1:jlKHmd3/KdvWWhGZjoCnWQAQNOMHOhDK6DQ430p3T1I=
 cloud.google.com/go/dlp v1.11.2 h1:lTipOuJaSjlYnnotPMbEhKURLC6GzCMDDzVbJAEbmYM=
 cloud.google.com/go/dlp v1.11.2/go.mod h1:9Czi+8Y/FegpWzgSfkRlyz+jwW6Te9Rv26P3UfU/h/w=
@@ -342,6 +349,7 @@ cloud.google.com/go/dlp v1.25.0 h1:283+PJFk72SIj3apDTT/cHnKPBtuBUnduLBpbz1diFw=
 cloud.google.com/go/dlp v1.25.0/go.mod h1:PY4DMzV7lqRC5JvpxL05fXNeL8dknxYpFp4WjxmE22M=
 cloud.google.com/go/dlp v1.27.0 h1:rBQCAcIdWxyLRbFsOkyLig0OFhcKhCThtnro+b3dvEc=
 cloud.google.com/go/dlp v1.27.0/go.mod h1:PY4DMzV7lqRC5JvpxL05fXNeL8dknxYpFp4WjxmE22M=
+cloud.google.com/go/dlp v1.28.0 h1:+aMQYODOxCCZHpdzKvv/rIc9CbKd6XVmjVBRjaF8UvQ=
 cloud.google.com/go/dlp v1.28.0/go.mod h1:C3od1fIK8lf7Kr62aU1Uh0z4OL5Z8s3do3znAiEupAw=
 cloud.google.com/go/documentai v1.25.0 h1:lI62GMEEPO6vXJI9hj+G9WjOvnR0hEjvjokrnex4cxA=
 cloud.google.com/go/documentai v1.25.0/go.mod h1:ftLnzw5VcXkLItp6pw1mFic91tMRyfv6hHEY5br4KzY=
@@ -369,6 +377,7 @@ cloud.google.com/go/errorreporting v0.3.0 h1:kj1XEWMu8P0qlLhm3FwcaFsUvXChV/OraZw
 cloud.google.com/go/errorreporting v0.3.0/go.mod h1:xsP2yaAp+OAW4OIm60An2bbLpqIhKXdWR/tawvl7QzU=
 cloud.google.com/go/errorreporting v0.3.2 h1:isaoPwWX8kbAOea4qahcmttoS79+gQhvKsfg5L5AgH8=
 cloud.google.com/go/errorreporting v0.3.2/go.mod h1:s5kjs5r3l6A8UUyIsgvAhGq6tkqyBCUss0FRpsoVTww=
+cloud.google.com/go/errorreporting v0.4.0 h1:uLcasn2hKpj6iSPvHrzRjkJcaNVaKx8yKQcP3VTS6aI=
 cloud.google.com/go/errorreporting v0.4.0/go.mod h1:dZGEhqzdHZSRxxWLVjC3Ue5CVaROzvP58D9rU6zbBfw=
 cloud.google.com/go/essentialcontacts v1.6.6 h1:13eHn5qBnsawxI7mIrv4jRIEmQ1xg0Ztqw5ZGqtUNfA=
 cloud.google.com/go/essentialcontacts v1.6.6/go.mod h1:XbqHJGaiH0v2UvtuucfOzFXN+rpL/aU5BCZLn4DYl1Q=
@@ -384,6 +393,7 @@ cloud.google.com/go/eventarc v1.16.1 h1:1wIofFPViIgTABbIryIkx6uXJ0ima8UE2xIyo0nB
 cloud.google.com/go/eventarc v1.16.1/go.mod h1:wB3NTIQ+l4QPirJiTMeU+YpSc5+iyoDYWV4n2/Vmh78=
 cloud.google.com/go/eventarc v1.17.0 h1:cog4hh0RNbVC7KVwibCqBPhBKklj4wnIJVz8Qrf2hVI=
 cloud.google.com/go/eventarc v1.17.0/go.mod h1:wB3NTIQ+l4QPirJiTMeU+YpSc5+iyoDYWV4n2/Vmh78=
+cloud.google.com/go/eventarc v1.18.0 h1:8WWG1/ogInYur1NQjML6EMHQ0ZBzAdMDGlUVpLD56cI=
 cloud.google.com/go/eventarc v1.18.0/go.mod h1:/6SDoqh5+9QNUqCX4/oQcJVK16fG/snHBSXu7lrJtO8=
 cloud.google.com/go/filestore v1.8.1 h1:X5G4y/vrUo1B8Nsz93qSWTMAcM8LXbGUldq33OdcdCw=
 cloud.google.com/go/filestore v1.8.1/go.mod h1:MbN9KcaM47DRTIuLfQhJEsjaocVebNtNQhSLhKCF5GM=
@@ -397,6 +407,7 @@ cloud.google.com/go/firestore v1.18.0 h1:cuydCaLS7Vl2SatAeivXyhbhDEIR8BDmtn4egDh
 cloud.google.com/go/firestore v1.18.0/go.mod h1:5ye0v48PhseZBdcl0qbl3uttu7FIEwEYVaWm0UIEOEU=
 cloud.google.com/go/firestore v1.20.0 h1:JLlT12QP0fM2SJirKVyu2spBCO8leElaW0OOtPm6HEo=
 cloud.google.com/go/firestore v1.20.0/go.mod h1:jqu4yKdBmDN5srneWzx3HlKrHFWFdlkgjgQ6BKIOFQo=
+cloud.google.com/go/firestore v1.21.0 h1:BhopUsx7kh6NFx77ccRsHhrtkbJUmDAxNY3uapWdjcM=
 cloud.google.com/go/firestore v1.21.0/go.mod h1:1xH6HNcnkf/gGyR8udd6pFO4Z7GWJSwLKQMx/u6UrP4=
 cloud.google.com/go/functions v1.16.0 h1:IWVylmK5F6hJ3R5zaRW7jI5PrWhCvtBVU4axQLmXSo4=
 cloud.google.com/go/functions v1.16.0/go.mod h1:nbNpfAG7SG7Duw/o1iZ6ohvL7mc6MapWQVpqtM29n8k=
@@ -428,6 +439,7 @@ cloud.google.com/go/gkemulticloud v1.5.3 h1:334aZmOzIt3LVBpguCof8IHaLaftcZlx+L0T
 cloud.google.com/go/gkemulticloud v1.5.3/go.mod h1:KPFf+/RcfvmuScqwS9/2MF5exZAmXSuoSLPuaQ98Xlk=
 cloud.google.com/go/gkemulticloud v1.5.4 h1:AKuOmr5QBCPLJCyZhBABP3lIz+h3jxAy53LVMrEuvlg=
 cloud.google.com/go/gkemulticloud v1.5.4/go.mod h1:7l9+6Tp4jySSGj4PStO8CE6RrHFdcRARK4ScReHX1bU=
+cloud.google.com/go/gkemulticloud v1.6.0 h1:m0FX9o7t7xVmSZhqzm/m8nEZn8LnC5Kh60Wg4Yx1lyQ=
 cloud.google.com/go/gkemulticloud v1.6.0/go.mod h1:bGpd4o/Z5Z/XFlaojkgdVisHRwb+fLJvUPzsmV0I9ok=
 cloud.google.com/go/gsuiteaddons v1.6.5 h1:CZEbaBwmbYdhFw21Fwbo+C35HMe36fTE0FBSR4KSfWg=
 cloud.google.com/go/gsuiteaddons v1.6.5/go.mod h1:Lo4P2IvO8uZ9W+RaC6s1JVxo42vgy+TX5a6hfBZ0ubs=
@@ -464,6 +476,7 @@ cloud.google.com/go/kms v1.23.0/go.mod h1:rZ5kK0I7Kn9W4erhYVoIRPtpizjunlrfU4fUku
 cloud.google.com/go/kms v1.23.2 h1:4IYDQL5hG4L+HzJBhzejUySoUOheh3Lk5YT4PCyyW6k=
 cloud.google.com/go/kms v1.23.2/go.mod h1:rZ5kK0I7Kn9W4erhYVoIRPtpizjunlrfU4fUkumUp8g=
 cloud.google.com/go/kms v1.24.0/go.mod h1:QDH3z2SJ50lfNOE8EokKC1G40i7I0f8xTMCoiptcb5g=
+cloud.google.com/go/kms v1.25.0 h1:gVqvGGUmz0nYCmtoxWmdc1wli2L1apgP8U4fghPGSbQ=
 cloud.google.com/go/kms v1.25.0/go.mod h1:XIdHkzfj0bUO3E+LvwPg+oc7s58/Ns8Nd8Sdtljihbk=
 cloud.google.com/go/language v1.12.3 h1:iaJZg6K4j/2PvZZVcjeO/btcWWIllVRBhuTFjGO4LXs=
 cloud.google.com/go/language v1.12.3/go.mod h1:evFX9wECX6mksEva8RbRnr/4wi/vKGYnAJrTRXU8+f8=
@@ -528,6 +541,7 @@ cloud.google.com/go/networkconnectivity v1.18.0 h1:dQxh+/LBr8heinPCwjlYHZAr4IU7q
 cloud.google.com/go/networkconnectivity v1.18.0/go.mod h1:8MFjpAsCqTKUO+U5y9C6iGAsq2KkrfpQ43/XbqSbICc=
 cloud.google.com/go/networkconnectivity v1.19.1 h1:n0IzhdgSNzIKQygWwDV8yKRXkZpX3FsjCYFbO9iNHPU=
 cloud.google.com/go/networkconnectivity v1.19.1/go.mod h1:Q5v6uNNNz8BP232uuXM66XgWML9m379xhwv58Y+8Kb0=
+cloud.google.com/go/networkconnectivity v1.20.0 h1:A0uRcZJdq7F6LYWcc2NIea3h0i7p6kY1/CyLavOTG0I=
 cloud.google.com/go/networkconnectivity v1.20.0/go.mod h1:9MzGwD4ljiq+Z2Pg3ue27OEewCuHz7IUfw1fITrIdSw=
 cloud.google.com/go/networkmanagement v1.9.4 h1:aLV5GcosBNmd6M8+a0ekB0XlLRexv4fvnJJrYnqeBcg=
 cloud.google.com/go/networkmanagement v1.9.4/go.mod h1:daWJAl0KTFytFL7ar33I6R/oNBH8eEOX/rBNHrC/8TA=
@@ -545,6 +559,7 @@ cloud.google.com/go/networksecurity v0.10.6 h1:6b6fcCG9BFNcmtNO+VuPE04vkZb5TKNX9
 cloud.google.com/go/networksecurity v0.10.6/go.mod h1:FTZvabFPvK2kR/MRIH3l/OoQ/i53eSix2KA1vhBMJec=
 cloud.google.com/go/networksecurity v0.10.7 h1:J5gdG7mHdRLrsyM7yy4nKFgbN8+geaOo/4Zpeh4DWrg=
 cloud.google.com/go/networksecurity v0.10.7/go.mod h1:FgoictpfaJkeBlM1o2m+ngPZi8mgJetbFDH4ws1i2fQ=
+cloud.google.com/go/networksecurity v0.11.0 h1:+ahtCqEqwHw3a3UIeG21vT817xt9kkDDAO6k9+LCc18=
 cloud.google.com/go/networksecurity v0.11.0/go.mod h1:JLgDsg4tOyJ3eMO8lypjqMftbfd60SJ+P7T+DUmWBsM=
 cloud.google.com/go/notebooks v1.11.3 h1:FH48boYmrWVQ6k0Mx/WrnNafXncT5iSYxA8CNyWTgy0=
 cloud.google.com/go/notebooks v1.11.3/go.mod h1:0wQyI2dQC3AZyQqWnRsp+yA+kY4gC7ZIVP4Qg3AQcgo=
@@ -628,6 +643,7 @@ cloud.google.com/go/recaptchaenterprise/v2 v2.20.4 h1:P4QMryKcWdi4LIe1Sx0b2ZOAQv
 cloud.google.com/go/recaptchaenterprise/v2 v2.20.4/go.mod h1:3H8nb8j8N7Ss2eJ+zr+/H7gyorfzcxiDEtVBDvDjwDQ=
 cloud.google.com/go/recaptchaenterprise/v2 v2.20.5 h1:Q2CcYGxcvnvng2q3o1SaOpV+rjE/AbFVYGTJomxlG4g=
 cloud.google.com/go/recaptchaenterprise/v2 v2.20.5/go.mod h1:TCHn8+vtwgygBOwwbUJgRi6R9qglIpTeImsWsWDr5Lo=
+cloud.google.com/go/recaptchaenterprise/v2 v2.21.0 h1:zHaPdgmV3LmzaUfn9Xiiqp5zE1Y16f0O8XCwERrAs2E=
 cloud.google.com/go/recaptchaenterprise/v2 v2.21.0/go.mod h1:HxQYqZC2/zl2CvKN7jJEv71vEdDi1GMGNUiZxnpiuVI=
 cloud.google.com/go/recommendationengine v0.8.5 h1:ineqLswaCSBY0csYv5/wuXJMBlxATK6Xc5jJkpiTEdM=
 cloud.google.com/go/recommendationengine v0.8.5/go.mod h1:A38rIXHGFvoPvmy6pZLozr0g59NRNREz4cx7F58HAsQ=
@@ -676,6 +692,7 @@ cloud.google.com/go/run v1.12.0/go.mod h1:/APJ89UqgGdIdaD1yaTiSYXozx3fNoqKR/cueD
 cloud.google.com/go/run v1.12.1 h1:zoXZ+vavS6k8wzEPlxMuh5rGkhQb5CAzrcfSFBInlS4=
 cloud.google.com/go/run v1.12.1/go.mod h1:DdMsf2m0/n3WHNDcyoqZmfE+LMd/uEJ7j1yIooDrgXU=
 cloud.google.com/go/run v1.14.0/go.mod h1:KStBOpjX7m47Yi1xStWSkvJcCqLr+PMUkz6p3po5/VA=
+cloud.google.com/go/run v1.15.0 h1:4cwyNv9SUQEsQOf5/DfPKyMWYSA52p38/o119BgMhO4=
 cloud.google.com/go/run v1.15.0/go.mod h1:rgFHMdAopLl++57vzeqA+a1o2x0/ILZnEacRD6nC0EA=
 cloud.google.com/go/scheduler v1.10.6 h1:5U8iXLoQ03qOB+ZXlAecU7fiE33+u3QiM9nh4cd0eTE=
 cloud.google.com/go/scheduler v1.10.6/go.mod h1:pe2pNCtJ+R01E06XCDOJs1XvAMbv28ZsQEbqknxGOuE=
@@ -731,6 +748,7 @@ cloud.google.com/go/spanner v1.85.1 h1:cJx1ZD//C2QIfFQl8hSTn4twL8amAXtnayyflRIjj
 cloud.google.com/go/spanner v1.85.1/go.mod h1:bbwCXbM+zljwSPLZ44wZOdzcdmy89hbUGmM/r9sD0ws=
 cloud.google.com/go/spanner v1.86.1 h1:lSeVPwUotuKTpf8K6BPitzneQfGu73QcDFIca2lshG8=
 cloud.google.com/go/spanner v1.86.1/go.mod h1:bbwCXbM+zljwSPLZ44wZOdzcdmy89hbUGmM/r9sD0ws=
+cloud.google.com/go/spanner v1.87.0 h1:M9RGcj/4gJk6yY1lRLOz1Ze+5ufoWhbIiurzXLOOfcw=
 cloud.google.com/go/spanner v1.87.0/go.mod h1:tcj735Y2aqphB6/l+X5MmwG4NnV+X1NJIbFSZGaHYXw=
 cloud.google.com/go/speech v1.21.1 h1:nuFc+Kj5B8de75nN4FdPyUbI2SiBoHZG6BLurXL56Q0=
 cloud.google.com/go/speech v1.21.1/go.mod h1:E5GHZXYQlkqWQwY5xRSLHw2ci5NMQNG52FfMU1aZrIA=
@@ -738,6 +756,7 @@ cloud.google.com/go/speech v1.28.0 h1:9AuiAxDTmh/aeREtw+/0e7aI27T5QN4fK5lhssc9Mx
 cloud.google.com/go/speech v1.28.0/go.mod h1:hJf6oa+1rzCW/CeDE/qCXedV20B2TXEUje5iaGwW+JI=
 cloud.google.com/go/speech v1.28.1 h1:L8kq/CypGn6y/FbipyAPyn1L9JDW4CK3zkcAe4oDN7U=
 cloud.google.com/go/speech v1.28.1/go.mod h1:+EN8Zuy6y2BKe9P1RAmMaFPAgBns6m+XMgXAfkYtSSE=
+cloud.google.com/go/speech v1.29.0 h1:ehOzN/IsAhjjAtWg4fI8A3iNtonb1N8yWjofVhSTv+c=
 cloud.google.com/go/speech v1.29.0/go.mod h1:wtUmIS/h0ZYU6cPA9klcyST3f6i2FdnvNDqENjrRDds=
 cloud.google.com/go/storage v1.0.0/go.mod h1:IhtSnM/ZTZV8YYJWCY8RULGVqBDmpoyjwiyrjsg+URw=
 cloud.google.com/go/storage v1.5.0/go.mod h1:tpKbwo567HUNpVclU5sGELwQWBDZ8gh0ZeosJ0Rtdos=
@@ -812,6 +831,7 @@ cloud.google.com/go/vmmigration v1.9.0 h1:iekipb1hzN4qxVaFKvd4iM3IjMGDuu/CHb2PRf
 cloud.google.com/go/vmmigration v1.9.0/go.mod h1:jI3lBlhQn9+BKIWE/MmMsOzGekCXCc34b1M0CihL3zY=
 cloud.google.com/go/vmmigration v1.9.1 h1:7IED5P1BmZIDy0U9Co0OYGQkFK/19/7Y6xlCaitmIcs=
 cloud.google.com/go/vmmigration v1.9.1/go.mod h1:jI3lBlhQn9+BKIWE/MmMsOzGekCXCc34b1M0CihL3zY=
+cloud.google.com/go/vmmigration v1.10.0 h1:6AvttGxASQTiuIsNKUKOKsRiQG4qTMOY4KMyBhdZa1w=
 cloud.google.com/go/vmmigration v1.10.0/go.mod h1:LDztCWEb+RwS1bPg4Xzt0fcJS9kVrFxa3ejhH7OW9vg=
 cloud.google.com/go/vmwareengine v1.1.1 h1:EGdDi9QbqThfZq3ILcDK5g+m9jTevc34AY5tACx5v7k=
 cloud.google.com/go/vmwareengine v1.1.1/go.mod h1:nMpdsIVkUrSaX8UvmnBhzVzG7PPvNYc5BszcvIVudYs=
@@ -1017,14 +1037,19 @@ github.com/census-instrumentation/opencensus-proto v0.4.1 h1:iKLQ0xPNFxR/2hzXZMr
 github.com/census-instrumentation/opencensus-proto v0.4.1/go.mod h1:4T9NM4+4Vw91VeyqjLS6ao50K5bOcLKN6Q42XnYaRYw=
 github.com/certifi/gocertifi v0.0.0-20180118203423-deb3ae2ef261 h1:6/yVvBsKeAw05IUj4AzvrxaCnDjN4nUqKjW9+w5wixg=
 github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
+github.com/charmbracelet/bubbletea v1.3.6/go.mod h1:oQD9VCRQFF8KplacJLo28/jofOI2ToOfGYeFgBBxHOc=
 github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc/go.mod h1:X4/0JoqgTIPSFcRA/P6INZzIuyqdFY5rm8tb41s9okk=
 github.com/charmbracelet/colorprofile v0.3.3/go.mod h1:nB1FugsAbzq284eJcjfah2nhdSLppN2NqvfotkfRYP4=
 github.com/charmbracelet/harmonica v0.2.0 h1:8NxJWRWg/bzKqqEaaeFNipOu77YR5t8aSwG4pgaUBiQ=
 github.com/charmbracelet/harmonica v0.2.0/go.mod h1:KSri/1RMQOZLbw7AHqgcBycp8pgJnQMYYT8QZRqZ1Ao=
 github.com/charmbracelet/x/ansi v0.8.0/go.mod h1:wdYl/ONOLHLIVmQaxbIYEC/cRKOQyjTkowiI4blgS9Q=
 github.com/charmbracelet/x/ansi v0.9.3/go.mod h1:3RQDQ6lDnROptfpWuUVIUG64bD2g2BgntdxH0Ya5TeE=
+github.com/charmbracelet/x/ansi v0.10.1/go.mod h1:3RQDQ6lDnROptfpWuUVIUG64bD2g2BgntdxH0Ya5TeE=
 github.com/charmbracelet/x/ansi v0.11.0/go.mod h1:uQt8bOrq/xgXjlGcFMc8U2WYbnxyjrKhnvTQluvfCaE=
 github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd/go.mod h1:xe0nKWGd3eJgtqZRaN9RjMtK7xUYchjzPr7q6kcvCCs=
+github.com/charmbracelet/x/cellbuf v0.0.13/go.mod h1:xe0nKWGd3eJgtqZRaN9RjMtK7xUYchjzPr7q6kcvCCs=
+github.com/charmbracelet/x/exp/strings v0.0.0-20240722160745-212f7b056ed0/go.mod h1:pBhA0ybfXv6hDjQUZ7hk1lVxBiUbupdw5R31yPUViVQ=
+github.com/charmbracelet/x/term v0.2.1/go.mod h1:oQ4enTYFV7QN4m0i9mzHrViD7TQKvNEEkHUMCmsxdUg=
 github.com/checkpoint-restore/checkpointctl v1.3.0 h1:bNz5b6s+lxFdG5ZGDba3qSkBtXDDTCG2494dfAbQJ4E=
 github.com/checkpoint-restore/checkpointctl v1.3.0/go.mod h1:dqZH4wDvbjnsqFGK2LdUDk21yFQ1dCAtzgRMlG44KDM=
 github.com/checkpoint-restore/checkpointctl v1.4.0 h1:3kRns56TArwiyHOMakaumUgSZZlB1hZBkjVgR6IeZ3E=
@@ -1047,6 +1072,7 @@ github.com/clbanning/mxj/v2 v2.7.0 h1:WA/La7UGCanFe5NpHF0Q3DNtnCsVoxbPKuyBNHWRyM
 github.com/clbanning/mxj/v2 v2.7.0/go.mod h1:hNiWqW14h+kc+MdF9C6/YoRfjEJoR3ou6tn/Qo+ve2s=
 github.com/client9/misspell v0.3.4 h1:ta993UF76GwbvJcIo3Y68y/M3WxlpEHPWIGDkJYwzJI=
 github.com/clipperhouse/displaywidth v0.4.1/go.mod h1:R+kHuzaYWFkTm7xoMmK1lFydbci4X2CicfbGstSGg0o=
+github.com/clipperhouse/uax29/v2 v2.2.0/go.mod h1:EFJ2TJMRUaplDxHKj1qAEhCtQPW2tJSwu5BF98AuoVM=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f h1:WBZRG4aNOuI15bLRrCgN8fCq8E5Xuty6jGbmSNEvSsU=
 github.com/cncf/udpa/go v0.0.0-20200629203442-efcf912fb354/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
@@ -1494,11 +1520,13 @@ github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/linuxkit/virtsock v0.0.0-20201010232012-f8cee7dfc7a3 h1:jUp75lepDg0phMUJBCmvaeFDldD2N3S1lBuPwUTszio=
 github.com/linuxkit/virtsock v0.0.0-20201010232012-f8cee7dfc7a3/go.mod h1:3r6x7q95whyfWQpmGZTu3gk3v2YkMi05HEzl7Tf7YEo=
+github.com/lucasb-eyer/go-colorful v1.2.0/go.mod h1:R4dSotOR9KMtayYi1e77YzuveK+i7ruzyGqttikkLy0=
 github.com/lyft/protoc-gen-star/v2 v2.0.4-0.20230330145011-496ad1ac90a4 h1:sIXJOMrYnQZJu7OB7ANSF4MYri2fTEGIsRLz6LwI4xE=
 github.com/lyft/protoc-gen-star/v2 v2.0.4-0.20230330145011-496ad1ac90a4/go.mod h1:amey7yeodaJhXSbf/TlLvWiqQfLOSpEk//mLlc+axEk=
 github.com/magefile/mage v1.14.0/go.mod h1:z5UZb/iS3GoOSn0JgWuiw7dxlurVYTu+/jHXqQg881A=
 github.com/magiconair/properties v1.8.7 h1:IeQXZAiQcpL9mgcAe1Nu6cX9LLw6ExEHKjN0VQdvPDY=
 github.com/magiconair/properties v1.8.7/go.mod h1:Dhd985XPs7jluiymwWYZ0G4Z61jb3vdS329zhj2hYo0=
+github.com/mailru/easyjson v0.7.7 h1:UGYAvKxe3sBsEDzO8ZeWOSlIQfWFlxbzLZe7hwFURr0=
 github.com/mailru/easyjson v0.7.7/go.mod h1:xzfreul335JAWq5oZzymOObrkdz5UnU4kGfJJLY9Nlc=
 github.com/mailru/easyjson v0.9.0 h1:PrnmzHw7262yW8sTBwxi1PdJA3Iw/EKBa8psRf7d9a4=
 github.com/mailru/easyjson v0.9.0/go.mod h1:1+xMtQp2MRNVL/V1bOzuP3aP8VNwRW55fQUto+XFtTU=
@@ -2105,6 +2133,7 @@ golang.org/x/net v0.46.0/go.mod h1:Q9BGdFy1y4nkUwiLvT5qtyhAnEHgnQ/zd8PfU6nc210=
 golang.org/x/net v0.46.1-0.20251013234738-63d1a5100f82/go.mod h1:Q9BGdFy1y4nkUwiLvT5qtyhAnEHgnQ/zd8PfU6nc210=
 golang.org/x/net v0.47.0/go.mod h1:/jNxtkgq5yWUGYkaZGqo27cfGZ1c5Nen03aYrrKpVRU=
 golang.org/x/net v0.48.0/go.mod h1:+ndRgGjkh8FGtu1w1FGbEC31if4VrNVMuKTgcAAnQRY=
+golang.org/x/net v0.49.0/go.mod h1:/ysNB2EvaqvesRkuLAyjI1ycPZlQHM3q01F02UY/MV8=
 golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
 golang.org/x/oauth2 v0.0.0-20191202225959-858c2ad4c8b6/go.mod h1:gOpvHmFTYa4IltrdGE7lF6nIHvwfUNPOp7c8zoXwtLw=
@@ -2472,6 +2501,8 @@ google.golang.org/genproto/googleapis/bytestream v0.0.0-20260122232226-8e98ce8d3
 google.golang.org/genproto/googleapis/bytestream v0.0.0-20260202165425-ce8ad4cf556b/go.mod h1:Tej9lWiwVvQJP+b43pjJIsr/3mZycXWCIyoiXmbFf40=
 google.golang.org/genproto/googleapis/bytestream v0.0.0-20260203192932-546029d2fa20/go.mod h1:Tej9lWiwVvQJP+b43pjJIsr/3mZycXWCIyoiXmbFf40=
 google.golang.org/genproto/googleapis/bytestream v0.0.0-20260217215200-42d3e9bedb6d/go.mod h1:9amqk/8LQWEC4RjyUxMx1DebyQ7hZB9gvl67bHmgZ2E=
+google.golang.org/genproto/googleapis/bytestream v0.0.0-20260226221140-a57be14db171 h1:zeSmMyGeCh9H7xJRBK+IS3b272WQpcvXUnLPhNuYLWI=
+google.golang.org/genproto/googleapis/bytestream v0.0.0-20260226221140-a57be14db171/go.mod h1:9amqk/8LQWEC4RjyUxMx1DebyQ7hZB9gvl67bHmgZ2E=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20230731190214-cbb8c96f2d6d/go.mod h1:TUfxEVdsvPg18p6AslUXFoLdpED4oBnGwyqk3dV1XzM=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237/go.mod h1:WtryC6hu0hhx87FDGxWCDptyssuo68sk10vYjF+T9fY=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda/go.mod h1:WtryC6hu0hhx87FDGxWCDptyssuo68sk10vYjF+T9fY=
