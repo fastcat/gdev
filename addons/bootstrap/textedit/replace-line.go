@@ -84,10 +84,12 @@ func (r *replaceLineEditor) Next(line string) (output iter.Seq[string], err erro
 		// fall through to re-check if we are on the start of the previous lines again
 	}
 
-	if tsl == r.previousLines[r.prevPos] {
-		r.prevPos++
-	} else {
-		r.prevPos = 0
+	if len(r.previousLines) > 0 {
+		if tsl == r.previousLines[r.prevPos] {
+			r.prevPos++
+		} else {
+			r.prevPos = 0
+		}
 	}
 	return each(line), nil
 }

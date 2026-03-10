@@ -30,6 +30,13 @@ func TestReplaceLine(t *testing.T) {
 			expected: []string{"new\n"},
 		},
 		{
+			name:     "simple in the middle",
+			original: []string{"ctx1\n", "old\n", "ctx2\n"},
+			oldLine:  "old",
+			newLine:  "new",
+			expected: []string{"ctx1\n", "new\n", "ctx2\n"},
+		},
+		{
 			name:      "with previous lines",
 			original:  []string{"ctx1\n", "pfx1\n", "pfx2\n", "old\n", "ctx2\n"},
 			oldLine:   "old",
