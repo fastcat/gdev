@@ -303,32 +303,35 @@ func AddGroupMember(
 		return fmt.Errorf("member is required")
 	}
 
-	// check if it's already a member
-	if _, err := shx.Run(ctx,
-		[]string{
-			"gcloud", "identity", "groups", "memberships", "describe",
-			"--group-email", group,
-			"--member-email", member,
-		},
-		shx.WithCombinedError(),
-	); err == nil {
-		fmt.Printf("%s is already a member of %s\n", member, group)
+	// this has a tendency to fail with new accounts, give it a few shots
+	return retry(ctx, 10, time.Second, func() error {
+		// check if it's already a member
+		if _, err := shx.Run(ctx,
+			[]string{
+				"gcloud", "identity", "groups", "memberships", "describe",
+				"--group-email", group,
+				"--member-email", member,
+			},
+			shx.WithCombinedError(),
+		); err == nil {
+			fmt.Printf("%s is already a member of %s\n", member, group)
+			return nil
+		}
+
+		if _, err := shx.Run(ctx,
+			[]string{
+				"gcloud", "identity", "groups", "memberships", "add",
+				"--group-email", group,
+				"--member-email", member,
+			},
+			shx.PassOutput(),
+			shx.WithCombinedError(),
+		); err != nil {
+			return fmt.Errorf("failed to add group member: %w", err)
+		}
+
 		return nil
-	}
-
-	if _, err := shx.Run(ctx,
-		[]string{
-			"gcloud", "identity", "groups", "memberships", "add",
-			"--group-email", group,
-			"--member-email", member,
-		},
-		shx.PassOutput(),
-		shx.WithCombinedError(),
-	); err != nil {
-		return fmt.Errorf("failed to add group member: %w", err)
-	}
-
-	return nil
+	})
 }
 
 // RunWithTemporaryHumanLogin wraps the given function in a temporary gcloud
@@ -339,7 +342,7 @@ func AddGroupMember(
 func RunWithTemporaryHumanLogin(
 	ctx *bootstrap.Context,
 	desc string,
-	fn func(ctx context.Context, humanAccount string) error,
+	fn func(ctx *bootstrap.Context, humanAccount string) error,
 ) (finalErr error) {
 	// no ADC here, we don't want to have to revoke them later
 	cmd := []string{"gcloud", "auth", "login"}
@@ -444,33 +447,43 @@ func UseNewServiceAccountKey(
 	); err != nil {
 		return err
 	}
+
 	fmt.Println("Logging into gcloud as service account, this might take a couple attempts ...")
-	var loginErr error
-	for i := range 10 {
-		if i > 0 {
-			fmt.Println("Will retry in a moment...")
-			select {
-			case <-time.After(time.Second):
-			default:
-			}
-		}
-		if _, loginErr = shx.Run(
+	if err := retry(ctx, 10, time.Second, func() error {
+		_, err := shx.Run(
 			ctx,
 			[]string{"gcloud", "auth", "activate-service-account", "--key-file", kp},
 			shx.PassStdio(),
 			shx.WithCombinedError(),
-		); loginErr == nil {
-			break
-		}
+		)
+		return err
+	}); err != nil {
+		return fmt.Errorf("activating service account with new key: %w", err)
 	}
-	if loginErr != nil {
-		return loginErr
-	}
+
 	if err := copyADC(ctx); err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func retry(ctx context.Context, attempts int, delay time.Duration, fn func() error) error {
+	var err error
+	for i := range attempts {
+		if i > 0 {
+			fmt.Println("Will retry in a moment...")
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(delay):
+			}
+		}
+		if err = fn(); err == nil {
+			return nil
+		}
+	}
+	return err
 }
 
 func copyADC(ctx context.Context) error {
