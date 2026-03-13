@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/storage v1.60.0
 	fastcat.org/go/gdev v0.12.0
 	fastcat.org/go/gdev/addons/docker v0.12.0
-	fastcat.org/go/gdev/addons/k8s v0.12.0
+	fastcat.org/go/gdev/addons/k8s v0.13.0
 	google.golang.org/api v0.270.0
 	k8s.io/api v0.35.2
 	k8s.io/apimachinery v0.35.2

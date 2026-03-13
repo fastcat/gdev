@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	fastcat.org/go/gdev v0.12.0
-	fastcat.org/go/gdev/addons/k8s v0.12.0
+	fastcat.org/go/gdev/addons/k8s v0.13.0
 	k8s.io/api v0.35.2
 	k8s.io/client-go v0.35.2
 )

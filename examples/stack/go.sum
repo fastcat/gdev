@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.12.0 h1:MEOd0OKA1mMca+GuSMN34WQ84HB1l4xszWiWjAc0BTU=
-fastcat.org/go/gdev v0.12.0/go.mod h1:jxl2j6qmM4emJXBqJP0Yahy/sSV3yiB1o4xUVDPd6Qo=
-fastcat.org/go/gdev/addons/docker v0.12.0 h1:fhznJ9nrGPT0QJr4WyU5deu5biGam7ZVTt35guabyVo=
-fastcat.org/go/gdev/addons/docker v0.12.0/go.mod h1:U7uPMwjwZhWl1e9yc0u33q9LeVEpEaYeY0RUdPwIB9E=
+fastcat.org/go/gdev v0.13.0 h1:O7R8TJQ5EdSKGLdloz6JBZL04lFjPCe7WEb/WChjlFM=
+fastcat.org/go/gdev v0.13.0/go.mod h1:OjsMUAajv8JyeBSwx/WUq4WuPlK8ddaoo8d6gRz9NiU=
+fastcat.org/go/gdev/addons/docker v0.13.0 h1:WVnm25oOLCi9b7/XCuf0WJOGCVDavM71DP4ZG5etJtw=
+fastcat.org/go/gdev/addons/docker v0.13.0/go.mod h1:Gr1PjlBn61idCdyHTyDhs1QVdrSjLqepwZjyJSsjGcs=
 github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c h1:udKWzYgxTojEKWjV8V+WSxDXJ4NFATAsZjh8iIbsQIg=
 github.com/Azure/go-ansiterm v0.0.0-20250102033503-faa5f7b0171c/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
