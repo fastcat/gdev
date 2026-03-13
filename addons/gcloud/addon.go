@@ -229,22 +229,118 @@ func LoginUser(ctx *bootstrap.Context) error {
 	return nil
 }
 
-func LoginServiceAccount(ctx *bootstrap.Context, email string) (finalErr error) {
-	if !strings.HasSuffix(email, ".iam.gserviceaccount.com") {
-		return fmt.Errorf("service email must be in .iam.gserviceaccount.com domain")
+type ServiceAccountCreate struct {
+	Name        string
+	Project     string
+	DisplayName string
+	Description string
+}
+
+// CreateServiceAccount creates a new service account with the given parameters.
+//
+// Name and Project are required, the other account fields are optional.
+//
+// Name becomes the part before the @ in the service account email.
+func CreateServiceAccount(
+	ctx context.Context,
+	account ServiceAccountCreate,
+) error {
+	if account.Name == "" {
+		return fmt.Errorf("service account name is required")
+	} else if strings.Contains(account.Name, "@") {
+		return fmt.Errorf("service account name cannot contain '@'")
 	}
-	accounts, err := getAccounts(ctx)
-	if err != nil {
-		return err
+	if account.Project == "" {
+		return fmt.Errorf("project is required")
 	}
-	if acct, err := activeAccount(accounts, nil); err == nil && acct.Account == email {
-		fmt.Println("gcloud already logged in the desired service account")
+
+	email := fmt.Sprintf("%s@%s.iam.gserviceaccount.com", account.Name, account.Project)
+	if _, err := shx.Run(ctx,
+		[]string{
+			"gcloud", "iam", "service-accounts", "describe", email,
+			"--project", account.Project,
+			"--format=value(name)",
+		},
+		shx.WithCombinedError(),
+	); err == nil {
+		fmt.Printf("Service account %s already exists\n", email)
 		return nil
 	}
 
-	// creating a service account key requires us to log in as a user, use that
-	// user to create the key, and then revoke that user login
+	cna := []string{
+		"gcloud", "iam", "service-accounts", "create", account.Name,
+		"--project", account.Project,
+	}
+	if account.DisplayName != "" {
+		cna = append(cna, "--display-name", account.DisplayName)
+	}
+	if account.Description != "" {
+		cna = append(cna, "--description", account.Description)
+	}
+	if _, err := shx.Run(ctx,
+		cna,
+		shx.PassOutput(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return fmt.Errorf("failed to create service account: %w", err)
+	}
+	return nil
+}
 
+// AddGroupMember adds the given member (user or service account email) to the
+// given group.
+//
+// It checks if the member is already in the group before trying to add, and
+// will print a message and do nothing if so.
+func AddGroupMember(
+	ctx context.Context,
+	group, member string,
+) error {
+	if group == "" {
+		return fmt.Errorf("group is required")
+	}
+	if member == "" {
+		return fmt.Errorf("member is required")
+	}
+
+	// check if it's already a member
+	if _, err := shx.Run(ctx,
+		[]string{
+			"gcloud", "identity", "groups", "memberships", "describe",
+			"--group-email", group,
+			"--member-email", member,
+		},
+		shx.WithCombinedError(),
+	); err == nil {
+		fmt.Printf("%s is already a member of %s\n", member, group)
+		return nil
+	}
+
+	if _, err := shx.Run(ctx,
+		[]string{
+			"gcloud", "identity", "groups", "memberships", "add",
+			"--group-email", group,
+			"--member-email", member,
+		},
+		shx.PassOutput(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return fmt.Errorf("failed to add group member: %w", err)
+	}
+
+	return nil
+}
+
+// RunWithTemporaryHumanLogin wraps the given function in a temporary gcloud
+// login as a human using the configured allowed domain(s).
+//
+// It will log the user out after the function returns, even if it returns an
+// error.
+func RunWithTemporaryHumanLogin(
+	ctx *bootstrap.Context,
+	desc string,
+	fn func(ctx context.Context, humanAccount string) error,
+) (finalErr error) {
 	// no ADC here, we don't want to have to revoke them later
 	cmd := []string{"gcloud", "auth", "login"}
 	if bootstrap.Headless(ctx) {
@@ -261,7 +357,8 @@ func LoginServiceAccount(ctx *bootstrap.Context, email string) (finalErr error) 
 	); err != nil {
 		return err
 	}
-	if accounts, err = getAccounts(ctx); err != nil {
+	accounts, err := getAccounts(ctx)
+	if err != nil {
 		return err
 	}
 	userAccount, err := activeAccount(accounts, addon.Config.allowedDomains)
@@ -294,6 +391,43 @@ func LoginServiceAccount(ctx *bootstrap.Context, email string) (finalErr error) 
 		}
 	}()
 
+	if err := fn(ctx, userAccount.Account); err != nil {
+		return err
+	}
+
+	revoked = true
+	if err := revoke(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func HasServiceAccountLogin(
+	ctx context.Context,
+	email string,
+) (bool, error) {
+	if !strings.HasSuffix(email, ".iam.gserviceaccount.com") {
+		return false, fmt.Errorf("service email must be in .iam.gserviceaccount.com domain")
+	} else if accounts, err := getAccounts(ctx); err != nil {
+		return false, err
+	} else if acct, err := activeAccount(accounts, nil); err == nil && acct.Account == email {
+		return true, nil
+	}
+	return false, nil
+}
+
+// UseNewServiceAccountKey creates a new service account key for the given
+// email, and logs in with it.
+//
+// You should always call this from inside [RunWithTemporaryHumanLogin], and
+// have checked [HasServiceAccountLogin] before that.
+//
+// The key this creates will not have any expiration!
+func UseNewServiceAccountKey(
+	ctx *bootstrap.Context,
+	email string,
+) error {
 	fmt.Println("Creating service account key")
 	td, err := os.MkdirTemp("", "gdev-svc-key.*")
 	if err != nil {
@@ -335,10 +469,7 @@ func LoginServiceAccount(ctx *bootstrap.Context, email string) (finalErr error) 
 	if err := copyADC(ctx); err != nil {
 		return err
 	}
-	revoked = true
-	if err := revoke(); err != nil {
-		return err
-	}
+
 	return nil
 }
 
