@@ -3,11 +3,11 @@ module fastcat.org/go/gdev/addons/gocache
 go 1.26.1
 
 require (
-	fastcat.org/go/gdev v0.12.0
+	fastcat.org/go/gdev v0.13.0
 	github.com/pkg/sftp v1.13.10
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/crypto v0.48.0
+	golang.org/x/crypto v0.49.0
 	golang.org/x/sync v0.20.0
 )
 

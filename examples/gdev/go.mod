@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	fastcat.org/go/gdev v0.13.0
-	fastcat.org/go/gdev/addons/bootstrap/input v0.12.0
+	fastcat.org/go/gdev/addons/bootstrap/input v0.13.0
 	fastcat.org/go/gdev/addons/containerd v0.13.0
 	fastcat.org/go/gdev/addons/docker v0.13.0
 	fastcat.org/go/gdev/addons/gcs v0.13.0
