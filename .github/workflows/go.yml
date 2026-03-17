@@ -24,14 +24,11 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v6
-    - name: Prepare go cache data
-      run: 'echo "$GOOS $GOARCH" > .ci-env'
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
         go-version-file: 'go.work'
         cache-dependency-path: |
-          .ci-env
           go.mod
           **/go.mod
     - name: Setup Mage
@@ -47,14 +44,14 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v6
-    - name: Prepare go cache data
-      run: 'echo "$GOOS $GOARCH" > .ci-env'
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
         go-version-file: 'go.work'
+        # include the golangci config in the go cache hash so that we don't
+        # collide with build cache, and don't have to add an extra file
         cache-dependency-path: |
-          .ci-env
+          .golangci.yaml
           go.mod
           **/go.mod
     - name: Setup Mage

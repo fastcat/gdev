@@ -29,4 +29,3 @@ __debug_bin*
 
 .semrel
 .generated-go-semantic-release-changelog.md
-.ci-env
