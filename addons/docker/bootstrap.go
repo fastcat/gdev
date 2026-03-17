@@ -35,9 +35,15 @@ var configureBootstrap = sync.OnceFunc(func() {
 					if err != nil {
 						return err
 					}
+					dpkgInstalled, err := apt.DpkgInstalled(ctx)
+					if err != nil {
+						return err
+					}
 					for _, pkg := range toRemove {
 						if _, ok := aptAvail[pkg]; ok {
 							// "-" suffix tells apt to remove the package instead of installing it
+							apt.AddPackages(ctx, pkg+"-")
+						} else if _, ok := dpkgInstalled[pkg]; ok {
 							apt.AddPackages(ctx, pkg+"-")
 						}
 					}
