@@ -21,14 +21,18 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@v4
-    - name: Setup Go Module Access Token
-      run: |
-        git config --global url."https://x-access-token:$GH_ACTIONS_TOKEN@github.com/fastcat/gdev".insteadOf https://github.com/fastcat/gdev
 
+    - name: Prepare go cache data
+      run: 'echo "$GOOS $GOARCH" > .ci-env'
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: '~1.26.1'
+        cache-dependency-path: |
+          .ci-env
+          go.sum
+          go.work.sum
+          **/go.sum
 
     # - name: Submit Dependencies (root)
     #   uses: actions/go-dependency-submission@v2
