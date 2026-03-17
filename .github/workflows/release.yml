@@ -17,7 +17,7 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
          # get enough commits to hopefully allow goreleaser to generate a proper
          # changelog since the last release
@@ -28,14 +28,13 @@ jobs:
     - name: Prepare go cache data
       run: 'echo "$GOOS $GOARCH" > .ci-env'
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version: '~1.26.1'
         cache-dependency-path: |
           .ci-env
-          go.sum
-          go.work.sum
-          **/go.sum
+          go.mod
+          **/go.mod
     - name: Tag Release
       id: semrel
       uses: go-semantic-release/action@v1
@@ -61,22 +60,21 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-tags: true
     - name: Prepare go cache data
       run: 'echo "$GOOS $GOARCH" > .ci-env'
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version: '~1.26.1'
         cache-dependency-path: |
           .ci-env
-          go.sum
-          go.work.sum
-          **/go.sum
+          go.mod
+          **/go.mod
     - name: Set up ko
-      uses: ko-build/setup-ko@v0.8
+      uses: ko-build/setup-ko@v0.9
     - name: Build & Publish svc1
       # TODO: use mage for this so it can pick up all the defined builds automatically
       # make sure to overwrite all the labels from the chainguard base image
@@ -108,11 +106,11 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-tags: true
     - name: Set up NodeJS
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: "lts/*"
         # TODO: cache doesn't support rush
@@ -125,7 +123,7 @@ jobs:
         node common/scripts/install-run-rush.js build --verbose
         node common/scripts/install-run-rush.js deploy
     - name: Docker Login
-      uses: docker/login-action@v3
+      uses: docker/login-action@v4
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -163,22 +161,21 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-tags: true
     - name: Prepare go cache data
       run: 'echo "$GOOS $GOARCH" > .ci-env'
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version: '~1.26.1'
         cache-dependency-path: |
           .ci-env
-          go.sum
-          go.work.sum
-          **/go.sum
+          go.mod
+          **/go.mod
     - name: Set up ko
-      uses: ko-build/setup-ko@v0.8
+      uses: ko-build/setup-ko@v0.9
     - name: "Build & Publish ent-blog svc"
       # TODO: use mage for this so it can pick up all the defined builds automatically
       # make sure to overwrite all the labels from the chainguard base image
@@ -210,22 +207,21 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-tags: true
     - name: Prepare go cache data
       run: 'echo "$GOOS $GOARCH" > .ci-env'
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version: '~1.26.1'
         cache-dependency-path: |
           .ci-env
-          go.sum
-          go.work.sum
-          **/go.sum
+          go.mod
+          **/go.mod
     - name: Publish gdev example
-      uses: goreleaser/goreleaser-action@v6
+      uses: goreleaser/goreleaser-action@v7
       with:
         workdir: examples/gdev
         args: release

@@ -20,8 +20,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: actions/checkout@v6
+    - uses: actions/setup-node@v6
       with:
         node-version: "lts/*"
         # TODO: cache doesn't support rush
@@ -36,7 +36,7 @@ jobs:
       run: node common/scripts/install-run-rush.js deploy
       working-directory: examples/stack/svc2
     - name: "svc2: Build Docker Image"
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: examples/stack/svc2/common/deploy/
         file: examples/stack/svc2/app/Dockerfile

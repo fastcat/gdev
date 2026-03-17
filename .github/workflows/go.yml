@@ -23,18 +23,17 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Prepare go cache data
       run: 'echo "$GOOS $GOARCH" > .ci-env'
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version: '~1.26.1'
         cache-dependency-path: |
           .ci-env
-          go.sum
-          go.work.sum
-          **/go.sum
+          go.mod
+          **/go.mod
     - name: Setup Mage
       run: go tool mage -l
 
@@ -47,18 +46,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Prepare go cache data
       run: 'echo "$GOOS $GOARCH" > .ci-env'
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v6
       with:
         go-version: '~1.26.1'
         cache-dependency-path: |
           .ci-env
-          go.sum
-          go.work.sum
-          **/go.sum
+          go.mod
+          **/go.mod
     - name: Setup Mage
       run: go tool mage -l
 
@@ -68,7 +66,7 @@ jobs:
         git diff --exit-code
 
     - name: Golangci-lint
-      uses: golangci/golangci-lint-action@v8.0.0
+      uses: golangci/golangci-lint-action@v9
       # can use latest release nowadays
     - name: Other Lint
       run: go tool mage -v lint:other
