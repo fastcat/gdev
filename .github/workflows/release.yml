@@ -123,7 +123,7 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish svc2
-      uses: docker/build-push-action@v6
+      uses: docker/build-push-action@v7
       with:
         context: examples/stack/svc2
         file: examples/stack/svc2/app/Dockerfile
