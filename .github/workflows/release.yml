@@ -30,7 +30,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
-        go-version: '~1.26.1'
+        go-version-file: 'go.work'
         cache-dependency-path: |
           .ci-env
           go.mod
@@ -68,7 +68,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
-        go-version: '~1.26.1'
+        go-version-file: 'go.work'
         cache-dependency-path: |
           .ci-env
           go.mod
@@ -169,7 +169,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
-        go-version: '~1.26.1'
+        go-version-file: 'go.work'
         cache-dependency-path: |
           .ci-env
           go.mod
@@ -215,7 +215,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
-        go-version: '~1.26.1'
+        go-version-file: 'go.work'
         cache-dependency-path: |
           .ci-env
           go.mod
