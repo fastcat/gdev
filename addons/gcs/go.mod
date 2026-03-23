@@ -8,9 +8,9 @@ require (
 	fastcat.org/go/gdev/addons/docker v0.13.0
 	fastcat.org/go/gdev/addons/k8s v0.13.0
 	google.golang.org/api v0.272.0
-	k8s.io/api v0.35.2
-	k8s.io/apimachinery v0.35.2
-	k8s.io/client-go v0.35.2
+	k8s.io/api v0.35.3
+	k8s.io/apimachinery v0.35.3
+	k8s.io/client-go v0.35.3
 )
 
 require (
