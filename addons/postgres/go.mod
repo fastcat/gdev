@@ -5,10 +5,10 @@ go 1.26.1
 require (
 	fastcat.org/go/gdev v0.13.0
 	fastcat.org/go/gdev/addons/k8s v0.13.0
-	github.com/jackc/pgx/v5 v5.8.0
-	k8s.io/api v0.35.2
-	k8s.io/apimachinery v0.35.2
-	k8s.io/client-go v0.35.2
+	github.com/jackc/pgx/v5 v5.9.1
+	k8s.io/api v0.35.3
+	k8s.io/apimachinery v0.35.3
+	k8s.io/client-go v0.35.3
 )
 
 require (
