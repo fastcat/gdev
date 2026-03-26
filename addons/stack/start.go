@@ -99,7 +99,7 @@ func StartServices(ctx context.Context, kind string, svcs ...service.Service) er
 		return errors.Join(errs...)
 	}
 	for _, r := range resources {
-		pt.UpdateMessage(fmt.Sprintf("Starting %s...", r.ID()))
+		pt.UpdateMessage(fmt.Sprintf("Starting %s", r.ID()))
 		if err := r.Start(ctx); err != nil {
 			pt.MarkAsErrored()
 			return fmt.Errorf("failed to start %s: %w", r.ID(), err)

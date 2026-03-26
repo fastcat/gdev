@@ -84,7 +84,7 @@ func StopServices(ctx context.Context, opts StackStopOptions, kind string, svcs 
 	errCh := make(chan error, 1)
 	var wg sync.WaitGroup
 	for _, r := range resources {
-		pt.UpdateMessage(fmt.Sprintf("Stopping %s...", r.ID()))
+		pt.UpdateMessage(fmt.Sprintf("Stopping %s", r.ID()))
 		wg.Go(func() {
 			if err := r.Stop(ctx); err != nil {
 				pt.MarkAsErrored()
@@ -102,7 +102,7 @@ func StopServices(ctx context.Context, opts StackStopOptions, kind string, svcs 
 		}
 	}
 	if opts.Parallel {
-		pt.UpdateMessage(fmt.Sprintf("Waiting for %d services (%s) to stop...", len(svcs), kind))
+		pt.UpdateMessage(fmt.Sprintf("Waiting for %d services (%s) to stop", len(svcs), kind))
 		go func() { defer close(errCh); wg.Wait() }()
 		for err := range errCh {
 			errs = append(errs, err)
