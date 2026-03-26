@@ -30,6 +30,7 @@ func StartWriter(ctx context.Context) (_ context.Context, stop func()) {
 	pw := progress.NewWriter()
 	pw.SetStyle(progress.StyleBlocks)
 	pw.SetTrackerPosition(progress.PositionRight)
+	pw.SetSortBy(progress.SortByIndex)
 	var wg sync.WaitGroup
 	wg.Go(func() { pw.Render() })
 	// if the caller's work all finishes before render starts, then Stop() might
@@ -49,6 +50,9 @@ func StartWriter(ctx context.Context) (_ context.Context, stop func()) {
 
 func AddTracker(ctx context.Context, t *progress.Tracker) {
 	if w := ContextWriter(ctx); w != nil {
+		if t.Index == 0 {
+			t.Index = uint64(w.Length() + 1)
+		}
 		w.AppendTracker(t)
 	}
 }
