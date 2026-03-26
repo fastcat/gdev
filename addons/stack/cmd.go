@@ -30,7 +30,6 @@ func registerCommands() {
 					DefaultShellCompDirective: &scd,
 				},
 				RunE: func(cmd *cobra.Command, args []string) error {
-					// TODO: use go-pretty/v6/progress
 					return Start(cmd.Context(), service.WithServiceModes(service.ConfiguredModes()))
 				},
 			}

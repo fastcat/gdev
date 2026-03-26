@@ -1,18 +1,17 @@
 package apt
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
-	"sync"
-
-	"github.com/jedib0t/go-pretty/v6/progress"
 
 	"fastcat.org/go/gdev/addons/bootstrap"
 	"fastcat.org/go/gdev/addons/bootstrap/apt/dpkg"
 	"fastcat.org/go/gdev/instance"
 	"fastcat.org/go/gdev/lib/httpx"
+	"fastcat.org/go/gdev/progress"
 )
 
 func InstallDownloadedPackageStep[R PackageRelease](
@@ -57,7 +56,7 @@ func InstallDownloadedPackage[R PackageRelease](
 	defer os.Remove(tf.Name()) // nolint:errcheck
 	defer tf.Close()           // nolint:errcheck
 
-	if err := streamWithProgress(stream, tf, "Downloading "+name+".deb", size); err != nil {
+	if err := streamWithProgress(ctx, stream, tf, "Downloading "+name+".deb", size); err != nil {
 		return err
 	} else if err := tf.Close(); err != nil {
 		return err
@@ -215,35 +214,23 @@ func URLPackageSource(uri, ver string) *HTTPPackageSource[StaticPackageRelease] 
 }
 
 func streamWithProgress(
+	ctx context.Context,
 	src io.Reader,
 	dest io.Writer,
 	msg string,
 	size int64,
 ) error {
 	// progress bar for download since it takes a moment
-	pw := progress.NewWriter()
-	// progress has an internal context, but doesn't support setting it to base
-	// off something other than context.Background()
+	ctx, stop := progress.StartWriter(ctx)
+	defer stop()
 	pt := &progress.Tracker{
 		Message: msg,
 		Total:   size,
 		Units:   progress.UnitsBytes,
 	}
-	pw.SetTrackerPosition(progress.PositionRight)
-	pt.Start()
-	pw.AppendTracker(pt)
-	var wg sync.WaitGroup
-	// if we run Render in the "background" there is a race where we might finish
-	// our work before it initializes, and then Stop() won't actually stop it, so
-	// we have to run Render in the "foreground" and the streaming in the
-	// background.
-	var err error
-	wg.Go(func() {
-		defer pw.Stop()
-		_, err = io.Copy(&progressWriter{pt, dest}, src)
-	})
-	pw.Render()
-	wg.Wait()
+	progress.AddTracker(ctx, pt)
+	_, err := io.Copy(&progressWriter{pt, dest}, src)
+	stop()
 	return err
 }
 

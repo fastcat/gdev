@@ -7,6 +7,7 @@ import (
 	"slices"
 	"sync"
 
+	"fastcat.org/go/gdev/progress"
 	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/service"
 )
@@ -18,7 +19,9 @@ type StackStopOptions struct {
 }
 
 func StackStop(ctx context.Context, opts StackStopOptions) error {
-	// TODO: use go-pretty/v6/progress
+	ctx, stop := progress.StartWriter(ctx)
+	defer stop()
+
 	ctx, err := resource.NewContext(ctx)
 	if err != nil {
 		return err
@@ -29,12 +32,12 @@ func StackStop(ctx context.Context, opts StackStopOptions) error {
 	// do services & infra separately in case parallel was requested. infra after
 	// services because we stop things in reverse of start order.
 	svcs := slices.DeleteFunc(AllServices(), deleteFunc)
-	if err := StopServices(ctx, opts, svcs...); err != nil {
+	if err := StopServices(ctx, opts, "stack", svcs...); err != nil {
 		return err
 	}
 	if opts.IncludeInfrastructure {
 		svcs := slices.DeleteFunc(AllInfrastructure(), deleteFunc)
-		if err := StopServices(ctx, opts, svcs...); err != nil {
+		if err := StopServices(ctx, opts, "infrastructure", svcs...); err != nil {
 			return err
 		}
 	}
@@ -58,8 +61,14 @@ func Stop(
 	})
 }
 
-func StopServices(ctx context.Context, opts StackStopOptions, svcs ...service.Service) error {
-	fmt.Printf("Stopping %d services...\n", len(svcs))
+func StopServices(ctx context.Context, opts StackStopOptions, kind string, svcs ...service.Service) error {
+	pt := &progress.Tracker{
+		Message: fmt.Sprintf("Stopping %d services (%s)...", len(svcs), kind),
+		Total:   int64(len(svcs)),
+		Units:   progress.UnitsDefault,
+	}
+	progress.AddTracker(ctx, pt)
+
 	resources := make([]resource.Resource, 0, len(svcs))
 	var errs []error
 	for _, svc := range svcs {
@@ -75,11 +84,13 @@ func StopServices(ctx context.Context, opts StackStopOptions, svcs ...service.Se
 	errCh := make(chan error, 1)
 	var wg sync.WaitGroup
 	for _, r := range resources {
-		fmt.Printf("Stopping %s...\n", r.ID())
+		pt.UpdateMessage(fmt.Sprintf("Stopping %s...", r.ID()))
 		wg.Go(func() {
 			if err := r.Stop(ctx); err != nil {
+				pt.MarkAsErrored()
 				errCh <- fmt.Errorf("failed to stop %s: %w", r.ID(), err)
 			}
+			pt.Increment(1)
 		})
 		if !opts.Parallel {
 			wg.Wait()
@@ -91,10 +102,17 @@ func StopServices(ctx context.Context, opts StackStopOptions, svcs ...service.Se
 		}
 	}
 	if opts.Parallel {
+		pt.UpdateMessage(fmt.Sprintf("Waiting for %d services (%s) to stop...", len(svcs), kind))
 		go func() { defer close(errCh); wg.Wait() }()
 		for err := range errCh {
 			errs = append(errs, err)
 		}
 	}
+	if len(errs) == 0 {
+		pt.UpdateMessage(fmt.Sprintf("Stopped %d services (%s)", len(svcs), kind))
+		pt.MarkAsDone()
+		return nil
+	}
+
 	return errors.Join(errs...)
 }

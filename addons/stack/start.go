@@ -10,6 +10,7 @@ import (
 
 	"fastcat.org/go/gdev/cmd"
 	"fastcat.org/go/gdev/instance"
+	"fastcat.org/go/gdev/progress"
 	"fastcat.org/go/gdev/resource"
 	"fastcat.org/go/gdev/service"
 )
@@ -27,6 +28,9 @@ func AddStartFlaggers(fns ...func(*pflag.FlagSet, cmd.FlagCompletionRegistrar) e
 // and will be passed to [service.NewContext] and [resource.NewContext]
 // respectively.
 func Start(ctx context.Context, opts ...any) error {
+	ctx, stop := progress.StartWriter(ctx)
+	defer stop()
+
 	// TODO: make progress printing pluggable
 	var svcOpts []service.ContextOption
 	var rcOpts []resource.ContextOption
@@ -67,12 +71,18 @@ func StartServices(ctx context.Context, kind string, svcs ...service.Service) er
 	if len(svcs) == 0 {
 		return nil
 	}
-	fmt.Printf("Starting %d services (%s)...\n", len(svcs), kind)
+	pt := &progress.Tracker{
+		Message: fmt.Sprintf("Starting %d services (%s)", len(svcs), kind),
+		Total:   int64(len(svcs)),
+		Units:   progress.UnitsDefault,
+	}
+	progress.AddTracker(ctx, pt)
 	resources := make([]resource.Resource, 0, len(svcs))
 	var errs []error
 	for _, svc := range svcs {
 		rs, err := svc.Resources(ctx)
 		if err != nil {
+			pt.MarkAsErrored()
 			errs = append(errs, err)
 		}
 		// if this service is disabled, force all its resources to be stopped
@@ -89,10 +99,12 @@ func StartServices(ctx context.Context, kind string, svcs ...service.Service) er
 		return errors.Join(errs...)
 	}
 	for _, r := range resources {
-		fmt.Printf("Starting %s...\n", r.ID())
+		pt.UpdateMessage(fmt.Sprintf("Starting %s...", r.ID()))
 		if err := r.Start(ctx); err != nil {
+			pt.MarkAsErrored()
 			return fmt.Errorf("failed to start %s: %w", r.ID(), err)
 		}
+		pt.Increment(1)
 	}
 
 	if kind != "infrastructure" && !service.NoServiceWait(ctx) {
@@ -101,6 +113,8 @@ func StartServices(ctx context.Context, kind string, svcs ...service.Service) er
 		}
 	}
 
+	pt.UpdateMessage(fmt.Sprintf("Started %d services (%s)", len(svcs), kind))
+	pt.MarkAsDone()
 	return nil
 }
 
