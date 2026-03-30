@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"maps"
+	"net/netip"
 
 	"github.com/containerd/errdefs"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/mount"
-	"github.com/docker/docker/api/types/network"
-	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/mount"
+	"github.com/moby/moby/api/types/network"
+	"github.com/moby/moby/client"
 
 	"fastcat.org/go/gdev/addons/containers"
 	"fastcat.org/go/gdev/instance"
@@ -27,7 +28,7 @@ type ContainerResource struct {
 	Mounts     []mount.Mount
 	Labels     map[string]string
 
-	StopOptions *container.StopOptions
+	StopOptions *client.ContainerStopOptions
 
 	hostConfigFn []func(*container.HostConfig) error
 }
@@ -105,7 +106,7 @@ func (c *ContainerResource) WithCustomHostConfig(fn func(*container.HostConfig) 
 	return c
 }
 
-func (c *ContainerResource) WithStopOptions(opts container.StopOptions) *ContainerResource {
+func (c *ContainerResource) WithStopOptions(opts client.ContainerStopOptions) *ContainerResource {
 	c.StopOptions = &opts
 	return c
 }
@@ -165,8 +166,36 @@ func (c *ContainerResource) Start(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("failed to parse port specs %v: %w", c.Ports, err)
 		}
-		cc.ExposedPorts = exposed
-		hc.PortBindings = bindings
+		// now we have to parse them _again_
+		ep2 := make(network.PortSet, len(exposed))
+		for p := range exposed {
+			if pp, err := network.ParsePort(string(p)); err != nil {
+				return fmt.Errorf("failed to parse exposed port %q: %w", p, err)
+			} else {
+				ep2[pp] = struct{}{}
+			}
+		}
+		b2 := make(network.PortMap, len(bindings))
+		for p, bs := range bindings {
+			if pp, err := network.ParsePort(string(p)); err != nil {
+				return fmt.Errorf("failed to parse port binding port %q: %w", p, err)
+			} else {
+				b2pp := make([]network.PortBinding, len(bs))
+				for i, b := range bs {
+					if hip, err := netip.ParseAddr(b.HostIP); err != nil {
+						return fmt.Errorf("failed to parse port binding host IP %q: %w", b.HostIP, err)
+					} else {
+						b2pp[i] = network.PortBinding{
+							HostIP:   hip,
+							HostPort: b.HostPort,
+						}
+					}
+				}
+				b2[pp] = b2pp
+			}
+		}
+		cc.ExposedPorts = ep2
+		hc.PortBindings = b2
 	}
 	for _, fn := range c.hostConfigFn {
 		if err := fn(&hc); err != nil {
@@ -175,16 +204,18 @@ func (c *ContainerResource) Start(ctx context.Context) error {
 	}
 	cr, err := cli.ContainerCreate(
 		ctx,
-		&cc,
-		&hc,
-		&network.NetworkingConfig{},
-		nil, // platform
-		c.realName(),
+		client.ContainerCreateOptions{
+			Config:           &cc,
+			HostConfig:       &hc,
+			NetworkingConfig: nil,
+			Platform:         nil,
+			Name:             c.realName(),
+		},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create container %s: %w", c.Name, err)
 	}
-	err = cli.ContainerStart(ctx, cr.ID, container.StartOptions{})
+	_, err = cli.ContainerStart(ctx, cr.ID, client.ContainerStartOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to start container %s(%s): %w", c.Name, c.ID(), err)
 	}
@@ -201,12 +232,12 @@ func (c *ContainerResource) Stop(ctx context.Context) error {
 		// attempt a graceful stop first
 		// TODO: warn if graceful stop fails. for now we're going to forcibly remove
 		// it, so this doesn't matter much
-		_ = cli.ContainerStop(ctx, c.realName(), *c.StopOptions)
+		_, _ = cli.ContainerStop(ctx, c.realName(), *c.StopOptions)
 	}
-	err := cli.ContainerRemove(
+	_, err := cli.ContainerRemove(
 		ctx,
 		c.realName(), // param is named id but accepts name too
-		container.RemoveOptions{
+		client.ContainerRemoveOptions{
 			Force:         true,
 			RemoveVolumes: true,
 		},

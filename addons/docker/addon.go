@@ -3,7 +3,7 @@ package docker
 import (
 	"context"
 
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 
 	"fastcat.org/go/gdev/addons"
 	"fastcat.org/go/gdev/internal"

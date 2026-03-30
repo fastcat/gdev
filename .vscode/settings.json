@@ -21,6 +21,7 @@
 		"kubelet",
 		"labelargs",
 		"libc",
+		"moby",
 		"noctty",
 		"nolint",
 		"NOPASSWD",

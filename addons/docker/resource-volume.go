@@ -7,8 +7,7 @@ import (
 	"maps"
 
 	"github.com/containerd/errdefs"
-	"github.com/docker/docker/api/types/volume"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/client"
 
 	"fastcat.org/go/gdev/addons/containers"
 	"fastcat.org/go/gdev/instance"
@@ -64,7 +63,7 @@ func (v *volumeResource) Start(ctx context.Context) error {
 	if cli == nil {
 		return fmt.Errorf("docker client not found in context")
 	}
-	_, err := cli.VolumeCreate(ctx, volume.CreateOptions{
+	_, err := cli.VolumeCreate(ctx, client.VolumeCreateOptions{
 		Name:       v.realName(),
 		Labels:     containers.DefaultLabels(),
 		Driver:     v.Driver,
