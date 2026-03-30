@@ -1,5 +1,5 @@
-fastcat.org/go/gdev v0.13.0 h1:O7R8TJQ5EdSKGLdloz6JBZL04lFjPCe7WEb/WChjlFM=
-fastcat.org/go/gdev v0.13.0/go.mod h1:OjsMUAajv8JyeBSwx/WUq4WuPlK8ddaoo8d6gRz9NiU=
+fastcat.org/go/gdev v0.14.0 h1:jot47zcgSqVlK3zB9OqfuH1Zka/T8dQevTHip0doaeA=
+fastcat.org/go/gdev v0.14.0/go.mod h1:snw5Ur0+R7kX52AAG8JeCCG60Bc3PLjKsQvAelg10FM=
 github.com/MakeNowJust/heredoc v1.0.0 h1:cXCdzVdstXyiTqTvfqk9SDHpKNjxuom+DOlyEeQ4pzQ=
 github.com/MakeNowJust/heredoc v1.0.0/go.mod h1:mG5amYoWBHf8vpLOuehzbGGw0EHxpZZ6lCpQ4fNJ8LE=
 github.com/atotto/clipboard v0.1.4 h1:EH0zSVneZPSuFR11BlR9YppQTVDbh5+16AmcJi4g1z4=

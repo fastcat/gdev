@@ -4,8 +4,8 @@ go 1.26.1
 
 require (
 	cloud.google.com/go/storage v1.61.3
-	fastcat.org/go/gdev v0.13.0
-	fastcat.org/go/gdev/addons/gocache v0.13.0
+	fastcat.org/go/gdev v0.14.0
+	fastcat.org/go/gdev/addons/gocache v0.14.0
 )
 
 require (

@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/gocache/s3
 go 1.26.1
 
 require (
-	fastcat.org/go/gdev v0.13.0
-	fastcat.org/go/gdev/addons/gocache v0.13.0
+	fastcat.org/go/gdev v0.14.0
+	fastcat.org/go/gdev/addons/gocache v0.14.0
 	github.com/aws/aws-sdk-go-v2 v1.41.4
 	github.com/aws/aws-sdk-go-v2/config v1.32.12
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.97.2

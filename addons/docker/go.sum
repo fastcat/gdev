@@ -1,5 +1,5 @@
-fastcat.org/go/gdev v0.13.0 h1:O7R8TJQ5EdSKGLdloz6JBZL04lFjPCe7WEb/WChjlFM=
-fastcat.org/go/gdev v0.13.0/go.mod h1:OjsMUAajv8JyeBSwx/WUq4WuPlK8ddaoo8d6gRz9NiU=
+fastcat.org/go/gdev v0.14.0 h1:jot47zcgSqVlK3zB9OqfuH1Zka/T8dQevTHip0doaeA=
+fastcat.org/go/gdev v0.14.0/go.mod h1:snw5Ur0+R7kX52AAG8JeCCG60Bc3PLjKsQvAelg10FM=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
