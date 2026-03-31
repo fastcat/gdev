@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	github.com/goccy/go-yaml v1.19.2
-	github.com/magefile/mage v1.16.1
+	github.com/magefile/mage v1.17.1
 	golang.org/x/mod v0.34.0
 )
 
