@@ -317,6 +317,10 @@ func initialStatus(c *child) api.ChildStatus {
 	return s
 }
 
+var printCGroupsROWarning = sync.OnceFunc(func() {
+	log.Print("process isolation failing due to read-only mount, suppressing errors")
+})
+
 func (c *child) start(
 	idx int,
 	exited chan<- error,
@@ -372,7 +376,11 @@ func (c *child) start(
 		instance.AppName()+"-pm-"+name+".scope",
 		cmd.Process,
 	); err != nil {
-		log.Printf("ERROR: failed to isolate process %d as %q: %v", cmd.Process.Pid, name, err)
+		if errors.Is(err, syscall.EROFS) {
+			printCGroupsROWarning()
+		} else {
+			log.Printf("ERROR: failed to isolate process %d as %q: %v", cmd.Process.Pid, name, err)
+		}
 	} else {
 		eStat.Group = isolationGroup
 	}
