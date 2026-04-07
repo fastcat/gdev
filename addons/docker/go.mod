@@ -6,8 +6,8 @@ require (
 	fastcat.org/go/gdev v0.14.0
 	github.com/containerd/errdefs v1.0.0
 	github.com/docker/go-connections v0.6.0
-	github.com/moby/moby/api v1.54.0
-	github.com/moby/moby/client v0.3.1-0.20260325154711-f78c987ad371
+	github.com/moby/moby/api v1.54.1
+	github.com/moby/moby/client v0.4.0
 )
 
 require (
