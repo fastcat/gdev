@@ -12,7 +12,6 @@ import (
 
 	"fastcat.org/go/gdev/addons/pm/api"
 	"fastcat.org/go/gdev/addons/pm/internal"
-	internalG "fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/lib/sys"
 )
 
@@ -204,7 +203,7 @@ func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 			Pid:         pid,
 		}
 		if status.Health.LastHealthy != nil || status.Health.LastUnhealthy != nil {
-			cs.Healthy = internalG.Ptr(status.Health.Healthy)
+			cs.Healthy = new(status.Health.Healthy)
 		}
 
 		ret = append(ret, cs)

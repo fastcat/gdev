@@ -14,7 +14,6 @@ import (
 	applyMetaV1 "k8s.io/client-go/applyconfigurations/meta/v1"
 
 	"fastcat.org/go/gdev/addons/k8s"
-	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/service"
 )
 
@@ -30,7 +29,7 @@ func Service(
 		o(&cfg)
 	}
 	if cfg.variant == nil {
-		cfg.variant = internal.Ptr(DefaultVariant)
+		cfg.variant = new(DefaultVariant)
 	}
 	if cfg.name == "" {
 		if cfg.major == 0 {
@@ -157,7 +156,7 @@ func (c valkeySvcConfig) deployment() k8s.ContainerResource {
 		WithPeriodSeconds(1).
 		WithTimeoutSeconds(1)
 	// ready mostly the same as startup
-	readyProbe := internal.Ptr(*startupProbe).
+	readyProbe := new(*startupProbe).
 		WithFailureThreshold(5).
 		WithPeriodSeconds(15).
 		WithTimeoutSeconds(15)

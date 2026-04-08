@@ -79,6 +79,16 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+  - package-ecosystem: gomod
+    directory: /addons/mariadb
+    multi-ecosystem-group: everything
+    patterns:
+    - "*"
+  - package-ecosystem: gomod
+    directory: /examples/full-stack
+    multi-ecosystem-group: everything
+    patterns:
+    - "*"
 multi-ecosystem-groups:
   everything:
     schedule:

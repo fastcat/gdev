@@ -6,8 +6,8 @@ require (
 	fastcat.org/go/gdev v0.14.0
 	github.com/containerd/errdefs v1.0.0
 	github.com/docker/go-connections v0.6.0
-	github.com/moby/moby/api v1.54.0
-	github.com/moby/moby/client v0.3.1-0.20260325154711-f78c987ad371
+	github.com/moby/moby/api v1.54.1
+	github.com/moby/moby/client v0.4.0
 )
 
 require (
@@ -27,7 +27,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.7.8 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.7.9 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect

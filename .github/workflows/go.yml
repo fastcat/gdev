@@ -59,7 +59,7 @@ jobs:
 
     - name: Check codegen
       run: |
-        go generate -x ./...
+        go generate -x work
         git diff --exit-code
 
     - name: Golangci-lint

@@ -66,7 +66,7 @@ func (c *svcConfig) fillDefaults() {
 		c.major = DefaultMajor
 	}
 	if c.variant == nil {
-		c.variant = internal.Ptr(DefaultVariant)
+		c.variant = new(DefaultVariant)
 	}
 	if c.name == "" {
 		c.name = fmt.Sprintf("postgres-%d", c.major)
@@ -223,7 +223,7 @@ func (c svcConfig) deployment() k8s.ContainerResource {
 		WithPeriodSeconds(1).
 		WithTimeoutSeconds(1)
 	// ready mostly the same as startup
-	readyProbe := internal.Ptr(*startupProbe).
+	readyProbe := new(*startupProbe).
 		WithFailureThreshold(5).
 		WithPeriodSeconds(15).
 		WithTimeoutSeconds(15)

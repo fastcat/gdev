@@ -2,6 +2,7 @@ package dpkg
 
 import (
 	"errors"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -121,14 +122,14 @@ func StringToVersion(str string) (Version, error) {
 
 	for i := range len(version.UpstreamVersion) {
 		r := rune(version.UpstreamVersion[i])
-		if !unicode.IsDigit(r) && !unicode.IsLetter(r) && !containsRune(upstreamVersionAllowedSymbols, r) {
+		if !unicode.IsDigit(r) && !unicode.IsLetter(r) && !slices.Contains(upstreamVersionAllowedSymbols, r) {
 			return Version{}, errors.New("invalid character in UpstreamVersion")
 		}
 	}
 
 	for i := range len(version.DebianRevision) {
 		r := rune(version.DebianRevision[i])
-		if !unicode.IsDigit(r) && !unicode.IsLetter(r) && !containsRune(debianRevisionAllowedSymbols, r) {
+		if !unicode.IsDigit(r) && !unicode.IsLetter(r) && !slices.Contains(debianRevisionAllowedSymbols, r) {
 			return Version{}, errors.New("invalid character in DebianRevision")
 		}
 	}
@@ -212,15 +213,6 @@ func nextRune(str string) (string, *rune) {
 		return str[1:], &r
 	}
 	return str, nil
-}
-
-func containsRune(s []rune, e rune) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
 }
 
 func signum(a int) int {
