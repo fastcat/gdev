@@ -34,15 +34,15 @@ func (b *goBuilder) Root() string {
 
 // BuildAll implements build.Builder.
 func (b *goBuilder) BuildAll(ctx context.Context, opts build.Options) error {
-	if b.workspace {
-		return fmt.Errorf("not implemented: go workspace build")
-	}
 	shOpts := []shx.Option{shx.WithCwd(b.root)}
 	shOpts = append(shOpts, opts.ShellOpts()...)
-	res, err := shx.Run(ctx,
-		[]string{"go", "build", "-v", "./..."},
-		shOpts...,
-	)
+	cna := []string{"go", "build", "-v"}
+	if b.workspace {
+		cna = append(cna, "work")
+	} else {
+		cna = append(cna, "./...")
+	}
+	res, err := shx.Run(ctx, cna, shOpts...)
 	return buildResult("go build", res, err)
 }
 
