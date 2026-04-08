@@ -642,6 +642,6 @@ func applyOpts(context.Context) apiMetaV1.ApplyOptions {
 
 func deleteOpts(context.Context) apiMetaV1.DeleteOptions {
 	return apiMetaV1.DeleteOptions{
-		PropagationPolicy: internal.Ptr(apiMetaV1.DeletePropagationBackground),
+		PropagationPolicy: new(apiMetaV1.DeletePropagationBackground),
 	}
 }

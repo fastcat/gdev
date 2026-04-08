@@ -61,8 +61,8 @@ func Uninstall(ctx context.Context, dest string) error {
 	slices.Reverse(mountDirs)
 	unmountAndRemove := func(dir string) error {
 		var dirPfx string
-		if strings.HasSuffix(dir, "*") {
-			dir = strings.TrimSuffix(dir, "*")
+		if before, ok := strings.CutSuffix(dir, "*"); ok {
+			dir = before
 			dirPfx = dir
 		} else {
 			dirPfx = dir + string(filepath.Separator)

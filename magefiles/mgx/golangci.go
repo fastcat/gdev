@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sync"
 )
 
@@ -18,11 +19,8 @@ var FindGCI = sync.OnceValue(func() string {
 	}
 	gbInPath := false
 	pathVals := os.Getenv("PATH")
-	for _, dir := range filepath.SplitList(pathVals) {
-		if dir == gb {
-			gbInPath = true
-			break
-		}
+	if slices.Contains(filepath.SplitList(pathVals), gb) {
+		gbInPath = true
 	}
 	if !gbInPath {
 		// add GOBIN to PATH so that we can find golangci-lint
