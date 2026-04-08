@@ -2,7 +2,6 @@ package golang
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 
