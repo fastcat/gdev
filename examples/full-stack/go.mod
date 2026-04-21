@@ -10,12 +10,12 @@ require (
 	fastcat.org/go/gdev/addons/k8s v0.14.0
 	fastcat.org/go/gdev/addons/postgres v0.14.0
 	github.com/go-chi/chi/v5 v5.2.5
-	github.com/jackc/pgx/v5 v5.9.1
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/mattn/go-sqlite3 v1.14.42
 	github.com/stretchr/testify v1.11.1
-	k8s.io/api v0.35.3
-	k8s.io/apimachinery v0.35.3
-	k8s.io/client-go v0.35.3
+	k8s.io/api v0.35.4
+	k8s.io/apimachinery v0.35.4
+	k8s.io/client-go v0.35.4
 )
 
 require (
