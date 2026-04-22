@@ -5,9 +5,9 @@ go 1.26.1
 require (
 	fastcat.org/go/gdev v0.14.0
 	github.com/containerd/errdefs v1.0.0
-	github.com/docker/go-connections v0.6.0
-	github.com/moby/moby/api v1.54.1
-	github.com/moby/moby/client v0.4.0
+	github.com/docker/go-connections v0.7.0
+	github.com/moby/moby/api v1.54.2
+	github.com/moby/moby/client v0.4.1
 )
 
 require (
