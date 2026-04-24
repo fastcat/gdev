@@ -125,7 +125,7 @@ func TailscaleUp(ctx context.Context) error {
 	// TODO: do we need to do anything to _force_ `tailscale up` to run headless?
 	if _, err := shx.Run(
 		ctx,
-		[]string{"tailscale", "up"},
+		[]string{"tailscale", "up", "--operator", shx.UserName()},
 		shx.WithSudo("bring up tailscale"),
 		shx.PassStdio(),
 		shx.WithCombinedError(),
