@@ -104,13 +104,19 @@ var configureBootstrap = sync.OnceFunc(func() {
 const ConfigureStepName = "Configure tailscale"
 
 func configureTailscale(ctx *bootstrap.Context) error {
-	if addon.Config.skipLogin {
-		return nil
+	if !addon.Config.skipLogin {
+		if err := TailscaleUp(ctx); err != nil {
+			return err
+		}
 	}
-	return TailscaleUp(ctx)
+	return TailscaleUserConfig(ctx)
 }
 
-func TailscaleUp(ctx context.Context) error {
+// TailscaleUserConfig applies runtime config for the current user to tailscale:
+//
+//   - Allows the current user to administer the tailscale client
+//   - Enables the tailscale system tray app for the current user and starts it
+func TailscaleUserConfig(ctx context.Context) error {
 	fmt.Println("Enabling tailscale local user control...")
 	if _, err := shx.Run(
 		ctx,
@@ -120,17 +126,6 @@ func TailscaleUp(ctx context.Context) error {
 		shx.WithCombinedError(),
 	); err != nil {
 		return fmt.Errorf("failed to allow local user to administer tailscale client: %w", err)
-	}
-	fmt.Println("Bringing up tailscale...")
-	// TODO: do we need to do anything to _force_ `tailscale up` to run headless?
-	if _, err := shx.Run(
-		ctx,
-		[]string{"tailscale", "up", "--operator", shx.UserName()},
-		shx.WithSudo("bring up tailscale"),
-		shx.PassStdio(),
-		shx.WithCombinedError(),
-	); err != nil {
-		return fmt.Errorf("failed to bring up tailscale: %w", err)
 	}
 	fmt.Println("Enabling tailscale system tray app...")
 	if _, err := shx.Run(
@@ -157,6 +152,21 @@ func TailscaleUp(ctx context.Context) error {
 		shx.WithCombinedError(),
 	); err != nil {
 		return fmt.Errorf("failed to enable & start tailscale systray service: %w", err)
+	}
+	return nil
+}
+
+func TailscaleUp(ctx context.Context) error {
+	fmt.Println("Bringing up tailscale...")
+	// TODO: do we need to do anything to _force_ `tailscale up` to run headless?
+	if _, err := shx.Run(
+		ctx,
+		[]string{"tailscale", "up", "--operator", shx.UserName()},
+		shx.WithSudo("bring up tailscale"),
+		shx.PassStdio(),
+		shx.WithCombinedError(),
+	); err != nil {
+		return fmt.Errorf("failed to bring up tailscale: %w", err)
 	}
 	return nil
 }
