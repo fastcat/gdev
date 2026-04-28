@@ -72,7 +72,7 @@ func ArtifactRegistryAptSource(
 // ArtifactRegistryAptSteps creates bootstrap steps to add a private Artifact
 // Registry hosted APT source. It will order itself after the default gcloud
 // login step, but you must order it before your package install with
-// [bootstrap.BeforeSteps]. If you have used [WithSkipLogin], then you will need
+// [bootstrap.BeforeSteps]. If you have used [WithSkipDefaultLogin], then you will need
 // to include [bootstrap.AfterSteps] for the step in which you do the actual
 // login.
 func ArtifactRegistryAptSteps(

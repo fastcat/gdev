@@ -32,6 +32,7 @@ func init() {
 type config struct {
 	cmdFactories []cmdBuilder
 	plan         *Plan
+	skipHandlers map[string]SkipHandler
 }
 
 func Configure(opts ...Option) {
@@ -69,6 +70,18 @@ func initialize() error {
 			return nil
 		},
 	)
+	for item, handler := range addon.Config.skipHandlers {
+		pf.BoolFunc(fmt.Sprintf("skip-%s", item), fmt.Sprintf("skip %s", item), func(s string) error {
+			if s == "" {
+				handler(item)
+			} else if v, err := strconv.ParseBool(s); err != nil {
+				return err
+			} else if v {
+				handler(item)
+			}
+			return nil
+		})
+	}
 	instance.AddCommands(cmd)
 
 	for _, f := range addon.Config.cmdFactories {

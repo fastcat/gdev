@@ -32,7 +32,8 @@ func init() {
 }
 
 type config struct {
-	skipLogin bool
+	skipDefaultLogin bool
+	skipAllLogin     bool
 }
 
 type option func(*config)
@@ -52,14 +53,15 @@ func initialize() error {
 	return nil
 }
 
-func WithSkipLogin() option {
+func WithSkipDefaultLogin() option {
 	return func(c *config) {
-		c.skipLogin = true
+		c.skipDefaultLogin = true
 	}
 }
 
 var configureBootstrap = sync.OnceFunc(func() {
 	bootstrap.Configure(
+		bootstrap.WithSkipper("tailscale-up", func(string) { addon.Config.skipAllLogin = true }),
 		bootstrap.WithSteps(apt.PublicSourceInstallSteps(
 			&apt.SourceInstaller{
 				SourceName: "tailscale",
@@ -104,7 +106,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 const ConfigureStepName = "Configure tailscale"
 
 func configureTailscale(ctx *bootstrap.Context) error {
-	if !addon.Config.skipLogin {
+	if !addon.Config.skipDefaultLogin {
 		if err := TailscaleUp(ctx); err != nil {
 			return err
 		}
@@ -157,6 +159,11 @@ func TailscaleUserConfig(ctx context.Context) error {
 }
 
 func TailscaleUp(ctx context.Context) error {
+	if addon.Config.skipAllLogin {
+		fmt.Println("Skipping tailscale up")
+		return nil
+	}
+
 	fmt.Println("Bringing up tailscale...")
 	// TODO: do we need to do anything to _force_ `tailscale up` to run headless?
 	if _, err := shx.Run(

@@ -37,7 +37,8 @@ func init() {
 }
 
 type config struct {
-	skipLogin        bool
+	skipDefaultLogin bool
+	skipAllLogin     bool
 	includeTransport bool
 	allowedDomains   []string
 	defaultProject   string
@@ -60,13 +61,13 @@ func initialize() error {
 	return nil
 }
 
-// WithSkipLogin causes the bootstrap sequence to no-op the login step.
-func WithSkipLogin() option {
+// WithSkipDefaultLogin causes the bootstrap sequence to no-op the default login step.
+func WithSkipDefaultLogin() option {
 	return func(c *config) {
 		if configuredBootstrap {
-			panic("WithSkipLogin must be called before first Configure()")
+			panic("WithSkipDefaultLogin must be called before first Configure()")
 		}
-		c.skipLogin = true
+		c.skipDefaultLogin = true
 	}
 }
 
@@ -94,7 +95,10 @@ func WithAllowedDomains(domains ...string) option {
 var (
 	configuredBootstrap bool
 	configureBootstrap  = sync.OnceFunc(func() {
-		bootstrap.Configure(bootstrap.WithSteps(BootstrapSteps()...))
+		bootstrap.Configure(
+			bootstrap.WithSkipper("gcloud-login", func(string) { addon.Config.skipAllLogin = true }),
+			bootstrap.WithSteps(BootstrapSteps()...),
+		)
 		bootstrap.WithDefaultStepFactory(VerifyStepName, verifyStep)
 		configuredBootstrap = true
 	})
@@ -140,7 +144,7 @@ func configureGcloud(ctx *bootstrap.Context) error {
 		// can't set ADC quota-project here unless we know we're using user creds
 		// not a service account key
 	}
-	if addon.Config.skipLogin {
+	if addon.Config.skipDefaultLogin {
 		return nil
 	}
 	return LoginUser(ctx)
