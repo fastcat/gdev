@@ -39,6 +39,7 @@ func Main() {
 // ExitCodeErr is an interface that can be implemented by errors
 // to provide a custom exit code when the program exits due to them.
 type ExitCodeErr interface {
+	error
 	// ExitCode returns the exit code to use when the program exits due to this
 	// error.
 	ExitCode() int
