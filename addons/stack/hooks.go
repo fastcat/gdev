@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	sInternal "fastcat.org/go/gdev/addons/stack/internal"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/service"
 )
@@ -56,8 +57,17 @@ func (h *preStartHook) AfterServices(ctx context.Context, infra, svcs []service.
 
 var preStartHookFactories []func() PreStartHook
 
+func init() {
+	sInternal.AddResetHook(func() {
+		preStartHookFactories = preStartHookFactories[:0]
+	})
+}
+
 func AddPreStartHook(fn func() PreStartHook) {
-	internal.CheckCanCustomize()
+	// we don't go so far as calling internal.CheckLockedDown(), we just need the
+	// services registry to be unlocked for this, to enable the stacktest.Reset()
+	// call to play nice with this.
+	checkCanAddServices()
 	preStartHookFactories = append(preStartHookFactories, fn)
 }
 

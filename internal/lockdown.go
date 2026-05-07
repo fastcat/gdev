@@ -11,7 +11,7 @@ func LockCustomizations() {
 	customizationsLocked.Store(true)
 }
 
-// See: [instance.CheckCanCustomize] for details and an
+// See: [fastcat.org/go/gdev/instance.CheckCanCustomize] for details and an
 // importable version of this function.
 func CheckCanCustomize() {
 	if locked := customizationsLocked.Load(); locked {

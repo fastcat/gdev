@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync/atomic"
 
+	sInternal "fastcat.org/go/gdev/addons/stack/internal"
 	"fastcat.org/go/gdev/internal"
 	"fastcat.org/go/gdev/service"
 )
@@ -13,6 +14,15 @@ var (
 	allServices              = map[string]service.Service{}
 	infraOrder, serviceOrder []string
 )
+
+func init() {
+	sInternal.AddResetHook(func() {
+		servicesLocked.Store(false)
+		clear(allServices)
+		infraOrder = infraOrder[:0]
+		serviceOrder = serviceOrder[:0]
+	})
+}
 
 func checkCanAddServices() {
 	if servicesLocked.Load() {
