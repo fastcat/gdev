@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -52,7 +52,7 @@ jobs:
 
   publish-e-s-svc1:
     needs: release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -95,7 +95,7 @@ jobs:
 
   publish-e-s-svc2:
     needs: release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -150,7 +150,7 @@ jobs:
 
   publish-e-fs-ent-blog:
     needs: release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -193,7 +193,7 @@ jobs:
 
   publish-e-gdev-deb:
     needs: release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:

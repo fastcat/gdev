@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   deps:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
