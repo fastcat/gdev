@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.14.0 h1:jot47zcgSqVlK3zB9OqfuH1Zka/T8dQevTHip0doaeA=
-fastcat.org/go/gdev v0.14.0/go.mod h1:snw5Ur0+R7kX52AAG8JeCCG60Bc3PLjKsQvAelg10FM=
-fastcat.org/go/gdev/addons/docker v0.14.0 h1:ClK3p87gHaNqNwhpjCoVMFSvTP5HCRzkML+Z/cWYn9U=
-fastcat.org/go/gdev/addons/docker v0.14.0/go.mod h1:uNQ0SGT8afcnC6/OdFM8+682gLMVuaFvsuT1fmOaMjA=
+fastcat.org/go/gdev v0.15.0 h1:3d2fcu9xnIEN8NWtelx0deEir+vtYqCuK808wdXPknQ=
+fastcat.org/go/gdev v0.15.0/go.mod h1:DVLMSkDuQk/hpuR/SQXc6C4j2pFL2ZQDKF2iutISGXQ=
+fastcat.org/go/gdev/addons/docker v0.15.0 h1:mtf6G+7AG+DTJL3EeI3IsfGLX5b3coOmhamykWzZzpU=
+fastcat.org/go/gdev/addons/docker v0.15.0/go.mod h1:dLgpt662PDjap2GNqJC19tja8kPPIEIyy1DdJ4p10ek=
 github.com/Microsoft/go-winio v0.6.3-0.20251027160822-ad3df93bed29 h1:0kQAzHq8vLs7Pptv+7TxjdETLf/nIqJpIB4oC6Ba4vY=
 github.com/Microsoft/go-winio v0.6.3-0.20251027160822-ad3df93bed29/go.mod h1:ZWa7ssZJT30CCDGJ7fk/2SBTq9BIQrrVjrcss0UW2s0=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=

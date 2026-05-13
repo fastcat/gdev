@@ -5,8 +5,8 @@ go 1.26.1
 require (
 	cloud.google.com/go/storage v1.62.1
 	fastcat.org/go/gdev v0.14.0
-	fastcat.org/go/gdev/addons/docker v0.14.0
-	fastcat.org/go/gdev/addons/k8s v0.14.0
+	fastcat.org/go/gdev/addons/docker v0.15.0
+	fastcat.org/go/gdev/addons/k8s v0.15.0
 	google.golang.org/api v0.279.0
 	k8s.io/api v0.36.1
 	k8s.io/apimachinery v0.36.1
@@ -71,7 +71,6 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.7.10 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
-	github.com/mdlayher/socket v0.6.0 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/moby/api v1.54.2 // indirect
 	github.com/moby/moby/client v0.4.1 // indirect

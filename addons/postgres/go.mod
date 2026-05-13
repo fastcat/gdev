@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	fastcat.org/go/gdev v0.14.0
-	fastcat.org/go/gdev/addons/k8s v0.14.0
+	fastcat.org/go/gdev/addons/k8s v0.15.0
 	github.com/jackc/pgx/v5 v5.9.2
 	k8s.io/api v0.36.1
 	k8s.io/apimachinery v0.36.1

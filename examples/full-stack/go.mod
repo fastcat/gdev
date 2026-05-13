@@ -5,10 +5,10 @@ go 1.26.1
 require (
 	entgo.io/ent v0.14.6
 	fastcat.org/go/gdev v0.14.0
-	fastcat.org/go/gdev/addons/docker v0.14.0
-	fastcat.org/go/gdev/addons/k3s v0.14.0
-	fastcat.org/go/gdev/addons/k8s v0.14.0
-	fastcat.org/go/gdev/addons/postgres v0.14.0
+	fastcat.org/go/gdev/addons/docker v0.15.0
+	fastcat.org/go/gdev/addons/k3s v0.15.0
+	fastcat.org/go/gdev/addons/k8s v0.15.0
+	fastcat.org/go/gdev/addons/postgres v0.15.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/mattn/go-sqlite3 v1.14.44
@@ -80,7 +80,6 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
-	github.com/mdlayher/socket v0.6.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/moby/api v1.54.2 // indirect

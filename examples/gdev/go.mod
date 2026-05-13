@@ -3,18 +3,18 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.26.2
 
 require (
-	fastcat.org/go/gdev v0.14.0
-	fastcat.org/go/gdev/addons/bootstrap/input v0.14.0
-	fastcat.org/go/gdev/addons/containerd v0.14.0
-	fastcat.org/go/gdev/addons/docker v0.14.0
-	fastcat.org/go/gdev/addons/gcs v0.14.0
-	fastcat.org/go/gdev/addons/gocache v0.14.0
-	fastcat.org/go/gdev/addons/gocache/gcs v0.14.0
+	fastcat.org/go/gdev v0.15.0
+	fastcat.org/go/gdev/addons/bootstrap/input v0.15.0
+	fastcat.org/go/gdev/addons/containerd v0.15.0
+	fastcat.org/go/gdev/addons/docker v0.15.0
+	fastcat.org/go/gdev/addons/gcs v0.15.0
+	fastcat.org/go/gdev/addons/gocache v0.15.0
+	fastcat.org/go/gdev/addons/gocache/gcs v0.15.0
 	fastcat.org/go/gdev/addons/gocache/s3 v0.14.0
-	fastcat.org/go/gdev/addons/k3s v0.14.0
-	fastcat.org/go/gdev/addons/k8s v0.14.0
-	fastcat.org/go/gdev/addons/postgres v0.14.0
-	fastcat.org/go/gdev/addons/valkey v0.14.0
+	fastcat.org/go/gdev/addons/k3s v0.15.0
+	fastcat.org/go/gdev/addons/k8s v0.15.0
+	fastcat.org/go/gdev/addons/postgres v0.15.0
+	fastcat.org/go/gdev/addons/valkey v0.15.0
 )
 
 require (
@@ -134,7 +134,6 @@ require (
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/go-localereader v0.0.2-0.20220822084749-2491eb6c1c75 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect
-	github.com/mdlayher/socket v0.6.0 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/locker v1.0.1 // indirect

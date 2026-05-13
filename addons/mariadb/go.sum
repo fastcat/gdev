@@ -1,7 +1,7 @@
 fastcat.org/go/gdev v0.14.0 h1:jot47zcgSqVlK3zB9OqfuH1Zka/T8dQevTHip0doaeA=
 fastcat.org/go/gdev v0.14.0/go.mod h1:snw5Ur0+R7kX52AAG8JeCCG60Bc3PLjKsQvAelg10FM=
-fastcat.org/go/gdev/addons/k8s v0.14.0 h1:JcmBUHLsjJhDI44dlpwg83JfBi6ODDG0jA3dnMJ3CZI=
-fastcat.org/go/gdev/addons/k8s v0.14.0/go.mod h1:F/K0Etbki2mvuIzlfn/zGFCMECcxnJk8Fs/rWhDdVlE=
+fastcat.org/go/gdev/addons/k8s v0.15.0 h1:w+5bIvnncBDuheAHUUP0FKu/onRzQqu+6saOkJnIZnQ=
+fastcat.org/go/gdev/addons/k8s v0.15.0/go.mod h1:YYe8C2mrhOUNYJVLXLrin71nciM8ELVfbgR0t7e673w=
 filippo.io/edwards25519 v1.2.0 h1:crnVqOiS4jqYleHd9vaKZ+HKtHfllngJIiOpNpoJsjo=
 filippo.io/edwards25519 v1.2.0/go.mod h1:xzAOLCNug/yB62zG1bQ8uziwrIqIuxhctzJT18Q77mc=
 github.com/cilium/ebpf v0.21.0 h1:4dpx1J/B/1apeTmWBH5BkVLayHTkFrMovVPnHEk+l3k=

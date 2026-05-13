@@ -22,10 +22,10 @@ cloud.google.com/go/trace v1.15.0 h1:kAYkTwKyYHkGtAGFuu6qaUFRBkOVr+d1Yo44yZtGtgg
 cloud.google.com/go/trace v1.15.0/go.mod h1:r+bdAn16dKLSV1G2D5v3e58IlQlizfxWrUfjx7kM7X0=
 fastcat.org/go/gdev v0.14.0 h1:jot47zcgSqVlK3zB9OqfuH1Zka/T8dQevTHip0doaeA=
 fastcat.org/go/gdev v0.14.0/go.mod h1:snw5Ur0+R7kX52AAG8JeCCG60Bc3PLjKsQvAelg10FM=
-fastcat.org/go/gdev/addons/docker v0.14.0 h1:ClK3p87gHaNqNwhpjCoVMFSvTP5HCRzkML+Z/cWYn9U=
-fastcat.org/go/gdev/addons/docker v0.14.0/go.mod h1:uNQ0SGT8afcnC6/OdFM8+682gLMVuaFvsuT1fmOaMjA=
-fastcat.org/go/gdev/addons/k8s v0.14.0 h1:JcmBUHLsjJhDI44dlpwg83JfBi6ODDG0jA3dnMJ3CZI=
-fastcat.org/go/gdev/addons/k8s v0.14.0/go.mod h1:F/K0Etbki2mvuIzlfn/zGFCMECcxnJk8Fs/rWhDdVlE=
+fastcat.org/go/gdev/addons/docker v0.15.0 h1:mtf6G+7AG+DTJL3EeI3IsfGLX5b3coOmhamykWzZzpU=
+fastcat.org/go/gdev/addons/docker v0.15.0/go.mod h1:dLgpt662PDjap2GNqJC19tja8kPPIEIyy1DdJ4p10ek=
+fastcat.org/go/gdev/addons/k8s v0.15.0 h1:w+5bIvnncBDuheAHUUP0FKu/onRzQqu+6saOkJnIZnQ=
+fastcat.org/go/gdev/addons/k8s v0.15.0/go.mod h1:YYe8C2mrhOUNYJVLXLrin71nciM8ELVfbgR0t7e673w=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.32.0 h1:rIkQfkCOVKc1OiRCNcSDD8ml5RJlZbH/Xsq7lbpynwc=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.32.0/go.mod h1:RD2SsorTmYhF6HkTmDw7KmPYQk8OBYwTkuasChwv7R4=
 github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/metric v0.56.0 h1:O2sXMyJh8b7devAGdE+163xtRurt0RVpB6DIzX5vGfg=
