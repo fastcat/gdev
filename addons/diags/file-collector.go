@@ -12,7 +12,6 @@ import (
 	"io/fs"
 	"os"
 	"sync"
-	"syscall"
 	"time"
 
 	"fastcat.org/go/gdev/instance"
@@ -91,12 +90,7 @@ func fillTarHeader(th *tar.Header, contents io.Reader) (bool, error) {
 		th.Size = fi.Size()
 		th.ModTime = fi.ModTime()
 		th.Mode = int64(fi.Mode().Perm())
-		if fis, ok := fi.Sys().(syscall.Stat_t); ok {
-			// don't bother trying to look up user information
-			th.Uid, th.Gid = int(fis.Uid), int(fis.Gid)
-			th.AccessTime = time.Unix(fis.Atim.Unix())
-			th.ChangeTime = time.Unix(fis.Ctim.Unix())
-		}
+		fillPlatformStatFields(th, fi)
 		return true, nil
 	}
 
