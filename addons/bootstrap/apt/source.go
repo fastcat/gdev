@@ -83,6 +83,11 @@ func (s *Source) ToDeb822() map[string]string {
 	if s.SignedBy != "" {
 		deb822["Signed-By"] = s.SignedBy
 	}
+
+	// force things to be re-enabled after upgrades, esp. Ubuntu's pattern of
+	// disabling everything
+	deb822["Enabled"] = "yes"
+
 	return deb822
 }
 
