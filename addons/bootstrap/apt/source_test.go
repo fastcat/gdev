@@ -56,6 +56,7 @@ func TestAptSource_ToDeb822(t *testing.T) {
 				"Suites":     "trixie",
 				"Components": "main non-free non-free-firmware contrib",
 				"Signed-By":  "/usr/share/keyrings/debian-archive-keyring.gpg",
+				"Enabled":    "yes",
 			},
 		},
 	}
