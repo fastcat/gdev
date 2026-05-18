@@ -196,7 +196,15 @@ func verifyStep() *bootstrap.Step {
 // If it is not nill but empty, then it will accept any already logged in
 // account as sufficient. Otherwise it will only skip the login if an active
 // acccount in one of the given domains is found.
+//
+// If the global skip flag is set, this will always return nil and never attempt
+// a login.
 func LoginUser(ctx *bootstrap.Context) error {
+	if addon.Config.skipAllLogin {
+		fmt.Println("Skipping gcloud login")
+		return nil
+	}
+
 	// check current accounts
 	accounts, err := getAccounts(ctx)
 	if err != nil {
