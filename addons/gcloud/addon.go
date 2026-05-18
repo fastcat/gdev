@@ -187,6 +187,7 @@ func verifyStep() *bootstrap.Step {
 		},
 		// the two auth steps mark themselves before this to order things
 		bootstrap.SkipIfNoLogins(),
+		bootstrap.SkipFunc(func(ctx *bootstrap.Context) (bool, error) { return addon.Config.skipAllLogin, nil }),
 	)
 }
 
