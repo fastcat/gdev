@@ -74,8 +74,7 @@ var configureBootstrap = sync.OnceFunc(func() {
 					SignedBy:   "/usr/share/keyrings/tailscale-archive-keyring.gpg",
 				},
 				SigningKey: tailScaleAptKeyring,
-				// be compatible with what their installer does
-				Deb822: false,
+				Deb822:     true,
 				RuntimeUpdate: func(si *apt.SourceInstaller) error {
 					// switch the URI & suite to the proper value based on the os release
 					osInfo, err := apt_common.HostOSRelease()
