@@ -2,7 +2,6 @@ package stacktest
 
 import (
 	sInternal "fastcat.org/go/gdev/addons/stack/internal"
-	"fastcat.org/go/gdev/internal"
 )
 
 // ResetServices unlocks and resets (clears) the registered stack services.
@@ -14,6 +13,5 @@ import (
 //
 // Running this while the stack is running WILL cause problems.
 func ResetServices() {
-	internal.CheckLockedDown()
 	sInternal.Reset()
 }
