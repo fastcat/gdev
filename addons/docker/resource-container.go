@@ -180,15 +180,19 @@ func (c *ContainerResource) Start(ctx context.Context) error {
 			if pp, err := network.ParsePort(string(p)); err != nil {
 				return fmt.Errorf("failed to parse port binding port %q: %w", p, err)
 			} else {
-				b2pp := make([]network.PortBinding, len(bs))
-				for i, b := range bs {
+				b2pp := make([]network.PortBinding, 0, len(bs))
+				for _, b := range bs {
+					if b == (nat.PortBinding{}) {
+						// ignore empty struct
+						continue
+					}
 					if hip, err := netip.ParseAddr(b.HostIP); err != nil {
 						return fmt.Errorf("failed to parse port binding host IP %q: %w", b.HostIP, err)
 					} else {
-						b2pp[i] = network.PortBinding{
+						b2pp = append(b2pp, network.PortBinding{
 							HostIP:   hip,
 							HostPort: b.HostPort,
-						}
+						})
 					}
 				}
 				b2[pp] = b2pp
