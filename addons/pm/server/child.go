@@ -341,8 +341,7 @@ func (c *child) start(
 	for k, v := range e.Env {
 		cmd.Env = append(cmd.Env, k+"="+v)
 	}
-	// set pgid so we can kill process groups
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	setProcGroup(cmd)
 	// if logfile is not set, pass output to stdout/stderr and let journalctl
 	// capture it. note that this only works if we're using systemd for isolation.
 	if e.Logfile == "" {
@@ -388,16 +387,14 @@ func (c *child) start(
 }
 
 func (c *child) terminate(p *os.Process, s *api.ExecStatus) {
-	// signal the whole process group
-	if err := syscall.Kill(-p.Pid, syscall.SIGTERM); err != nil {
+	if err := terminateProcessGroup(p.Pid); err != nil {
 		log.Printf("failed to terminate %d: %v", p.Pid, err)
 	}
 	s.State = api.ExecStopping
 }
 
 func (c *child) kill(p *os.Process, s *api.ExecStatus) {
-	// signal the whole process group
-	if err := syscall.Kill(-p.Pid, syscall.SIGKILL); err != nil {
+	if err := killProcessGroup(p.Pid); err != nil {
 		log.Printf("failed to kill %d: %v", p.Pid, err)
 	}
 	if s.Group != "" {
