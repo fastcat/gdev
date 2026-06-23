@@ -17,7 +17,7 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
          # get enough commits to hopefully allow goreleaser to generate a proper
          # changelog since the last release
@@ -57,7 +57,7 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         fetch-tags: true
     - name: Set up Go
@@ -100,7 +100,7 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         fetch-tags: true
     - name: Set up NodeJS
@@ -155,7 +155,7 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         fetch-tags: true
     - name: Set up Go
@@ -198,7 +198,7 @@ jobs:
       GH_ACTIONS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         fetch-tags: true
     - name: Set up Go
