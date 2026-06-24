@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	fastcat.org/go/gdev v0.14.0
-	github.com/containerd/containerd/v2 v2.3.1
+	github.com/containerd/containerd/v2 v2.3.2
 )
 
 require (
