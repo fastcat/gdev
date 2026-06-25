@@ -40,7 +40,7 @@ jobs:
       run: go tool mage -v test
   lint:
     # don't need to run lint per-platform for now
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
     - name: Checkout Code
       uses: actions/checkout@v7
