@@ -19,8 +19,7 @@ func APIReadyWaiter() resource.Resource {
 	return resource.Waiter("k8s-api-ready", func(ctx context.Context) (bool, error) {
 		client := resource.ContextValue[Interface](ctx)
 		if err := client.Health().Ready(ctx); err != nil {
-			var se *apiErrors.StatusError
-			if errors.As(err, &se) {
+			if se, ok := errors.AsType[*apiErrors.StatusError](err); ok {
 				switch se.ErrStatus.Code {
 				case 503:
 					// not ready yet

@@ -65,8 +65,7 @@ func (r *initDBsResource) Start(ctx context.Context) error {
 		// create the database if it doesn't exist
 		_, err := conn.Exec(ctx, "CREATE DATABASE "+safeName)
 		if err != nil {
-			var pge *pgconn.PgError
-			if errors.As(err, &pge) && pge.SQLState() == "42P04" {
+			if pge, ok := errors.AsType[*pgconn.PgError](err); ok && pge.SQLState() == "42P04" {
 				// database already exists
 				continue
 			}

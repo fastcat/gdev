@@ -9,12 +9,12 @@ import (
 )
 
 type StatusCodeErr interface {
+	error
 	StatusCode() int
 }
 
 func IsNotFound(err error) bool {
-	var sce StatusCodeErr
-	if errors.As(err, &sce) {
+	if sce, ok := errors.AsType[StatusCodeErr](err); ok {
 		if sce.StatusCode() == http.StatusNotFound {
 			return true
 		}

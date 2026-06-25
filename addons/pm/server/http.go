@@ -189,9 +189,8 @@ func (h *httpWrapper) Terminate(w http.ResponseWriter, r *http.Request) {
 
 func (h *httpWrapper) error(w http.ResponseWriter, err error) {
 	w.Header().Set("content-type", "text/plain")
-	var sce httpx.StatusCodeErr
 	sc := http.StatusInternalServerError
-	if errors.As(err, &sce) {
+	if sce, ok := errors.AsType[httpx.StatusCodeErr](err); ok {
 		sc = sce.StatusCode()
 	}
 	w.WriteHeader(sc)

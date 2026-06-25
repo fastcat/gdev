@@ -118,8 +118,7 @@ func (b *backend) Rename(oldpath, newpath string) error {
 			RenameSource: &oldObj,
 		})
 		if err != nil {
-			var opErr smithy.APIError
-			if errors.As(err, &opErr) && opErr.ErrorCode() == "NotImplemented" {
+			if opErr, ok := errors.AsType[smithy.APIError](err); ok && opErr.ErrorCode() == "NotImplemented" {
 				// this bucket doesn't support renames
 				b.cantRename.Store(true)
 				// fall through to the copy+delete strategy
@@ -160,12 +159,10 @@ func (b *backend) Stat(name string) (fs.FileInfo, error) {
 }
 
 func translateErr(err error) error {
-	var nfe *types.NotFound
-	var nsk *types.NoSuchKey
-	if errors.As(err, &nfe) {
-		return fmt.Errorf("%w %w", os.ErrNotExist, err)
-	} else if errors.As(err, &nsk) {
-		return fmt.Errorf("%w %w", os.ErrNotExist, err)
+	if nfe, ok := errors.AsType[*types.NotFound](err); ok {
+		return fmt.Errorf("%w %w", os.ErrNotExist, nfe)
+	} else if nsk, ok := errors.AsType[*types.NoSuchKey](err); ok {
+		return fmt.Errorf("%w %w", os.ErrNotExist, nsk)
 	}
 	return err
 }

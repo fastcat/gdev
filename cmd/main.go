@@ -28,8 +28,7 @@ func Main() {
 	if err := Root().ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		ec := 1
-		var ece ExitCodeErr
-		if errors.As(err, &ece) {
+		if ece, ok := errors.AsType[ExitCodeErr](err); ok {
 			ec = ece.ExitCode()
 		}
 		os.Exit(ec) //nolint:forbidigo // entrypoint

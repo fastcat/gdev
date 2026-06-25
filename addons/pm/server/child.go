@@ -150,8 +150,7 @@ MANAGER:
 			// the cgroup, unless they managed to escape into a new cgroup
 			c.cleanup(s)
 			s.State = api.ExecEnded
-			var ee *exec.ExitError
-			if errors.As(err, &ee) {
+			if ee, ok := errors.AsType[*exec.ExitError](err); ok {
 				s.ExitCode = ee.ExitCode()
 			} else {
 				s.ExitCode = 0

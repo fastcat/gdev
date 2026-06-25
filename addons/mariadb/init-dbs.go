@@ -73,8 +73,7 @@ func (r *initDBsResource) Start(ctx context.Context) error {
 		escapedName := "`" + strings.ReplaceAll(dbName, "`", "``") + "`"
 		_, err := conn.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s", escapedName))
 		if err != nil {
-			var me *mysql.MySQLError
-			if errors.As(err, &me) && string(me.SQLState[:]) == "HY000" {
+			if me, ok := errors.AsType[*mysql.MySQLError](err); ok && string(me.SQLState[:]) == "HY000" {
 				// database already exists
 				continue
 			}
