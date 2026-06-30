@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev/addons/gocache/s3
 
-go 1.26.1
+go 1.26.4
 
 require (
 	fastcat.org/go/gdev v0.14.0

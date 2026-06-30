@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev/addons/gocache
 
-go 1.26.1
+go 1.26.4
 
 require (
 	fastcat.org/go/gdev v0.14.0
@@ -17,6 +17,7 @@ require (
 	github.com/kr/fs v0.1.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
