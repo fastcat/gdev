@@ -68,7 +68,7 @@ jobs:
           go.mod
           **/go.mod
     - name: Set up ko
-      uses: ko-build/setup-ko@v0.9
+      uses: ko-build/setup-ko@v0.10
     - name: Build & Publish svc1
       # TODO: use mage for this so it can pick up all the defined builds automatically
       # make sure to overwrite all the labels from the chainguard base image
@@ -166,7 +166,7 @@ jobs:
           go.mod
           **/go.mod
     - name: Set up ko
-      uses: ko-build/setup-ko@v0.9
+      uses: ko-build/setup-ko@v0.10
     - name: "Build & Publish ent-blog svc"
       # TODO: use mage for this so it can pick up all the defined builds automatically
       # make sure to overwrite all the labels from the chainguard base image
