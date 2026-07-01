@@ -8,12 +8,28 @@ import (
 
 var info = sync.OnceValue(loadVersionInfo)
 
+// versionOverride, if non-empty, replaces MainVersion from build info.
+var versionOverride string
+
+// SetVersion overrides the main version string reported by Version() and
+// VersionInfo(). Call before any use of the version functions.
+func SetVersion(v string) {
+	versionOverride = v
+}
+
 func Version() string {
+	if versionOverride != "" {
+		return versionOverride
+	}
 	return info().MainVersion
 }
 
 func VersionInfo() versionInfo {
-	return info()
+	vi := info()
+	if versionOverride != "" {
+		vi.MainVersion = versionOverride
+	}
+	return vi
 }
 
 type versionInfo struct {
