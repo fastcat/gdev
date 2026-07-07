@@ -10,7 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  # needed to submit dependencies
+  contents: write
 
 jobs:
   deps:
