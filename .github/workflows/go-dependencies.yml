@@ -4,8 +4,6 @@ on:
   push:
     branches:
     - main
-    # broken by https://github.com/actions/go-dependency-submission/issues/90
-    - "!main"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -30,16 +28,19 @@ jobs:
           go.mod
           **/go.mod
 
-    # - name: Submit Dependencies (root)
-    #   uses: actions/go-dependency-submission@v2
-    #   with:
-    #       go-mod-path: go.mod
+    # go-dependency-submission using an unreleased sha:
+    # https://github.com/actions/go-dependency-submission/issues/94#issuecomment-4389238818
+
+    - name: Submit Dependencies (root)
+      uses: actions/go-dependency-submission@bc8bc528058f8783a71277e474972be5d8dc4f94
+      with:
+          go-mod-path: go.mod
     - name: Submit Dependencies (gdev)
       # this should get almost everything
-      uses: actions/go-dependency-submission@v2
+      uses: actions/go-dependency-submission@bc8bc528058f8783a71277e474972be5d8dc4f94
       with:
           go-mod-path: examples/gdev/go.mod
-    # - name: Submit Dependencies (mage)
-    #   uses: actions/go-dependency-submission@v2
-    #   with:
-    #       go-mod-path: magefiles/go.mod
+    - name: Submit Dependencies (mage)
+      uses: actions/go-dependency-submission@bc8bc528058f8783a71277e474972be5d8dc4f94
+      with:
+          go-mod-path: magefiles/go.mod
