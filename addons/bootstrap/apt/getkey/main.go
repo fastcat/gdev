@@ -7,7 +7,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"golang.org/x/crypto/openpgp/armor" //nolint:staticcheck // armor parsing is fine within deprecation
+	"github.com/ProtonMail/go-crypto/openpgp/armor"
 )
 
 func main() {

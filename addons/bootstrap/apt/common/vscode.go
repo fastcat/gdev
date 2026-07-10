@@ -6,7 +6,7 @@ import (
 	"io"
 	"sync"
 
-	"golang.org/x/crypto/openpgp/armor" //nolint:staticcheck // armor parsing is fine within deprecation
+	"github.com/ProtonMail/go-crypto/openpgp/armor"
 
 	"fastcat.org/go/gdev/addons/bootstrap/apt"
 )
