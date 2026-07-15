@@ -13,6 +13,11 @@ import (
 //go:embed google-cloud.asc
 var GoogleCloudArchiveKeyring []byte
 
+// GoogleCloudArchiveKeyringPath is the path to the keyring file for
+// Google-signed apt repositories. Source installers should write
+// [GoogleCloudArchiveKeyring] to this path.
+const GoogleCloudArchiveKeyringPath = "/usr/share/keyrings/cloud.google.asc"
+
 func CLISourceInstaller() *apt.SourceInstaller {
 	return &apt.SourceInstaller{
 		SourceName: "google-cloud-sdk",
@@ -21,7 +26,7 @@ func CLISourceInstaller() *apt.SourceInstaller {
 			URIs:       []string{"https://packages.cloud.google.com/apt"},
 			Suites:     []string{"cloud-sdk"},
 			Components: []string{"main"},
-			SignedBy:   "/usr/share/keyrings/cloud.google.asc",
+			SignedBy:   GoogleCloudArchiveKeyringPath,
 		},
 		SigningKey: GoogleCloudArchiveKeyring,
 		Deb822:     true,
@@ -36,7 +41,7 @@ func AptTransportSourceInstaller() *apt.SourceInstaller {
 			URIs:       []string{"https://packages.cloud.google.com/apt"},
 			Suites:     []string{"apt-transport-artifact-registry-stable"},
 			Components: []string{"main"},
-			SignedBy:   "/usr/share/keyrings/cloud.google.asc",
+			SignedBy:   GoogleCloudArchiveKeyringPath,
 		},
 		SigningKey: GoogleCloudArchiveKeyring,
 		Deb822:     true,
@@ -62,7 +67,7 @@ func ArtifactRegistryAptSource(
 			URIs:       []string{"ar+https://" + location + "-apt.pkg.dev/projects/" + project},
 			Suites:     []string{repository},
 			Components: []string{"main"},
-			SignedBy:   "/usr/share/keyrings/cloud.google.asc",
+			SignedBy:   GoogleCloudArchiveKeyringPath,
 		},
 		SigningKey: GoogleCloudArchiveKeyring,
 		Deb822:     true,
