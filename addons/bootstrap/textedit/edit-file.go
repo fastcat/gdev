@@ -74,6 +74,69 @@ func EditFile(
 	return true, nil
 }
 
+// EditFileUnsafe is like [EditFile], except that it writes directly to the
+// output file instead of to a temp file and renaming.
+//
+// It does still compute the new output and avoid rewrites if no changes are
+// necessary.
+//
+// Only use this for scenarios where permissions prevent doing the temp file
+// dance.
+func EditFileUnsafe(
+	fileName string,
+	editor Editor,
+) (bool, error) {
+	var in io.ReadCloser
+	var inFile *os.File
+	var inStat os.FileInfo
+	var err error
+	if inFile, err = os.Open(fileName); err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return false, err
+		}
+		// file doesn't exist, so we can just create it as if there was an empty file there
+		in = io.NopCloser(bytes.NewReader(nil))
+	} else if inStat, err = inFile.Stat(); err != nil {
+		_ = inFile.Close()
+		return false, err
+	} else {
+		in = inFile
+	}
+	defer in.Close() // nolint:errcheck
+	out := bytes.NewBuffer(make([]byte, 0, inStat.Size()))
+	// keep a running checksum so we know if we can skip the final rename due to not
+	// making any changes. This doesn't need to be a strong hash.
+	hIn, hOut := crc32.NewIEEE(), crc32.NewIEEE()
+	mr := io.TeeReader(in, hIn)
+	mw := io.MultiWriter(hOut, out)
+	if err := Edit(mr, mw, editor); err != nil {
+		return false, err
+	}
+	if err := in.Close(); err != nil {
+		return false, err
+	}
+	// if the checksums match, we didn't make any changes, so we can skip the
+	// rename and avoid the mtime/etc update of the file.
+	if hIn.Sum32() == hOut.Sum32() {
+		// we didn't make any changes
+		return false, nil
+	}
+	// danger zone!
+	outFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, inStat.Mode())
+	if err != nil {
+		return false, err
+	}
+	defer outFile.Close() // nolint:errcheck
+	if _, err := outFile.Write(out.Bytes()); err != nil {
+		return false, err
+	} else if err := outFile.Sync(); err != nil {
+		return false, err
+	} else if err := outFile.Close(); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func EditFileAsRoot(
 	ctx context.Context,
 	fileName string,
