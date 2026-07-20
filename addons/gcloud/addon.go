@@ -370,7 +370,7 @@ func RunWithTemporaryHumanLogin(
 		cmd = append(cmd, "--no-launch-browser")
 	}
 
-	fmt.Println("Temporarily logging into gcloud as user to create service account key")
+	fmt.Printf("Temporarily logging into gcloud as user to %s\n", desc)
 	if _, err := shx.Run(
 		ctx,
 		cmd,
