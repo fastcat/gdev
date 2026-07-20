@@ -114,7 +114,8 @@ func BootstrapSteps() []*bootstrap.Step {
 	var steps []*bootstrap.Step
 	steps = append(steps, apt.PublicSourceInstallSteps(sources...)...)
 	// TODO: this is a bit ugly, might create weird behavior elsewhere
-	steps = append(steps,
+	steps = append(
+		steps,
 		apt.AddPackagesStep("Select gcloud packages", packages...),
 		bootstrap.NewStep(
 			ConfigureStepName,
@@ -151,7 +152,8 @@ func configureGcloud(ctx *bootstrap.Context) error {
 }
 
 func verifyStep() *bootstrap.Step {
-	return bootstrap.NewStep(VerifyStepName,
+	return bootstrap.NewStep(
+		VerifyStepName,
 		func(ctx *bootstrap.Context) error {
 			gcDir := filepath.Join(shx.HomeDir(), ".config", "gcloud")
 			adcPath := filepath.Join(gcDir, "application_default_credentials.json")
@@ -159,11 +161,11 @@ func verifyStep() *bootstrap.Step {
 				return fmt.Errorf("gcloud ADC credentials not found at %s", adcPath)
 			}
 			// verify the active account is in the expected domain
-			accts, err := getAccounts(ctx)
+			accts, err := GetAccounts(ctx)
 			if err != nil {
 				return fmt.Errorf("not logged into gcloud: %w", err)
 			}
-			activeAcct, err := activeAccount(accts, addon.Config.allowedDomains)
+			activeAcct, err := ActiveAccount(accts, addon.Config.allowedDomains)
 			if err != nil {
 				return fmt.Errorf("gcloud active account invalid: %w", err)
 			}
@@ -207,12 +209,12 @@ func LoginUser(ctx *bootstrap.Context) error {
 	}
 
 	// check current accounts
-	accounts, err := getAccounts(ctx)
+	accounts, err := GetAccounts(ctx)
 	if err != nil {
 		return err
 	}
 	// see if any active account in an allowed domain is present
-	if _, err := activeAccount(accounts, addon.Config.allowedDomains); err == nil {
+	if _, err := ActiveAccount(accounts, addon.Config.allowedDomains); err == nil {
 		if err := copyADC(ctx); err != nil {
 			return err
 		}
@@ -268,7 +270,8 @@ func CreateServiceAccount(
 	}
 
 	email := fmt.Sprintf("%s@%s.iam.gserviceaccount.com", account.Name, account.Project)
-	if _, err := shx.Run(ctx,
+	if _, err := shx.Run(
+		ctx,
 		[]string{
 			"gcloud", "iam", "service-accounts", "describe", email,
 			"--project", account.Project,
@@ -290,7 +293,8 @@ func CreateServiceAccount(
 	if account.Description != "" {
 		cna = append(cna, "--description", account.Description)
 	}
-	if _, err := shx.Run(ctx,
+	if _, err := shx.Run(
+		ctx,
 		cna,
 		shx.PassOutput(),
 		shx.WithCombinedError(),
@@ -319,7 +323,8 @@ func AddGroupMember(
 	// this has a tendency to fail with new accounts, give it a few shots
 	return retry(ctx, 10, time.Second, func() error {
 		// check if it's already a member
-		if _, err := shx.Run(ctx,
+		if _, err := shx.Run(
+			ctx,
 			[]string{
 				"gcloud", "identity", "groups", "memberships", "describe",
 				"--group-email", group,
@@ -331,7 +336,8 @@ func AddGroupMember(
 			return nil
 		}
 
-		if _, err := shx.Run(ctx,
+		if _, err := shx.Run(
+			ctx,
 			[]string{
 				"gcloud", "identity", "groups", "memberships", "add",
 				"--group-email", group,
@@ -373,11 +379,11 @@ func RunWithTemporaryHumanLogin(
 	); err != nil {
 		return err
 	}
-	accounts, err := getAccounts(ctx)
+	accounts, err := GetAccounts(ctx)
 	if err != nil {
 		return err
 	}
-	userAccount, err := activeAccount(accounts, addon.Config.allowedDomains)
+	userAccount, err := ActiveAccount(accounts, addon.Config.allowedDomains)
 	if err != nil {
 		return fmt.Errorf("failed to find active user account after login: %w", err)
 	}
@@ -425,9 +431,9 @@ func HasServiceAccountLogin(
 ) (bool, error) {
 	if !strings.HasSuffix(email, ".iam.gserviceaccount.com") {
 		return false, fmt.Errorf("service email must be in .iam.gserviceaccount.com domain")
-	} else if accounts, err := getAccounts(ctx); err != nil {
+	} else if accounts, err := GetAccounts(ctx); err != nil {
 		return false, err
-	} else if acct, err := activeAccount(accounts, nil); err == nil && acct.Account == email {
+	} else if acct, err := ActiveAccount(accounts, nil); err == nil && acct.Account == email {
 		return true, nil
 	}
 	return false, nil
@@ -500,11 +506,11 @@ func retry(ctx context.Context, attempts int, delay time.Duration, fn func() err
 }
 
 func copyADC(ctx context.Context) error {
-	accounts, err := getAccounts(ctx)
+	accounts, err := GetAccounts(ctx)
 	if err != nil {
 		return err
 	}
-	account, err := activeAccount(accounts, nil)
+	account, err := ActiveAccount(accounts, nil)
 	if err != nil {
 		return err
 	}
@@ -545,12 +551,12 @@ func copyADC(ctx context.Context) error {
 	return nil
 }
 
-type gcloudAccount struct {
+type Account struct {
 	Account string `json:"account"`
 	Status  string `json:"status"`
 }
 
-func getAccounts(ctx context.Context) ([]gcloudAccount, error) {
+func GetAccounts(ctx context.Context) ([]Account, error) {
 	res, err := shx.Run(
 		ctx,
 		[]string{"gcloud", "auth", "list", "--format=json"},
@@ -560,14 +566,14 @@ func getAccounts(ctx context.Context) ([]gcloudAccount, error) {
 	if err != nil {
 		return nil, err
 	}
-	var accounts []gcloudAccount
+	var accounts []Account
 	if err := json.NewDecoder(res.Stdout()).Decode(&accounts); err != nil {
 		return nil, err
 	}
 	return accounts, nil
 }
 
-func activeAccount(accounts []gcloudAccount, allowedDomains []string) (gcloudAccount, error) {
+func ActiveAccount(accounts []Account, allowedDomains []string) (Account, error) {
 	for _, acct := range accounts {
 		if acct.Status != "ACTIVE" {
 			continue
@@ -577,13 +583,13 @@ func activeAccount(accounts []gcloudAccount, allowedDomains []string) (gcloudAcc
 		}
 		_, domain, ok := strings.Cut(acct.Account, "@")
 		if !ok {
-			return gcloudAccount{}, fmt.Errorf("invalid account email, no @: %q", acct.Account)
+			return Account{}, fmt.Errorf("invalid account email, no @: %q", acct.Account)
 		}
 		if slices.Contains(allowedDomains, domain) {
 			return acct, nil
 		}
 	}
-	return gcloudAccount{}, errNoActiveAccount
+	return Account{}, ErrNoActiveAccount
 }
 
-var errNoActiveAccount = fmt.Errorf("no active account in valid domain found")
+var ErrNoActiveAccount = fmt.Errorf("no active account in valid domain found")
