@@ -4,7 +4,7 @@ go 1.26.4
 
 require (
 	cloud.google.com/go/storage v1.64.0
-	fastcat.org/go/gdev v0.14.0
+	fastcat.org/go/gdev v0.15.0
 	fastcat.org/go/gdev/addons/gocache v0.15.0
 )
 

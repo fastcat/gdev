@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/k3s
 go 1.26.4
 
 require (
-	fastcat.org/go/gdev v0.14.0
-	fastcat.org/go/gdev/addons/k8s v0.15.0
+	fastcat.org/go/gdev v0.15.0
+	fastcat.org/go/gdev/addons/k8s v0.15.1
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/sync v0.22.0
 	k8s.io/api v0.36.3
@@ -53,7 +53,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opencontainers/runtime-spec v1.3.0 // indirect
-	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/x448/float16 v0.8.4 // indirect

@@ -1,5 +1,5 @@
-fastcat.org/go/gdev v0.14.0 h1:jot47zcgSqVlK3zB9OqfuH1Zka/T8dQevTHip0doaeA=
-fastcat.org/go/gdev v0.14.0/go.mod h1:snw5Ur0+R7kX52AAG8JeCCG60Bc3PLjKsQvAelg10FM=
+fastcat.org/go/gdev v0.15.0 h1:3d2fcu9xnIEN8NWtelx0deEir+vtYqCuK808wdXPknQ=
+fastcat.org/go/gdev v0.15.0/go.mod h1:DVLMSkDuQk/hpuR/SQXc6C4j2pFL2ZQDKF2iutISGXQ=
 fastcat.org/go/gdev/addons/gocache v0.15.0 h1:qDta+A7DRLj26UCDZ7731fLpID9383ormEK4CgacHjI=
 fastcat.org/go/gdev/addons/gocache v0.15.0/go.mod h1:IolxAen2ejw4SGoKBYbVaoENOnpx4a5A3Alymssx8CQ=
 github.com/aws/aws-sdk-go-v2 v1.42.0 h1:XvXMJTkFQtpBKIWZnmr9ZEOc2InWM2yldjXEJ/bymhA=
