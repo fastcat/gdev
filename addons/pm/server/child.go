@@ -176,7 +176,8 @@ MANAGER:
 				} else {
 					status.State = api.ChildInitError
 					if c.def.NoRestart {
-						log.Printf("child %s init %d failed with code %d, will not automatically restart",
+						log.Printf(
+							"child %s init %d failed with code %d, will not automatically restart",
 							c.def.Name, curExec, s.ExitCode,
 						)
 					} else {
@@ -390,11 +391,15 @@ func (c *child) terminate(p *os.Process, s *api.ExecStatus) {
 	// signal the whole process group
 	if err := syscall.Kill(-p.Pid, syscall.SIGTERM); err != nil {
 		log.Printf("failed to terminate %d: %v", p.Pid, err)
+	} else {
+		log.Printf("sent SIGTERM to child %s pid %d", c.def.Name, p.Pid)
 	}
+
 	s.State = api.ExecStopping
 }
 
 func (c *child) kill(p *os.Process, s *api.ExecStatus) {
+	log.Printf("resorting to SIGKILL for child %s pid %d", c.def.Name, p.Pid)
 	// signal the whole process group
 	if err := syscall.Kill(-p.Pid, syscall.SIGKILL); err != nil {
 		log.Printf("failed to kill %d: %v", p.Pid, err)
