@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 	"sync"
+	"time"
 
 	"fastcat.org/go/gdev/progress"
 	"fastcat.org/go/gdev/resource"
@@ -16,6 +17,8 @@ type StackStopOptions struct {
 	IncludeInfrastructure bool
 	Exclude               []string
 	Parallel              bool
+	// If set non-nil, the time each service takes to stop will be recorded in this map
+	Timing map[string]time.Duration
 }
 
 func StackStop(ctx context.Context, opts StackStopOptions) error {
@@ -83,13 +86,24 @@ func StopServices(ctx context.Context, opts StackStopOptions, kind string, svcs 
 	// buffer 1 so we can do the non-parallel stop without extra shenanigans
 	errCh := make(chan error, 1)
 	var wg sync.WaitGroup
+	recTiming := func(r resource.Resource, start time.Time) {}
+	if opts.Timing != nil {
+		var mu sync.Mutex
+		recTiming = func(r resource.Resource, start time.Time) {
+			mu.Lock()
+			defer mu.Unlock()
+			opts.Timing[r.ID()] = time.Since(start)
+		}
+	}
 	for _, r := range resources {
 		pt.UpdateMessage(fmt.Sprintf("Stopping %s", r.ID()))
 		wg.Go(func() {
+			start := time.Now()
 			if err := r.Stop(ctx); err != nil {
 				pt.MarkAsErrored()
 				errCh <- fmt.Errorf("failed to stop %s: %w", r.ID(), err)
 			}
+			recTiming(r, start)
 			pt.Increment(1)
 		})
 		if !opts.Parallel {
