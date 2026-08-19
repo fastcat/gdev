@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/addons/gocache/s3
 go 1.26.4
 
 require (
-	fastcat.org/go/gdev v0.15.0
-	fastcat.org/go/gdev/addons/gocache v0.15.0
+	fastcat.org/go/gdev v0.15.2
+	fastcat.org/go/gdev/addons/gocache v0.15.2
 	github.com/aws/aws-sdk-go-v2 v1.43.6
 	github.com/aws/aws-sdk-go-v2/config v1.32.37
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.107.2
@@ -29,6 +29,5 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/stretchr/testify v1.12.1 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 )

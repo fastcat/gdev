@@ -3,7 +3,7 @@ module fastcat.org/go/gdev/addons/containerd
 go 1.26.4
 
 require (
-	fastcat.org/go/gdev v0.15.0
+	fastcat.org/go/gdev v0.15.2
 	github.com/containerd/containerd/v2 v2.3.4
 )
 
@@ -43,7 +43,6 @@ require (
 	github.com/sirupsen/logrus v1.10.1 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/stretchr/testify v1.12.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.70.0 // indirect
 	go.opentelemetry.io/otel v1.45.0 // indirect

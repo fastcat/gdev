@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.15.0 h1:3d2fcu9xnIEN8NWtelx0deEir+vtYqCuK808wdXPknQ=
-fastcat.org/go/gdev v0.15.0/go.mod h1:DVLMSkDuQk/hpuR/SQXc6C4j2pFL2ZQDKF2iutISGXQ=
-fastcat.org/go/gdev/addons/k8s v0.15.1 h1:Kz4YBdYX3B57HqCYUmZRAWeKorjUNd5964mJpVGcHbE=
-fastcat.org/go/gdev/addons/k8s v0.15.1/go.mod h1:Yp7NME65DSnG0g3yC0u4CT88Q+rEkaHPt248p3Qev/c=
+fastcat.org/go/gdev v0.15.2 h1:nM0a2iwVulijAD2RsRcrvd80dHLFJjPRbznB0bugFJw=
+fastcat.org/go/gdev v0.15.2/go.mod h1:gVn7z2/HDlgwTXpjO+zDXfC6jGcyBCLB+Df2O112n5o=
+fastcat.org/go/gdev/addons/k8s v0.15.2 h1:CLgNaycvWMocjho9WhA0KlfflRU9EUEr8VJeL1+glkc=
+fastcat.org/go/gdev/addons/k8s v0.15.2/go.mod h1:GoYRaeuFPCDl7+L4AFpnNEVsI+mtTMaGxxKTSXugNMw=
 github.com/cilium/ebpf v0.22.0 h1:v2ktp0roffpMOj2MMf3idtCQZOsAoC4BJbAJN+ke2bY=
 github.com/cilium/ebpf v0.22.0/go.mod h1:CDzZbe2hC5JjlDC+CY3KFCzlYwN4gbxppYM+Z10bQt4=
 github.com/clipperhouse/uax29/v2 v2.7.0 h1:+gs4oBZ2gPfVrKPthwbMzWZDaAFPGYK72F0NJv2v7Vk=

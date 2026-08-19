@@ -1,5 +1,5 @@
-fastcat.org/go/gdev v0.15.0 h1:3d2fcu9xnIEN8NWtelx0deEir+vtYqCuK808wdXPknQ=
-fastcat.org/go/gdev v0.15.0/go.mod h1:DVLMSkDuQk/hpuR/SQXc6C4j2pFL2ZQDKF2iutISGXQ=
+fastcat.org/go/gdev v0.15.2 h1:nM0a2iwVulijAD2RsRcrvd80dHLFJjPRbznB0bugFJw=
+fastcat.org/go/gdev v0.15.2/go.mod h1:gVn7z2/HDlgwTXpjO+zDXfC6jGcyBCLB+Df2O112n5o=
 github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6 h1:He8afgbRMd7mFxO99hRNu+6tazq8nFF9lIwo9JFroBk=
 github.com/AdaLogics/go-fuzz-headers v0.0.0-20240806141605-e8a1dd7889d6/go.mod h1:8o94RPi1/7XTJvwPpRSzSUedZrtlirdB3r9Z20bi2f8=
 github.com/Microsoft/go-winio v0.6.3-0.20251027160822-ad3df93bed29 h1:0kQAzHq8vLs7Pptv+7TxjdETLf/nIqJpIB4oC6Ba4vY=

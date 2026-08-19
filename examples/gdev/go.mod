@@ -3,18 +3,18 @@ module fastcat.org/go/gdev/examples/gdev
 go 1.26.4
 
 require (
-	fastcat.org/go/gdev v0.15.1
-	fastcat.org/go/gdev/addons/bootstrap/input v0.15.1
-	fastcat.org/go/gdev/addons/containerd v0.15.1
-	fastcat.org/go/gdev/addons/docker v0.15.1
-	fastcat.org/go/gdev/addons/gcs v0.15.1
-	fastcat.org/go/gdev/addons/gocache v0.15.1
-	fastcat.org/go/gdev/addons/gocache/gcs v0.15.1
-	fastcat.org/go/gdev/addons/gocache/s3 v0.15.1
-	fastcat.org/go/gdev/addons/k3s v0.15.1
-	fastcat.org/go/gdev/addons/k8s v0.15.1
-	fastcat.org/go/gdev/addons/postgres v0.15.1
-	fastcat.org/go/gdev/addons/valkey v0.15.1
+	fastcat.org/go/gdev v0.15.2
+	fastcat.org/go/gdev/addons/bootstrap/input v0.15.2
+	fastcat.org/go/gdev/addons/containerd v0.15.2
+	fastcat.org/go/gdev/addons/docker v0.15.2
+	fastcat.org/go/gdev/addons/gcs v0.15.2
+	fastcat.org/go/gdev/addons/gocache v0.15.2
+	fastcat.org/go/gdev/addons/gocache/gcs v0.15.2
+	fastcat.org/go/gdev/addons/gocache/s3 v0.15.2
+	fastcat.org/go/gdev/addons/k3s v0.15.2
+	fastcat.org/go/gdev/addons/k8s v0.15.2
+	fastcat.org/go/gdev/addons/postgres v0.15.2
+	fastcat.org/go/gdev/addons/valkey v0.15.2
 )
 
 require (
@@ -155,15 +155,13 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/sftp v1.13.11 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
-	github.com/prometheus/procfs v0.21.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sirupsen/logrus v1.10.1 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.8.1 // indirect
-	github.com/stretchr/testify v1.12.1 // indirect
+	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xo/terminfo v1.0.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
@@ -178,7 +176,6 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
-	golang.org/x/exp v0.0.0-20260813180055-c1d0aacb2297 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect

@@ -4,9 +4,9 @@ go 1.26.4
 
 require (
 	cloud.google.com/go/storage v1.65.0
-	fastcat.org/go/gdev v0.15.0
-	fastcat.org/go/gdev/addons/docker v0.15.1
-	fastcat.org/go/gdev/addons/k8s v0.15.1
+	fastcat.org/go/gdev v0.15.2
+	fastcat.org/go/gdev/addons/docker v0.15.2
+	fastcat.org/go/gdev/addons/k8s v0.15.2
 	google.golang.org/api v0.293.0
 	k8s.io/api v0.36.3
 	k8s.io/apimachinery v0.36.3
@@ -81,12 +81,11 @@ require (
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/opencontainers/runtime-spec v1.3.0 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
-	github.com/rogpeppe/go-internal v1.16.0 // indirect
 	github.com/sirupsen/logrus v1.10.1 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.8.1 // indirect
-	github.com/stretchr/testify v1.12.1 // indirect
+	github.com/stretchr/objx v0.5.3 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.45.0 // indirect

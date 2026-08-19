@@ -4,8 +4,8 @@ go 1.26.4
 
 require (
 	cloud.google.com/go/storage v1.65.0
-	fastcat.org/go/gdev v0.15.0
-	fastcat.org/go/gdev/addons/gocache v0.15.0
+	fastcat.org/go/gdev v0.15.2
+	fastcat.org/go/gdev/addons/gocache v0.15.2
 )
 
 require (
@@ -36,7 +36,6 @@ require (
 	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.8.1 // indirect
-	github.com/stretchr/testify v1.12.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/detectors/gcp v1.45.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.70.0 // indirect
