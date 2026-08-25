@@ -6,9 +6,9 @@ require (
 	fastcat.org/go/gdev v0.15.2
 	fastcat.org/go/gdev/addons/k8s v0.15.2
 	github.com/jackc/pgx/v5 v5.10.0
-	k8s.io/api v0.36.3
-	k8s.io/apimachinery v0.36.3
-	k8s.io/client-go v0.36.3
+	k8s.io/api v0.36.4
+	k8s.io/apimachinery v0.36.4
+	k8s.io/client-go v0.36.4
 )
 
 require (
