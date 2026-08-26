@@ -1,6 +1,10 @@
 package api
 
-import "time"
+import (
+	"fmt"
+	"syscall"
+	"time"
+)
 
 type Child struct {
 	Name        string            `json:"name" validate:"required"`
@@ -46,11 +50,28 @@ const (
 )
 
 type ExecStatus struct {
-	State    ExecState `json:"state"`
-	StartErr string    `json:"startErr"`
-	Pid      int       `json:"pid,omitzero"`
-	Group    string    `json:"group,omitzero"`
-	ExitCode int       `json:"exitCode"`
+	State      ExecState `json:"state"`
+	StartErr   string    `json:"startErr"`
+	Pid        int       `json:"pid,omitzero"`
+	Group      string    `json:"group,omitzero"`
+	ExitCode   int       `json:"exitCode"`
+	ExitSignal int       `json:"exitSignal,omitzero"`
+}
+
+func (s ExecStatus) DescribeExit() string {
+	if s.ExitCode == 0 {
+		return "success"
+	} else if s.ExitSignal != 0 {
+		sig := syscall.Signal(s.ExitSignal)
+		// normally exit code is -1 if it died with a signal, but be safe against
+		// other platforms or behavior changes
+		if s.ExitCode == -1 {
+			return fmt.Sprintf("signal %d=%s", sig, sig)
+		}
+		return fmt.Sprintf("code %d (signal %d=%s)", s.ExitCode, sig, sig)
+	} else {
+		return fmt.Sprintf("code %d", s.ExitCode)
+	}
 }
 
 type HealthStatus struct {

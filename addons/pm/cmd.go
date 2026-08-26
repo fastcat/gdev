@@ -217,7 +217,7 @@ func PrettyChildStatus(s *api.ChildWithStatus, out io.Writer) {
 			if s.ExitCode == 0 {
 				l.AppendItem("Done")
 			} else {
-				l.AppendItem(fmt.Sprintf("Failed, exit code: %d", s.ExitCode))
+				l.AppendItem(fmt.Sprintf("Failed, exit %s", s.DescribeExit()))
 			}
 		case api.ExecStopping:
 			l.AppendItem(fmt.Sprintf("Stopping, pid: %d", s.Pid))

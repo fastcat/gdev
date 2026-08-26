@@ -152,10 +152,13 @@ MANAGER:
 			s.State = api.ExecEnded
 			if ee, ok := errors.AsType[*exec.ExitError](err); ok {
 				s.ExitCode = ee.ExitCode()
+				if sys, ok := ee.Sys().(syscall.WaitStatus); ok && sys.Signaled() {
+					s.ExitSignal = int(sys.Signal())
+				}
 			} else {
-				s.ExitCode = 0
+				s.ExitCode, s.ExitSignal = 0, 0
 			}
-			log.Printf("child %s pid %d exited with code %d", c.def.Name, s.Pid, s.ExitCode)
+			log.Printf("child %s pid %d exited with %s", c.def.Name, s.Pid, s.DescribeExit())
 			s.Pid = 0
 			switch status.State {
 			case api.ChildStopping:
@@ -177,17 +180,17 @@ MANAGER:
 					status.State = api.ChildInitError
 					if c.def.NoRestart {
 						log.Printf(
-							"child %s init %d failed with code %d, will not automatically restart",
-							c.def.Name, curExec, s.ExitCode,
+							"child %s init %d failed with %s, will not automatically restart",
+							c.def.Name, curExec, s.DescribeExit(),
 						)
 					} else {
-						log.Printf("child %s init %d failed with code %d, will restart", c.def.Name, curExec, s.ExitCode)
+						log.Printf("child %s init %d failed with %s, will restart", c.def.Name, curExec, s.DescribeExit())
 						restart = time.After(c.restartDelay)
 					}
 				}
 			case api.ChildRunning:
 				if c.def.OneShot {
-					log.Printf("child %s one-shot completed with code %d", c.def.Name, s.ExitCode)
+					log.Printf("child %s one-shot completed with %s", c.def.Name, s.DescribeExit())
 					if s.ExitCode == 0 {
 						status.State = api.ChildDone
 					} else {
@@ -201,9 +204,12 @@ MANAGER:
 						status.State = api.ChildError
 					}
 					if c.def.NoRestart {
-						log.Printf("child %s exited with code %d, will not automatically restart", c.def.Name, s.ExitCode)
+						log.Printf(
+							"child %s exited with %s, will not automatically restart",
+							c.def.Name, s.DescribeExit(),
+						)
 					} else {
-						log.Printf("child %s service exited with code %d, will restart", c.def.Name, s.ExitCode)
+						log.Printf("child %s service exited with %s, will restart", c.def.Name, s.DescribeExit())
 						restart = time.After(c.restartDelay)
 					}
 				}
