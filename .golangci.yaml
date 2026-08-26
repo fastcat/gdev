@@ -43,4 +43,7 @@ formatters:
       local-prefixes:
         - fastcat.org
     gofumpt:
-      extra-rules: true
+      extra:
+        group-params: true
+        clothe-returns: false
+        balance-calls: true

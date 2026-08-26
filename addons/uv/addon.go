@@ -64,7 +64,8 @@ var configureBootstrap = sync.OnceFunc(func() {
 			"Install uv",
 			installUV,
 			bootstrap.SimFunc(simUV),
-		)),
+		),
+	),
 	)
 })
 
