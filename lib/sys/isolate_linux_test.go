@@ -34,11 +34,18 @@ func Test_systemdIsolator_isolateProcess(t *testing.T) {
 		unit, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process)
 		require.NoError(t, err)
 		t.Logf("started unit %q", unit)
-		g, err := cgroup2.PidGroupPath(cmd.Process.Pid)
+		g, err := i.resolveCgroup(t.Context(), unit)
 		require.NoError(t, err)
+		g2, err := cgroup2.PidGroupPath(cmd.Process.Pid)
+		require.NoError(t, err)
+		t.Logf("systemd says unit %q is in cgroup %q", unit, g)
+		assert.Equal(t, g2, g, "systemd cgroup lookup should match native pid-based lookup")
+		usage, err := i.Usage(t.Context(), unit)
+		if assert.NoError(t, err) {
+			t.Logf("cpu usage is: %+#v", usage)
+		}
 		mgr, err := cgroup2.Load(g)
 		require.NoError(t, err)
-		t.Logf("found unit in cgroup %q", g)
 		require.NoError(t, mgr.Kill())
 		ps, err := cmd.Process.Wait()
 		if assert.NoError(t, err) {

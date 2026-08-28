@@ -3,7 +3,17 @@ package sys
 import (
 	"context"
 	"os"
+	"time"
 )
+
+type IsolateUsage struct {
+	User   time.Duration
+	System time.Duration
+}
+
+func (u IsolateUsage) Total() time.Duration {
+	return u.User + u.System
+}
 
 type Isolator interface {
 	Isolate(
@@ -15,6 +25,10 @@ type Isolator interface {
 		ctx context.Context,
 		group string,
 	) error
+	Usage(
+		ctx context.Context,
+		group string,
+	) (IsolateUsage, error)
 }
 
 // GetIsolator is initialized in platform-specific files, and should generally

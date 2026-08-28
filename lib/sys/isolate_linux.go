@@ -98,6 +98,7 @@ func (s *systemdIsolator) Isolate(
 			dbus.PropPids(uint32(process.Pid)),
 			// accounting copied from containerd/cgroups/v3/cgroups2
 			{Name: "MemoryAccounting", Value: godbus.MakeVariant(true)},
+			// NOTE: always enabled in newer systemd, this is a failsafe for older systems
 			{Name: "CPUAccounting", Value: godbus.MakeVariant(true)},
 			{Name: "IOAccounting", Value: godbus.MakeVariant(true)},
 		},
@@ -144,6 +145,33 @@ func (s *systemdIsolator) Cleanup(ctx context.Context, group string) error {
 		}
 		return fmt.Errorf("service termination for %s failed: %s", group, status)
 	}
+}
+
+func (s *systemdIsolator) resolveCgroup(ctx context.Context, unit string) (string, error) {
+	conn, err := s.getConn()
+	if err != nil {
+		return "", err
+	}
+	// look up the cgroup path for the unit
+	p, err := conn.GetUnitTypePropertyContext(ctx, unit, "Scope", "ControlGroup")
+	if err != nil {
+		return "", err
+	}
+	cgPath, ok := p.Value.Value().(string)
+	if !ok {
+		return "", fmt.Errorf("unexpected type for ControlGroup property: %T", p.Value.Value())
+	} else if cgPath == "" {
+		return "", fmt.Errorf("empty ControlGroup property for unit %q", unit)
+	}
+	return cgPath, nil
+}
+
+func (s *systemdIsolator) Usage(ctx context.Context, unit string) (IsolateUsage, error) {
+	group, err := s.resolveCgroup(ctx, unit)
+	if err != nil {
+		return IsolateUsage{}, err
+	}
+	return cgroupUsage(group)
 }
 
 type cgroupsIsolator struct {
@@ -213,6 +241,25 @@ func (*cgroupsIsolator) Cleanup(ctx context.Context, groupPath string) error {
 			}
 		}
 	}
+}
+
+func cgroupUsage(group string) (IsolateUsage, error) {
+	mgr, err := cgroup2.Load(group)
+	if err != nil {
+		return IsolateUsage{}, err
+	}
+	m, err := mgr.StatFiltered(cgroup2.StatCPU)
+	if err != nil {
+		return IsolateUsage{}, err
+	}
+	return IsolateUsage{
+		User:   time.Duration(m.CPU.UserUsec) * time.Microsecond,
+		System: time.Duration(m.CPU.SystemUsec) * time.Microsecond,
+	}, nil
+}
+
+func (*cgroupsIsolator) Usage(ctx context.Context, group string) (IsolateUsage, error) {
+	return cgroupUsage(group)
 }
 
 func (c *cgroupsIsolator) getParentGroup() (string, error) {
