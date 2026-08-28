@@ -171,14 +171,18 @@ func verifyStep() *bootstrap.Step {
 			}
 			// adc print-access-token generates a new one each time, and takes a
 			// moment, so presumably it's actually hitting the cloud and thus
-			// verifying the creds are not expired/revoked.
-			if _, err := shx.Run(
-				ctx,
-				[]string{"gcloud", "auth", "application-default", "print-access-token"},
-				// pass stderr so user can see it if it fails
-				shx.PassStderr(),
-				shx.WithCombinedError(),
-			); err != nil {
+			// verifying the creds are not expired/revoked. like `AddGroupMember`, it
+			// sometimes fails initially and needs a few seconds & retries.
+			if err := retry(ctx, 10, time.Second, func() error {
+				_, err := shx.Run(
+					ctx,
+					[]string{"gcloud", "auth", "application-default", "print-access-token"},
+					// pass stderr so user can see it if it fails
+					shx.PassStderr(),
+					shx.WithCombinedError(),
+				)
+				return err
+			}); err != nil {
 				return fmt.Errorf("gcloud ADC credentials for %s invalid: %w", activeAcct.Account, err)
 			}
 			// TODO: verify creds are for the expected domain
