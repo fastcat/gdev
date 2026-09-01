@@ -33,15 +33,15 @@ jobs:
     # https://github.com/actions/go-dependency-submission/issues/94#issuecomment-4389238818
 
     - name: Submit Dependencies (root)
-      uses: actions/go-dependency-submission@e661dd32188ed075d3e66f216620600ccdf5ff09
+      uses: actions/go-dependency-submission@5b7d83fc0451f125096d30e1bf1deed84eedfa06
       with:
           go-mod-path: go.mod
     - name: Submit Dependencies (gdev)
       # this should get almost everything
-      uses: actions/go-dependency-submission@e661dd32188ed075d3e66f216620600ccdf5ff09
+      uses: actions/go-dependency-submission@5b7d83fc0451f125096d30e1bf1deed84eedfa06
       with:
           go-mod-path: examples/gdev/go.mod
     - name: Submit Dependencies (mage)
-      uses: actions/go-dependency-submission@e661dd32188ed075d3e66f216620600ccdf5ff09
+      uses: actions/go-dependency-submission@5b7d83fc0451f125096d30e1bf1deed84eedfa06
       with:
           go-mod-path: magefiles/go.mod
