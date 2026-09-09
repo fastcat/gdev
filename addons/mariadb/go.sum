@@ -1,7 +1,7 @@
-fastcat.org/go/gdev v0.15.2 h1:nM0a2iwVulijAD2RsRcrvd80dHLFJjPRbznB0bugFJw=
-fastcat.org/go/gdev v0.15.2/go.mod h1:gVn7z2/HDlgwTXpjO+zDXfC6jGcyBCLB+Df2O112n5o=
-fastcat.org/go/gdev/addons/k8s v0.15.2 h1:CLgNaycvWMocjho9WhA0KlfflRU9EUEr8VJeL1+glkc=
-fastcat.org/go/gdev/addons/k8s v0.15.2/go.mod h1:GoYRaeuFPCDl7+L4AFpnNEVsI+mtTMaGxxKTSXugNMw=
+fastcat.org/go/gdev v0.16.0 h1:gDW/pj4BPID0bgMX48t5lzgcPQxcTtkLmDg1gxFPgT0=
+fastcat.org/go/gdev v0.16.0/go.mod h1:6slE0J01KDbM5/VsEDREmbe/riADt9zpzMYsFMk0BgE=
+fastcat.org/go/gdev/addons/k8s v0.16.0 h1:B+6pSlDNxK4lSko0NWOjZ7W+dL/prg+RFz08k5SiOzc=
+fastcat.org/go/gdev/addons/k8s v0.16.0/go.mod h1:NjR2iH6jVUm59zPGbO9SURGnOoBu1Hv3BHX1oQ9mzT4=
 filippo.io/edwards25519 v1.2.0 h1:crnVqOiS4jqYleHd9vaKZ+HKtHfllngJIiOpNpoJsjo=
 filippo.io/edwards25519 v1.2.0/go.mod h1:xzAOLCNug/yB62zG1bQ8uziwrIqIuxhctzJT18Q77mc=
 github.com/cilium/ebpf v0.22.0 h1:v2ktp0roffpMOj2MMf3idtCQZOsAoC4BJbAJN+ke2bY=

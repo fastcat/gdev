@@ -3,8 +3,8 @@ module fastcat.org/go/gdev/examples/stack
 go 1.26.4
 
 require (
-	fastcat.org/go/gdev v0.15.2
-	fastcat.org/go/gdev/addons/docker v0.15.2
+	fastcat.org/go/gdev v0.16.0
+	fastcat.org/go/gdev/addons/docker v0.16.0
 )
 
 require (
@@ -33,7 +33,6 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.8.3 // indirect
 	github.com/leodido/go-urn v1.5.0 // indirect
 	github.com/mattn/go-runewidth v0.0.29 // indirect
-	github.com/mdlayher/socket v0.7.0 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
 	github.com/moby/moby/api v1.56.0 // indirect
 	github.com/moby/moby/client v0.6.0 // indirect
@@ -49,7 +48,6 @@ require (
 	go.opentelemetry.io/otel/metric v1.46.0 // indirect
 	go.opentelemetry.io/otel/trace v1.46.0 // indirect
 	golang.org/x/crypto v0.57.0 // indirect
-	golang.org/x/net v0.59.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/term v0.46.0 // indirect
