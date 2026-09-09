@@ -325,6 +325,7 @@ MANAGER:
 
 			lastTotalUsage = total
 			lastUsageLogged = now
+			usageLogDue = false
 		}
 
 		c.status.Store(cloneStatus(status))
