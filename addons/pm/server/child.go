@@ -68,6 +68,9 @@ func (c *child) run() {
 	c.wg.Add(1)
 	defer c.wg.Done()
 
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
 	status := initialStatus(c)
 	c.status.Store(cloneStatus(status))
 
@@ -92,6 +95,27 @@ func (c *child) run() {
 	healthChecks := -1
 	healthResults := make(chan bool, 1)
 
+	// usageTimer collects updated CPU usage for running processes
+	usageTimer := time.NewTicker(time.Second)
+	defer usageTimer.Stop()
+	const usageLogInterval = 30 * time.Second
+	usageLogTimer := time.NewTicker(usageLogInterval)
+	defer usageLogTimer.Stop()
+	lastUsageLogged := time.Now()
+	lastTotalUsage := time.Duration(0)
+	usageLogDue := false
+
+	reset := func() {
+		curExec = 0
+		for i := range status.Init {
+			status.Init[i].Usage = nil
+		}
+		status.Main.Usage = nil
+		lastUsageLogged = time.Now()
+		lastTotalUsage = 0
+		usageLogTimer.Reset(usageLogInterval)
+	}
+
 MANAGER:
 	for {
 		select {
@@ -101,9 +125,9 @@ MANAGER:
 				switch status.State {
 				case api.ChildStopped, api.ChildError, api.ChildInitError, api.ChildDone:
 					// start over from scratch
-					curExec = 0
+					reset()
 					s := curStatus()
-					curProc, *s, status.State = c.start(curExec, procExited)
+					curProc, *s, status.State = c.start(ctx, curExec, procExited)
 				default:
 					log.Printf("cannot start child %s from state %s", c.def.Name, status.State)
 				}
@@ -111,7 +135,7 @@ MANAGER:
 				if curProc == nil {
 					switch status.State {
 					case api.ChildError, api.ChildInitError:
-						curExec = 0
+						reset()
 						// cancel any restart
 						status.State = api.ChildStopped
 					case api.ChildStopped, api.ChildDone:
@@ -122,7 +146,7 @@ MANAGER:
 					}
 					break
 				}
-				c.terminate(curProc, curStatus())
+				c.terminate(ctx, curProc, curStatus())
 				kill = time.After(c.killDelay)
 				status.State = api.ChildStopping
 			case childDelete:
@@ -137,7 +161,7 @@ MANAGER:
 			if curProc == nil {
 				break
 			}
-			c.kill(curProc, curStatus())
+			c.kill(ctx, curProc, curStatus())
 			// should already be in this state
 			status.State = api.ChildStopping
 		case err := <-procExited:
@@ -148,7 +172,7 @@ MANAGER:
 			s := curStatus()
 			// make sure any children that tried to fork off get caught and killed via
 			// the cgroup, unless they managed to escape into a new cgroup
-			c.cleanup(s)
+			c.cleanup(ctx, s)
 			s.State = api.ExecEnded
 			if ee, ok := errors.AsType[*exec.ExitError](err); ok {
 				s.ExitCode = ee.ExitCode()
@@ -164,10 +188,10 @@ MANAGER:
 			case api.ChildStopping:
 				// re-check all the isolation groups to make sure all processes are
 				// killed and cgroups removed
-				c.cleanupAll(&status)
+				c.cleanupAll(ctx, &status)
 				// stop completed
 				status.State = api.ChildStopped
-				// reset the starting process to the beginning
+				// reset the starting process to the beginning, but not the usage
 				curExec = 0
 			case api.ChildInitRunning:
 				if s.ExitCode == 0 {
@@ -175,7 +199,7 @@ MANAGER:
 					// start next container
 					curExec++
 					s := curStatus()
-					curProc, *s, status.State = c.start(curExec, procExited)
+					curProc, *s, status.State = c.start(ctx, curExec, procExited)
 				} else {
 					status.State = api.ChildInitError
 					if c.def.NoRestart {
@@ -219,7 +243,7 @@ MANAGER:
 		case <-restart:
 			log.Printf("child %s exec %d: restarting", c.def.Name, curExec)
 			s := curStatus()
-			curProc, *s, status.State = c.start(curExec, procExited)
+			curProc, *s, status.State = c.start(ctx, curExec, procExited)
 		case <-healthCheck.C:
 			// TODO: do a health check
 			switch {
@@ -228,7 +252,7 @@ MANAGER:
 				if c.def.HealthCheck.TimeoutSeconds > 0 {
 					timeout = time.Duration(c.def.HealthCheck.TimeoutSeconds) * time.Second
 				}
-				go func() { healthResults <- c.httpCheck(c.def.HealthCheck.Http, timeout) }()
+				go func() { healthResults <- c.httpCheck(ctx, c.def.HealthCheck.Http, timeout) }()
 			default:
 				log.Printf("child %s: no recognized health check", c.def.Name)
 			}
@@ -253,6 +277,11 @@ MANAGER:
 			} else {
 				status.Health.LastUnhealthy = &now
 			}
+		case <-usageTimer.C:
+			// fall through to the bottom where we update the usage from all the
+			// running processes
+		case <-usageLogTimer.C:
+			usageLogDue = true
 		}
 
 		// if the child main just started, activate the health-check timer
@@ -267,9 +296,36 @@ MANAGER:
 		}
 
 		for i := range status.Init {
-			c.fillUsage(context.TODO(), &status.Init[i])
+			c.fillUsage(ctx, &status.Init[i])
 		}
-		c.fillUsage(context.TODO(), &status.Main)
+		c.fillUsage(ctx, &status.Main)
+
+		if usageLogDue {
+			now := time.Now()
+			dur := now.Sub(lastUsageLogged)
+
+			var total time.Duration
+			for _, s := range status.Init {
+				if u := s.Usage; u != nil {
+					total += time.Duration(float64(time.Second) * (u.SystemSecs + u.UserSecs))
+				}
+			}
+			if u := status.Main.Usage; u != nil {
+				total += time.Duration(float64(time.Second) * (u.SystemSecs + u.UserSecs))
+			}
+			delta := total - lastTotalUsage
+			pct := 100.0 * delta.Seconds() / dur.Seconds()
+			// only log if it is using a "measurable" amount of CPU time
+			if pct >= 1 {
+				log.Printf(
+					"child %s total usage over last %v: %v (%.2f%%)",
+					c.def.Name, dur.Round(time.Millisecond), delta.Round(time.Millisecond), pct,
+				)
+			}
+
+			lastTotalUsage = total
+			lastUsageLogged = now
+		}
 
 		c.status.Store(cloneStatus(status))
 	}
@@ -289,8 +345,8 @@ func (c *child) fillUsage(ctx context.Context, s *api.ExecStatus) {
 	}
 }
 
-func (c *child) httpCheck(check *api.HttpHealthCheck, timeout time.Duration) bool {
-	ctx, cancel := context.WithTimeout(context.TODO(), timeout)
+func (c *child) httpCheck(ctx context.Context, check *api.HttpHealthCheck, timeout time.Duration) bool {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	u := &url.URL{
 		// TODO: ipv6 hackery?
@@ -347,6 +403,7 @@ var printCGroupsROWarning = sync.OnceFunc(func() {
 })
 
 func (c *child) start(
+	ctx context.Context,
 	idx int,
 	exited chan<- error,
 ) (*os.Process, api.ExecStatus, api.ChildState) {
@@ -397,7 +454,7 @@ func (c *child) start(
 		Pid:   cmd.Process.Pid,
 	}
 	if isolationGroup, err := c.isolator.Isolate(
-		context.TODO(),
+		ctx,
 		instance.AppName()+"-pm-"+name+".scope",
 		cmd.Process,
 	); err != nil {
@@ -408,12 +465,13 @@ func (c *child) start(
 		}
 	} else {
 		eStat.Group = isolationGroup
-		c.fillUsage(context.TODO(), &eStat)
+		c.fillUsage(ctx, &eStat)
 	}
 	return cmd.Process, eStat, runningState
 }
 
-func (c *child) terminate(p *os.Process, s *api.ExecStatus) {
+func (c *child) terminate(ctx context.Context, p *os.Process, s *api.ExecStatus) {
+	c.fillUsage(ctx, s)
 	// signal the whole process group
 	if err := syscall.Kill(-p.Pid, syscall.SIGTERM); err != nil {
 		log.Printf("failed to terminate %d: %v", p.Pid, err)
@@ -424,36 +482,37 @@ func (c *child) terminate(p *os.Process, s *api.ExecStatus) {
 	s.State = api.ExecStopping
 }
 
-func (c *child) kill(p *os.Process, s *api.ExecStatus) {
+func (c *child) kill(ctx context.Context, p *os.Process, s *api.ExecStatus) {
+	c.fillUsage(ctx, s)
 	log.Printf("resorting to SIGKILL for child %s pid %d", c.def.Name, p.Pid)
 	// signal the whole process group
 	if err := syscall.Kill(-p.Pid, syscall.SIGKILL); err != nil {
 		log.Printf("failed to kill %d: %v", p.Pid, err)
 	}
 	if s.Group != "" {
-		if err := c.isolator.Cleanup(context.TODO(), s.Group); err != nil {
+		if err := c.isolator.Cleanup(ctx, s.Group); err != nil {
 			log.Printf("failed to cleanup isolation group %q: %v", s.Group, err)
 		}
 	}
 	s.State = api.ExecStopping
 }
 
-func (c *child) cleanup(s *api.ExecStatus) {
+func (c *child) cleanup(ctx context.Context, s *api.ExecStatus) {
 	if s.Group == "" {
 		return
 	}
-	if err := c.isolator.Cleanup(context.TODO(), s.Group); err != nil {
+	if err := c.isolator.Cleanup(ctx, s.Group); err != nil {
 		log.Printf("failed to cleanup isolation group %q: %v", s.Group, err)
 	} else {
 		s.Group = ""
 	}
 }
 
-func (c *child) cleanupAll(s *api.ChildStatus) {
+func (c *child) cleanupAll(ctx context.Context, s *api.ChildStatus) {
 	for i := range s.Init {
-		c.cleanup(&s.Init[i])
+		c.cleanup(ctx, &s.Init[i])
 	}
-	c.cleanup(&s.Main)
+	c.cleanup(ctx, &s.Main)
 }
 
 func cloneStatus(s api.ChildStatus) *api.ChildStatus {
