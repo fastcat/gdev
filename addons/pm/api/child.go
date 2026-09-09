@@ -50,12 +50,18 @@ const (
 )
 
 type ExecStatus struct {
-	State      ExecState `json:"state"`
-	StartErr   string    `json:"startErr"`
-	Pid        int       `json:"pid,omitzero"`
-	Group      string    `json:"group,omitzero"`
-	ExitCode   int       `json:"exitCode"`
-	ExitSignal int       `json:"exitSignal,omitzero"`
+	State      ExecState  `json:"state"`
+	StartErr   string     `json:"startErr"`
+	Pid        int        `json:"pid,omitzero"`
+	Group      string     `json:"group,omitzero"`
+	ExitCode   int        `json:"exitCode"`
+	ExitSignal int        `json:"exitSignal,omitzero"`
+	Usage      *ExecUsage `json:"usage,omitempty"`
+}
+
+type ExecUsage struct {
+	UserSecs   float64 `json:"userSecs"`
+	SystemSecs float64 `json:"systemSecs"`
 }
 
 func (s ExecStatus) DescribeExit() string {

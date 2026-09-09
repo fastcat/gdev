@@ -266,7 +266,26 @@ MANAGER:
 			healthChecks = -1
 		}
 
+		for i := range status.Init {
+			c.fillUsage(context.TODO(), &status.Init[i])
+		}
+		c.fillUsage(context.TODO(), &status.Main)
+
 		c.status.Store(cloneStatus(status))
+	}
+}
+
+func (c *child) fillUsage(ctx context.Context, s *api.ExecStatus) {
+	if s.State != api.ExecRunning || s.Group == "" {
+		return
+	}
+	if u, err := c.isolator.Usage(ctx, s.Group); err != nil {
+		log.Printf("WARN: unable to get child usage for group %q: %v", s.Group, err)
+	} else {
+		s.Usage = &api.ExecUsage{
+			UserSecs:   u.User.Seconds(),
+			SystemSecs: u.System.Seconds(),
+		}
 	}
 }
 
@@ -389,6 +408,7 @@ func (c *child) start(
 		}
 	} else {
 		eStat.Group = isolationGroup
+		c.fillUsage(context.TODO(), &eStat)
 	}
 	return cmd.Process, eStat, runningState
 }
