@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"math"
 	"net"
 	"net/http"
 	"net/url"
@@ -331,19 +332,21 @@ MANAGER:
 			}
 
 			// log memory usage if we got a new peak, or we have deviated by >= 10%
-			// since the last memory log
-			memRat := float64(memNow) / max(float64(lastMem), 1.0)
-			if memPeakNow != lastMemPeak || memRat <= 0.9 || memRat >= 1.1 {
-				log.Printf(
-					"child %s memory now=%d peak=%d",
-					c.def.Name, memNow, memPeakNow,
-				)
-				lastMem, lastMemPeak = memNow, memPeakNow
-			}
+			// since the last memory log. This
+			if memNow > 0 || memPeakNow > 0 {
+				memDiffRat := math.Abs(float64(memNow-lastMem) / float64(max(lastMem, 1)))
+				if memPeakNow != lastMemPeak || memDiffRat >= 0.1 {
+					log.Printf(
+						"child %s memory now=%d peak=%d",
+						c.def.Name, memNow, memPeakNow,
+					)
+					lastMem, lastMemPeak = memNow, memPeakNow
+				}
 
-			lastTotalCPU = total
-			lastUsageLogged = now
-			usageLogDue = false
+				lastTotalCPU = total
+				lastUsageLogged = now
+				usageLogDue = false
+			}
 		}
 
 		c.status.Store(cloneStatus(status))
