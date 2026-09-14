@@ -102,7 +102,8 @@ func (c *child) run() {
 	usageLogTimer := time.NewTicker(usageLogInterval)
 	defer usageLogTimer.Stop()
 	lastUsageLogged := time.Now()
-	lastTotalUsage := time.Duration(0)
+	lastTotalCPU := time.Duration(0)
+	lastMem, lastMemPeak := uint64(0), uint64(0)
 	usageLogDue := false
 
 	reset := func() {
@@ -112,7 +113,7 @@ func (c *child) run() {
 		}
 		status.Main.Usage = nil
 		lastUsageLogged = time.Now()
-		lastTotalUsage = 0
+		lastTotalCPU = 0
 		usageLogTimer.Reset(usageLogInterval)
 	}
 
@@ -305,25 +306,42 @@ MANAGER:
 			dur := now.Sub(lastUsageLogged)
 
 			var total time.Duration
-			for _, s := range status.Init {
+			memNow, memPeakNow := uint64(0), uint64(0)
+			accumulate := func(s api.ExecStatus) {
 				if u := s.Usage; u != nil {
 					total += time.Duration(float64(time.Second) * (u.SystemSecs + u.UserSecs))
+					if s.State == api.ExecRunning || s.State == api.ExecStopping {
+						memNow += u.MemoryBytes
+						memPeakNow += u.MemoryPeakBytes
+					}
 				}
 			}
-			if u := status.Main.Usage; u != nil {
-				total += time.Duration(float64(time.Second) * (u.SystemSecs + u.UserSecs))
+			for _, s := range status.Init {
+				accumulate(s)
 			}
-			delta := total - lastTotalUsage
-			pct := 100.0 * delta.Seconds() / dur.Seconds()
+			accumulate(status.Main)
+			delta := total - lastTotalCPU
 			// only log if it is using a "measurable" amount of CPU time
-			if pct >= 1 {
+			if pct := 100.0 * delta.Seconds() / dur.Seconds(); pct >= 1 {
 				log.Printf(
-					"child %s total usage over last %v: %v (%.2f%%)",
-					c.def.Name, dur.Round(time.Millisecond), delta.Round(time.Millisecond), pct,
+					"child %s total CPU usage over last %v: %v (%.2f%%)",
+					c.def.Name, dur.Round(time.Millisecond), delta.Round(time.Millisecond),
+					pct,
 				)
 			}
 
-			lastTotalUsage = total
+			// log memory usage if we got a new peak, or we have deviated by >= 10%
+			// since the last memory log
+			memRat := float64(memNow) / max(float64(lastMem), 1.0)
+			if memPeakNow != lastMemPeak || memRat <= 0.9 || memRat >= 1.1 {
+				log.Printf(
+					"child %s memory now=%d peak=%d",
+					c.def.Name, memNow, memPeakNow,
+				)
+				lastMem, lastMemPeak = memNow, memPeakNow
+			}
+
+			lastTotalCPU = total
 			lastUsageLogged = now
 			usageLogDue = false
 		}
@@ -340,10 +358,10 @@ func (c *child) fillUsage(ctx context.Context, s *api.ExecStatus) {
 		log.Printf("WARN: unable to get child usage for group %q: %v", s.Group, err)
 	} else {
 		s.Usage = &api.ExecUsage{
-			UserSecs:    u.User.Seconds(),
-			SystemSecs:  u.System.Seconds(),
-			MemoryBytes: u.Memory,
-			MemoryPeak:  u.MemoryPeak,
+			UserSecs:        u.User.Seconds(),
+			SystemSecs:      u.System.Seconds(),
+			MemoryBytes:     u.Memory,
+			MemoryPeakBytes: u.MemoryPeak,
 		}
 	}
 }
