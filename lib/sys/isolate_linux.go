@@ -248,13 +248,15 @@ func cgroupUsage(group string) (IsolateUsage, error) {
 	if err != nil {
 		return IsolateUsage{}, err
 	}
-	m, err := mgr.StatFiltered(cgroup2.StatCPU)
+	m, err := mgr.StatFiltered(cgroup2.StatCPU | cgroup2.StatMemory)
 	if err != nil {
 		return IsolateUsage{}, err
 	}
 	return IsolateUsage{
-		User:   time.Duration(m.CPU.UserUsec) * time.Microsecond,
-		System: time.Duration(m.CPU.SystemUsec) * time.Microsecond,
+		User:       time.Duration(m.CPU.UserUsec) * time.Microsecond,
+		System:     time.Duration(m.CPU.SystemUsec) * time.Microsecond,
+		Memory:     m.Memory.Usage,
+		MemoryPeak: m.Memory.MaxUsage,
 	}, nil
 }
 

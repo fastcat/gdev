@@ -7,8 +7,10 @@ import (
 )
 
 type IsolateUsage struct {
-	User   time.Duration
-	System time.Duration
+	User       time.Duration
+	System     time.Duration
+	Memory     uint64
+	MemoryPeak uint64
 }
 
 func (u IsolateUsage) Total() time.Duration {

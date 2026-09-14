@@ -340,8 +340,10 @@ func (c *child) fillUsage(ctx context.Context, s *api.ExecStatus) {
 		log.Printf("WARN: unable to get child usage for group %q: %v", s.Group, err)
 	} else {
 		s.Usage = &api.ExecUsage{
-			UserSecs:   u.User.Seconds(),
-			SystemSecs: u.System.Seconds(),
+			UserSecs:    u.User.Seconds(),
+			SystemSecs:  u.System.Seconds(),
+			MemoryBytes: u.Memory,
+			MemoryPeak:  u.MemoryPeak,
 		}
 	}
 }

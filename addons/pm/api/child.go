@@ -60,8 +60,10 @@ type ExecStatus struct {
 }
 
 type ExecUsage struct {
-	UserSecs   float64 `json:"userSecs"`
-	SystemSecs float64 `json:"systemSecs"`
+	UserSecs    float64 `json:"userSecs"`
+	SystemSecs  float64 `json:"systemSecs"`
+	MemoryBytes uint64  `json:"memoryBytes"`
+	MemoryPeak  uint64  `json:"memoryPeak"`
 }
 
 func (s ExecStatus) DescribeExit() string {
