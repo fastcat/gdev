@@ -27,7 +27,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/leodido/go-urn v1.5.0 // indirect
-	github.com/mattn/go-runewidth v0.0.29 // indirect
+	github.com/mattn/go-runewidth v0.0.30 // indirect
 	github.com/mdlayher/socket v0.7.0 // indirect
 	github.com/opencontainers/runtime-spec v1.3.0 // indirect
 	github.com/rogpeppe/go-internal v1.16.0 // indirect
