@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev/addons/postgres
 
-go 1.26.4
+go 1.26.6
 
 require (
 	fastcat.org/go/gdev v0.16.0
