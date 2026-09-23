@@ -68,6 +68,12 @@ func Tidy(ctx context.Context) error {
 	if err := shx.Cmd(ctx, "go", "work", "sync").Run(); err != nil {
 		return fmt.Errorf("error syncing go work: %w", err)
 	}
+	// work around some issues in go < 1.28, e.g.
+	// https://github.com/golang/go/issues/63901
+	// https://github.com/golang/go/issues/81127
+	if err := shx.Cmd(ctx, "go", "list", "-m", "all").Run(); err != nil {
+		return fmt.Errorf("error listing modules to tidy go.work.sum: %w", err)
+	}
 	return nil
 }
 

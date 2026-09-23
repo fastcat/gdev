@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev
 
-go 1.26.4
+go 1.26.6
 
 require (
 	github.com/ProtonMail/go-crypto v1.4.1
