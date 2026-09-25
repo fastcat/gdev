@@ -34,13 +34,13 @@ const (
 
 // DpkgInstalled returns a map of installed packages to their versions.
 func DpkgInstalled(ctx *bootstrap.Context) (map[string]string, error) {
-	data, ok := bootstrap.Get(ctx, installedKey)
+	data, ok := ctx.Get(installedKey)
 	if ok {
 		if st, err := os.Stat(dpkgStatusFile); err != nil ||
 			st.ModTime().After(data.timestamp) {
 			// on-disk file is newer than in memory cache, invalidate it
 			ok = false
-			bootstrap.Clear(ctx, installedKey)
+			ctx.Clear(installedKey)
 		}
 	}
 	if ok {
@@ -87,18 +87,18 @@ func DpkgInstalled(ctx *bootstrap.Context) (map[string]string, error) {
 		}
 		data.data[fields[0]] = fields[1] // package name -> version
 	}
-	bootstrap.Save(ctx, installedKey, data)
+	ctx.Save(installedKey, data)
 	return data.data, nil
 }
 
 func AptAvailable(ctx *bootstrap.Context) (map[string]string, error) {
-	data, ok := bootstrap.Get(ctx, availableKey)
+	data, ok := ctx.Get(availableKey)
 	if ok {
 		if st, err := os.Stat(aptPkgCacheFile); err != nil ||
 			st.ModTime().After(data.timestamp) {
 			// on-disk file is newer than in memory cache, invalidate it
 			ok = false
-			bootstrap.Clear(ctx, availableKey)
+			ctx.Clear(availableKey)
 		}
 	}
 	if ok {
@@ -145,6 +145,6 @@ func AptAvailable(ctx *bootstrap.Context) (map[string]string, error) {
 	if err := s.Err(); err != nil {
 		return nil, fmt.Errorf("error reading apt-cache dumpavail: %w", err)
 	}
-	bootstrap.Save(ctx, availableKey, data)
+	ctx.Save(availableKey, data)
 	return data.data, nil
 }

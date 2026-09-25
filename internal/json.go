@@ -16,6 +16,7 @@ func ReadJSONFile[T any](name string) (T, error) {
 		return result, err
 	}
 	defer f.Close() //nolint:errcheck // don't care, it's a read-only handle
+	// FUTURE: convert to json/v2.UnmarshalRead
 	d := json.NewDecoder(f)
 	err = d.Decode(&result)
 	if err != nil {

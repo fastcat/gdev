@@ -29,5 +29,5 @@ func PersistentVolumeClaim(apply *applyCoreV1.PersistentVolumeClaimApplyConfigur
 	apply.
 		WithLabels(l).
 		WithAnnotations(l)
-	return &pvc{newAppliable(accPVC, apply)}
+	return &pvc{accPVC.appliable(apply)}
 }

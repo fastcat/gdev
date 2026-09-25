@@ -45,20 +45,24 @@ func (h *HTTP) Ping(ctx context.Context) error {
 
 // Child implements api.API.
 func (h *HTTP) Child(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	r, err := h.do(ctx, http.MethodGet, withPathValue(api.PathOneChild, api.PathChildParamName, name), nil)
-	if err != nil {
-		return nil, err
-	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
+	return h.doJSON[*api.ChildWithStatus](
+		ctx,
+		http.MethodGet,
+		withPathValue(api.PathOneChild, api.PathChildParamName, name),
+		nil,
+		"",
+	)
 }
 
 // DeleteChild implements api.API.
 func (h *HTTP) DeleteChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	r, err := h.do(ctx, http.MethodDelete, withPathValue(api.PathOneChild, api.PathChildParamName, name), nil)
-	if err != nil {
-		return nil, err
-	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
+	return h.doJSON[*api.ChildWithStatus](
+		ctx,
+		http.MethodDelete,
+		withPathValue(api.PathOneChild, api.PathChildParamName, name),
+		nil,
+		"",
+	)
 }
 
 // PutChild implements api.API.
@@ -67,38 +71,40 @@ func (h *HTTP) PutChild(ctx context.Context, child api.Child) (*api.ChildWithSta
 	if err != nil {
 		return nil, err
 	}
-	r, err := h.do(ctx, http.MethodPut, api.PathChild, bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
+	return h.doJSON[*api.ChildWithStatus](
+		ctx,
+		http.MethodPut,
+		api.PathChild,
+		bytes.NewReader(body),
+		"",
+	)
 }
 
 // StartChild implements api.API.
 func (h *HTTP) StartChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	r, err := h.do(ctx, http.MethodPost, withPathValue(api.PathStartChild, api.PathChildParamName, name), nil)
-	if err != nil {
-		return nil, err
-	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
+	return h.doJSON[*api.ChildWithStatus](
+		ctx,
+		http.MethodPost,
+		withPathValue(api.PathStartChild, api.PathChildParamName, name),
+		nil,
+		"",
+	)
 }
 
 // StopChild implements api.API.
 func (h *HTTP) StopChild(ctx context.Context, name string) (*api.ChildWithStatus, error) {
-	r, err := h.do(ctx, http.MethodPost, withPathValue(api.PathStopChild, api.PathChildParamName, name), nil)
-	if err != nil {
-		return nil, err
-	}
-	return internal.JSONBody[*api.ChildWithStatus](ctx, r.Body, "", true)
+	return h.doJSON[*api.ChildWithStatus](
+		ctx,
+		http.MethodPost,
+		withPathValue(api.PathStopChild, api.PathChildParamName, name),
+		nil,
+		"",
+	)
 }
 
 // Summary implements api.API.
 func (h *HTTP) Summary(ctx context.Context) ([]api.ChildSummary, error) {
-	r, err := h.do(ctx, http.MethodGet, api.PathSummary, nil)
-	if err != nil {
-		return nil, err
-	}
-	return internal.JSONBody[[]api.ChildSummary](ctx, r.Body, "dive", true)
+	return h.doJSON[[]api.ChildSummary](ctx, http.MethodGet, api.PathSummary, nil, "dive")
 }
 
 // Terminate implements api.API.
@@ -125,6 +131,21 @@ func (h *HTTP) do(
 		return nil, httpx.HTTPResponseErr(res, path)
 	}
 	return res, nil
+}
+
+func (h *HTTP) doJSON[T any](
+	ctx context.Context,
+	method string,
+	path string,
+	reqBody io.Reader,
+	validation string,
+) (T, error) {
+	resp, err := h.do(ctx, method, path, reqBody)
+	if err != nil {
+		var zero T
+		return zero, err
+	}
+	return internal.JSONBody[T](ctx, resp.Body, validation, true)
 }
 
 func (h *HTTP) c() *http.Client {

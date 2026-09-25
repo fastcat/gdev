@@ -21,7 +21,7 @@ func ConfigMap(apply *applyCoreV1.ConfigMapApplyConfiguration) Resource {
 	apply.
 		WithLabels(l).
 		WithAnnotations(l)
-	return &configMap{newAppliable(accConfigMap, apply)}
+	return &configMap{accConfigMap.appliable(apply)}
 }
 
 type secret struct {
@@ -37,5 +37,5 @@ func Secret(apply *applyCoreV1.SecretApplyConfiguration) Resource {
 	apply.
 		WithLabels(l).
 		WithAnnotations(l)
-	return &secret{newAppliable(accSecret, apply)}
+	return &secret{accSecret.appliable(apply)}
 }

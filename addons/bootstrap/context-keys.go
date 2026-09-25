@@ -5,7 +5,7 @@ var skipLoginsKey = NewKey[bool]("bootstrap.skipLogins")
 // SkipLogins returns whether login steps should be skipped. This is set by a
 // command line argument. Custom bootstrap steps/plans should obey this.
 func SkipLogins(ctx *Context) bool {
-	v, ok := Get(ctx, skipLoginsKey)
+	v, ok := ctx.Get(skipLoginsKey)
 	return ok && v
 }
 
@@ -20,6 +20,6 @@ var headlessKey = NewKey[bool]("bootstrap.headless")
 // Headless returns whether steps should run in headless mode. This is set by a
 // command line argument. Custom bootstrap steps/plans should obey this.
 func Headless(ctx *Context) bool {
-	v, ok := Get(ctx, headlessKey)
+	v, ok := ctx.Get(headlessKey)
 	return ok && v
 }

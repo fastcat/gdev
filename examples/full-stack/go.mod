@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev/examples/full-stack
 
-go 1.26.6
+go 1.27.1
 
 require (
 	entgo.io/ent v0.14.6
