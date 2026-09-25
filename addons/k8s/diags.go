@@ -15,7 +15,8 @@ func DiagsSources() diags.SourceProvider {
 		}
 		var sources []diags.Source
 		for _, ns := range []Namespace{addon.Config.namespace, "kube-system"} {
-			sources = append(sources,
+			sources = append(
+				sources,
 				accessorSource(accStatefulSet, client, ns),
 				accessorSource(accDeployment, client, ns),
 				accessorSource(accService, client, ns),
@@ -30,12 +31,16 @@ func DiagsSources() diags.SourceProvider {
 			)
 		}
 		// non-namespaced objects, but pretend they are in kube-system
-		sources = append(sources,
+		sources = append(
+			sources,
 			accessorSource(accNode, client, "kube-system"),
 		)
 		return sources, nil
 	}
 }
+
+// NOTE: these could be methods on accessor[...], but they aren't conceptually
+// connected that way.
 
 func accessorSource[
 	Client client[Resource, Apply],
@@ -73,7 +78,12 @@ func collectAccessor[
 	for i := range list {
 		_, om := acc.resourceMeta(&list[i])
 		// TODO: check tm and om.Namespace match what we got from the accessor
-		if err := diags.CollectJSON(ctx, coll, path.Join(base, om.Name+".json"), &list[i]); err != nil {
+		if err := diags.CollectJSON(
+			ctx,
+			coll,
+			path.Join(base, om.Name+".json"),
+			&list[i],
+		); err != nil {
 			// if we get here it's fatal
 			return err
 		}
