@@ -16,16 +16,11 @@ type podder[
 	appliable[Client, Resource, Apply]
 }
 
-func newPodder[
-	Client client[Resource, Apply],
-	Resource any,
-	Apply apply[Apply],
-](
-	acc accessor[Client, Resource, Apply],
+func (acc accessor[Client, Resource, Apply]) podder(
 	apply Apply,
 ) *podder[Client, Resource, Apply] {
 	// TODO: add standard annotations and labels
-	return &podder[Client, Resource, Apply]{newAppliable(acc, apply)}
+	return &podder[Client, Resource, Apply]{acc.appliable(apply)}
 }
 
 // ContainerImages implements resource.ContainerResource.
@@ -55,7 +50,7 @@ func StatefulSet(apply *applyAppsV1.StatefulSetApplyConfiguration) ContainerReso
 	apply.Spec.Template.
 		WithLabels(l).
 		WithAnnotations(l)
-	return newPodder(accStatefulSet, apply)
+	return accStatefulSet.podder(apply)
 }
 
 func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) ContainerResource {
@@ -67,7 +62,7 @@ func Deployment(apply *applyAppsV1.DeploymentApplyConfiguration) ContainerResour
 	apply.Spec.Template.
 		WithLabels(l).
 		WithAnnotations(l)
-	return newPodder(accDeployment, apply)
+	return accDeployment.podder(apply)
 }
 
 func CronJob(apply *applyBatchV1.CronJobApplyConfiguration) ContainerResource {
@@ -79,7 +74,7 @@ func CronJob(apply *applyBatchV1.CronJobApplyConfiguration) ContainerResource {
 	apply.Spec.JobTemplate.Spec.Template.
 		WithLabels(l).
 		WithAnnotations(l)
-	return newPodder(accCronJob, apply)
+	return accCronJob.podder(apply)
 }
 
 func BatchJob(apply *applyBatchV1.JobApplyConfiguration) ContainerResource {
@@ -91,7 +86,7 @@ func BatchJob(apply *applyBatchV1.JobApplyConfiguration) ContainerResource {
 	apply.Spec.Template.
 		WithLabels(l).
 		WithAnnotations(l)
-	return newPodder(accBatchJob, apply)
+	return accBatchJob.podder(apply)
 }
 
 // NOTE: Direct Pod manipulation is intentionally left out because it's a Bad Idea
