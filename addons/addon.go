@@ -20,7 +20,7 @@ type Addon[T any] struct {
 
 func (a *Addon[T]) RegisterIfNeeded() {
 	if a.registered.CompareAndSwap(false, true) {
-		Register(a)
+		a.register()
 	}
 }
 
