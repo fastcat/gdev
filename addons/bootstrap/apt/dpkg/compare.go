@@ -87,28 +87,23 @@ func StringToVersion(str string) (Version, error) {
 	}
 
 	// Find Epoch
-	sepEpoch := strings.Index(str, ":")
-	if sepEpoch > -1 {
-		intEpoch, err := strconv.Atoi(str[:sepEpoch])
-		if err == nil {
-			version.Epoch = intEpoch
-		} else {
+	epochStr, str, ok := strings.Cut(str, ":")
+	if ok {
+		if intEpoch, err := strconv.Atoi(epochStr); err != nil {
 			return Version{}, errors.New("epoch in version is not a number")
-		}
-		if intEpoch < 0 {
+		} else if intEpoch < 0 {
 			return Version{}, errors.New("epoch in version is negative")
+		} else {
+			version.Epoch = intEpoch
 		}
 	} else {
 		version.Epoch = 0
+		str = epochStr
 	}
 
 	// Find UpstreamVersion / DebianRevision
-	sepDebianRevision := strings.LastIndex(str, "-")
-	if sepDebianRevision > -1 {
-		version.UpstreamVersion = str[sepEpoch+1 : sepDebianRevision]
-		version.DebianRevision = str[sepDebianRevision+1:]
-	} else {
-		version.UpstreamVersion = str[sepEpoch+1:]
+	version.UpstreamVersion, version.DebianRevision, ok = strings.CutLast(str, "-")
+	if !ok {
 		version.DebianRevision = "0"
 	}
 	// Verify format

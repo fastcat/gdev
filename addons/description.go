@@ -23,7 +23,7 @@ type Description struct {
 
 var enabled = map[string]*registration{}
 
-func Register[T any](a *Addon[T]) {
+func (a *Addon[T]) register() {
 	if a.Definition.Name == "" {
 		panic(fmt.Errorf("addon name required"))
 	}

@@ -1,6 +1,6 @@
 module fastcat.org/go/gdev/examples/gdev
 
-go 1.26.6
+go 1.27.1
 
 require (
 	fastcat.org/go/gdev v0.16.0

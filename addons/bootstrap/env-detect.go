@@ -7,13 +7,13 @@ import (
 var isInContainerKey = NewKey[bool]("is-in-container")
 
 func IsInContainer(ctx *Context) bool {
-	if v, ok := Get(ctx, isInContainerKey); ok {
+	if v, ok := ctx.Get(isInContainerKey); ok {
 		return v
 	}
 	// TODO: better detection than this
 	_, err := os.Stat("/.dockerenv")
 	v := err == nil
-	Save(ctx, isInContainerKey, v)
+	ctx.Save(isInContainerKey, v)
 	return v
 }
 
@@ -26,11 +26,11 @@ func SkipInContainer() StepOpt {
 var hasGUIKey = NewKey[bool]("has-gui")
 
 func HasGUI(ctx *Context) bool {
-	if v, ok := Get(ctx, hasGUIKey); ok {
+	if v, ok := ctx.Get(hasGUIKey); ok {
 		return v
 	}
 	v := os.Getenv("DISPLAY") != "" || os.Getenv("WAYLAND_DISPLAY") != ""
-	Save(ctx, hasGUIKey, v)
+	ctx.Save(hasGUIKey, v)
 	return v
 }
 

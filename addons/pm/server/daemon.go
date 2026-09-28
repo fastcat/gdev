@@ -6,6 +6,7 @@ import (
 	"log"
 	"maps"
 	"net/http"
+	"runtime/pprof"
 	"slices"
 	"sync"
 	"time"
@@ -94,12 +95,14 @@ func (d *daemon) PutChild(ctx context.Context, child api.Child) (*api.ChildWithS
 	}
 	c := newChild(child, d.isolator)
 	d.children[child.Name] = c
-	go func() {
-		c.run()
-		d.mu.Lock()
-		delete(d.children, child.Name)
-		d.mu.Unlock()
-	}()
+	pprof.Do(ctx, pprof.Labels("child", child.Name), func(context.Context) {
+		go func() {
+			c.run()
+			d.mu.Lock()
+			delete(d.children, child.Name)
+			d.mu.Unlock()
+		}()
+	})
 	// ensure the manager goroutine has started
 	c.cmds <- childPing
 	return &api.ChildWithStatus{
@@ -211,7 +214,7 @@ func (d *daemon) Summary(ctx context.Context) ([]api.ChildSummary, error) {
 	return ret, nil
 }
 
-func (d *daemon) Terminate(context.Context) error {
+func (d *daemon) Terminate(ctx context.Context) error {
 	if d.onTerminate != nil {
 		d.onTerminate()
 	}
@@ -229,22 +232,24 @@ func (d *daemon) Terminate(context.Context) error {
 	d.mu.Unlock()
 	var wg sync.WaitGroup
 	for _, child := range children {
-		wg.Go(func() {
-			child.cmds <- childStop
-			// wait for it to stop
-			// TODO: avoid polling
-			// TODO: add a final timeout?
-			check := time.NewTicker(10 * time.Millisecond)
-			defer check.Stop()
-			for range check.C {
-				if s := child.Status().State; s == api.ChildError ||
-					s == api.ChildStopped ||
-					s == api.ChildDone {
-					break
+		pprof.Do(ctx, pprof.Labels("child", child.def.Name), func(context.Context) {
+			wg.Go(func() {
+				child.cmds <- childStop
+				// wait for it to stop
+				// TODO: avoid polling
+				// TODO: add a final timeout?
+				check := time.NewTicker(10 * time.Millisecond)
+				defer check.Stop()
+				for range check.C {
+					if s := child.Status().State; s == api.ChildError ||
+						s == api.ChildStopped ||
+						s == api.ChildDone {
+						break
+					}
 				}
-			}
-			child.cmds <- childDelete
-			child.Wait()
+				child.cmds <- childDelete
+				child.Wait()
+			})
 		})
 	}
 	wg.Wait()

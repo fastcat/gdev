@@ -120,8 +120,8 @@ func makeCmd() *cobra.Command {
 			fullArgs = append(fullArgs, args...)
 			args = fullArgs
 		ARGS:
-			for i := len(args) - 1; i >= 0; i-- {
-				url := args[i]
+			for _, url := range slices.Backward(args) {
+
 				for _, f := range addon.Config.factories {
 					if f.Want(url) {
 						nextRemote, err := f.New(url)

@@ -176,7 +176,7 @@ func (p *Prompter[T]) key() internal.AnyInfoKey {
 }
 
 func (p *Prompter[T]) init(ctx *internal.Context) (value T, ok, guessed bool, err error) {
-	value, ok = internal.Get(ctx, p.infoKey)
+	value, ok = ctx.Get(p.infoKey)
 	if ok && p.validator != nil {
 		if p.validator(value) == nil {
 			return value, true, false, nil
@@ -244,7 +244,7 @@ func (p *Prompter[T]) field(ctx *internal.Context) (huh.Field, error) {
 	if err != nil {
 		return nil, err
 	} else if ok && !guessed {
-		internal.Save(ctx, p.infoKey, value)
+		ctx.Save(p.infoKey, value)
 		return nil, nil
 	}
 
@@ -296,7 +296,7 @@ func (p *Prompter[T]) finishForm(
 			return fmt.Errorf("invalid value: %w", err)
 		}
 	}
-	internal.Set(ctx, p.infoKey, value)
+	ctx.Set(p.infoKey, value)
 	var errs []error
 	for _, writer := range p.writers {
 		if err := writer(ctx, value); err != nil {
@@ -341,7 +341,7 @@ func (p *Prompter[T]) Sim(ctx *internal.Context) error {
 	}
 	// in a sim (dry run), assume the user would confirm the guess as far as the
 	// in-memory storage
-	internal.Save(ctx, p.infoKey, value)
+	ctx.Save(p.infoKey, value)
 	if guessed {
 		fmt.Printf("Would confirm guessed value for %s: %s\n", p.infoKey, p.stringer(value))
 	} else {

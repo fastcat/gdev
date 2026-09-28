@@ -3,10 +3,10 @@ package bootstrap
 var needsRebootKey = NewKey[bool]("need-reboot-after-bootstrap")
 
 func SetNeedsReboot(ctx *Context) {
-	Set(ctx, needsRebootKey, true)
+	ctx.Set(needsRebootKey, true)
 }
 
 func needsReboot(ctx *Context) bool {
-	v, ok := Get(ctx, needsRebootKey)
+	v, ok := ctx.Get(needsRebootKey)
 	return ok && v
 }

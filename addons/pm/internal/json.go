@@ -41,6 +41,7 @@ func JSONBody[T any](
 		return value, badReqOrResp(errors.New("body required"), response)
 	}
 	defer r.Close() // nolint:errcheck
+	// FUTURE: convert to json/v2.UnmarshalRead
 	d := json.NewDecoder(r)
 	d.DisallowUnknownFields()
 	if err := d.Decode(&value); err != nil {

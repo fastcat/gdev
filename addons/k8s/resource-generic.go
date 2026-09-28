@@ -22,12 +22,7 @@ type appliable[
 	apply Apply
 }
 
-func newAppliable[
-	Client client[Resource, Apply],
-	Resource any,
-	Apply apply[Apply],
-](
-	acc accessor[Client, Resource, Apply],
+func (acc accessor[Client, Resource, Apply]) appliable(
 	apply Apply,
 ) appliable[Client, Resource, Apply] {
 	m, o := acc.applyMeta(apply)

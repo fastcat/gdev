@@ -21,18 +21,30 @@ func NewKey[T any](name string) InfoKey[T] {
 	return internal.NewKey[T](name)
 }
 
+// Deprecated: modernize
+//
+//go:fix inline
 func Save[T any](ctx *Context, k InfoKey[T], v T) {
-	internal.Save(ctx, k, v)
+	ctx.Save(k, v)
 }
 
+// Deprecated: modernize
+//
+//go:fix inline
 func Set[T any](ctx *Context, k InfoKey[T], v T) {
-	internal.Set(ctx, k, v)
+	ctx.Set(k, v)
 }
 
+// Deprecated: modernize
+//
+//go:fix inline
 func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
-	return internal.Get(ctx, k)
+	return ctx.Get(k)
 }
 
+// Deprecated: modernize
+//
+//go:fix inline
 func Clear[T any](ctx *Context, k InfoKey[T]) {
-	internal.Clear(ctx, k)
+	ctx.Clear(k)
 }

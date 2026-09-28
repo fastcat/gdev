@@ -30,18 +30,32 @@ func NewEmptyContext(ctx context.Context) *Context {
 	}
 }
 
+// Deprecated: modernize
+//
+//go:fix inline
+func Save[T any](ctx *Context, k InfoKey[T], v T) {
+	ctx.Save(k, v)
+}
+
 // Save stores a value, but only if it is not already set.
 //
 // If the value is already set, it panics.
-func Save[T any](ctx *Context, k InfoKey[T], v T) {
+func (ctx *Context) Save[T any](k InfoKey[T], v T) {
 	if _, ok := ctx.info[k]; ok {
 		panic(fmt.Errorf("already saved %s for %v", k.k, k.typ()))
 	}
 	ctx.info[k] = v
 }
 
-// Set is like save, but it will overwrite any existing value as well.
+// Deprecated: modernize
+//
+//go:fix inline
 func Set[T any](ctx *Context, k InfoKey[T], v T) {
+	ctx.Set(k, v)
+}
+
+// Set is like save, but it will overwrite any existing value as well.
+func (ctx *Context) Set[T any](k InfoKey[T], v T) {
 	ctx.info[k] = v
 }
 
@@ -52,7 +66,14 @@ func SetDefault[T any](k InfoKey[T], v T) {
 	defaults[k] = v
 }
 
+// Deprecated: modernize
+//
+//go:fix inline
 func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
+	return ctx.Get(k)
+}
+
+func (ctx *Context) Get[T any](k InfoKey[T]) (T, bool) {
 	v, ok := ctx.info[k]
 	if !ok {
 		var t T
@@ -61,7 +82,14 @@ func Get[T any](ctx *Context, k InfoKey[T]) (T, bool) {
 	return v.(T), ok
 }
 
+// Deprecated: modernize
+//
+//go:fix inline
 func Clear[T any](ctx *Context, k InfoKey[T]) {
+	ctx.Clear(k)
+}
+
+func (ctx *Context) Clear[T any](k InfoKey[T]) {
 	if _, ok := ctx.info[k]; !ok {
 		panic(fmt.Errorf("not saved %s for %v", k.k, k.typ()))
 	}

@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"runtime/pprof"
 	"slices"
 	"strconv"
 	"sync"
@@ -469,9 +470,11 @@ func (c *child) start(
 		return nil, api.ExecStatus{State: api.ExecNotStarted, StartErr: err.Error()}, errorState
 	}
 	log.Printf("started %s as pid %d", name, cmd.Process.Pid)
-	c.wg.Go(func() {
-		err := cmd.Wait()
-		exited <- err
+	pprof.Do(ctx, pprof.Labels("child", name), func(context.Context) {
+		c.wg.Go(func() {
+			err := cmd.Wait()
+			exited <- err
+		})
 	})
 	eStat := api.ExecStatus{
 		State: api.ExecRunning,

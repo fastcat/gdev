@@ -38,7 +38,7 @@ func updateStep() *bootstrap.Step {
 var sourcesDirty = bootstrap.NewKey[bool]("apt sources dirty")
 
 func DoUpdate(ctx *bootstrap.Context) error {
-	dirty, ok := bootstrap.Get(ctx, sourcesDirty)
+	dirty, ok := ctx.Get(sourcesDirty)
 	// TODO: heuristic if we can skip the update entirely, e.g. if no sources were
 	// changed and it ran within the last hour or something?
 	if ok && !dirty {
@@ -55,14 +55,14 @@ func DoUpdate(ctx *bootstrap.Context) error {
 	); err != nil {
 		return err
 	}
-	bootstrap.Set(ctx, sourcesDirty, false)
+	ctx.Set(sourcesDirty, false)
 	return nil
 }
 
 // ChangedSources will mark the apt sources list as dirty, so a secondary
 // `apt update` step registered with [WithExtraUpdate] will actually run.
 func ChangedSources(ctx *bootstrap.Context) {
-	bootstrap.Set(ctx, sourcesDirty, true)
+	ctx.Set(sourcesDirty, true)
 }
 
 // Name of the step registered by [AddAptInstall]. This step will install
@@ -132,10 +132,10 @@ func DoInstall(
 	extraPackages []string,
 	sudoPrompt string,
 ) error {
-	pkgSet, _ := bootstrap.Get(ctx, pendingPackages)
+	pkgSet, _ := ctx.Get(pendingPackages)
 	if pkgSet == nil {
 		pkgSet = map[string]struct{}{}
-		bootstrap.Save(ctx, pendingPackages, pkgSet)
+		ctx.Save(pendingPackages, pkgSet)
 	}
 	if len(extraPackages) > 0 {
 		// don't mutate the stored list
@@ -180,7 +180,7 @@ func DoInstall(
 	// clear the pending package list so that a little trickery can install more
 	// package groups later, e.g. in case setting up some apt source requires
 	// installing some packages.
-	bootstrap.Clear(ctx, pendingPackages)
+	ctx.Clear(pendingPackages)
 
 	// assume that installing or upgrading packages requires a reboot. Note that
 	// we intentionally don't just look at the packages we were asked to install,
@@ -200,10 +200,10 @@ func InstallNeeded(
 	ctx *bootstrap.Context,
 	extras ...string,
 ) (bool, error) {
-	pkgSet, _ := bootstrap.Get(ctx, pendingPackages)
+	pkgSet, _ := ctx.Get(pendingPackages)
 	if pkgSet == nil {
 		pkgSet = map[string]struct{}{}
-		bootstrap.Save(ctx, pendingPackages, pkgSet)
+		ctx.Save(pendingPackages, pkgSet)
 	}
 	if len(extras) > 0 {
 		// don't mutate the stored list
@@ -229,7 +229,7 @@ func needsInstall(ctx *bootstrap.Context, set map[string]struct{}) (bool, error)
 }
 
 func simInstall(ctx *bootstrap.Context) error {
-	pkgSet, _ := bootstrap.Get(ctx, pendingPackages)
+	pkgSet, _ := ctx.Get(pendingPackages)
 	if len(pkgSet) == 0 {
 		return nil
 	}
@@ -248,10 +248,10 @@ func simInstall(ctx *bootstrap.Context) error {
 //
 // The caller is responsible for ensuring that such a step runs after this.
 func AddPackages(ctx *bootstrap.Context, names ...string) {
-	pkgSet, _ := bootstrap.Get(ctx, pendingPackages)
+	pkgSet, _ := ctx.Get(pendingPackages)
 	if pkgSet == nil {
 		pkgSet = map[string]struct{}{}
-		bootstrap.Save(ctx, pendingPackages, pkgSet)
+		ctx.Save(pendingPackages, pkgSet)
 	}
 	added := []string{}
 	for _, name := range names {
