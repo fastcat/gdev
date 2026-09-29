@@ -3,11 +3,11 @@ module fastcat.org/go/gdev
 go 1.27.1
 
 require (
-	github.com/ProtonMail/go-crypto v1.4.1
+	github.com/ProtonMail/go-crypto v1.5.2
 	github.com/containerd/cgroups/v3 v3.1.3
 	github.com/containerd/log v0.2.0
 	github.com/coreos/go-systemd/v22 v22.7.0
-	github.com/go-playground/validator/v10 v10.30.4
+	github.com/go-playground/validator/v10 v10.30.5
 	github.com/goccy/go-yaml v1.19.2
 	github.com/godbus/dbus/v5 v5.2.2
 	github.com/jedib0t/go-pretty/v6 v6.8.3
