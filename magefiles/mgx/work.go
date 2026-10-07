@@ -10,9 +10,14 @@ import (
 )
 
 var WorkFile = sync.OnceValues(func() (*modfile.WorkFile, error) {
-	if wc, err := os.ReadFile("./go.work"); err != nil {
+	fn := os.Getenv("GOWORK")
+	if fn == "" {
+		fn = "./go.work"
+	}
+
+	if wc, err := os.ReadFile(fn); err != nil {
 		return nil, err
-	} else if w, err := modfile.ParseWork("go.work", wc, nil); err != nil {
+	} else if w, err := modfile.ParseWork(fn, wc, nil); err != nil {
 		return nil, err
 	} else {
 		return w, nil
