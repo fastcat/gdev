@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"fastcat.org/go/gdev/addons"
 	b_internal "fastcat.org/go/gdev/addons/bootstrap/internal"
@@ -33,6 +34,7 @@ type config struct {
 	cmdFactories []cmdBuilder
 	plan         *Plan
 	skipHandlers map[string]SkipHandler
+	keyFlags     map[string]func(*pflag.FlagSet)
 }
 
 func Configure(opts ...Option) {
@@ -81,6 +83,9 @@ func initialize() error {
 			}
 			return nil
 		})
+	}
+	for _, fn := range addon.Config.keyFlags {
+		fn(pf)
 	}
 	instance.AddCommands(cmd)
 
