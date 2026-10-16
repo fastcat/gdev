@@ -268,9 +268,21 @@ func (c *cgroupsIsolator) EnableUsage(ctx context.Context) error {
 		return nil
 	}
 
-	// in order to enable subtree control we have to evict all PIDs from our group
-	// into a sub-group
-	altRoot, err := mgr.NewChild(instance.AppName()+"-isolate-root.scope", nil)
+	// in order to enable subtree control we have to evict all PIDs from the
+	// parent group into a sub-group. However we don't want to do that if we
+	// already did it, so check if we seem to be using one of those, and if so
+	// shift up to using its parent. Since we normally look for the _parent_ group
+	// of the current process, we generally shouldn't hit this branch, it's just
+	// belt & suspenders.
+	altRootName := instance.AppName() + "-isolate-root.scope"
+	if filepath.Base(pg) == altRootName {
+		// we were already moved into one of these alt roots. all we need to do is
+		// use its parent
+		c.parentGroup = filepath.Dir(pg)
+		return nil
+	}
+
+	altRoot, err := mgr.NewChild(altRootName, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create cgroup to move away procs: %w", err)
 	}
@@ -287,7 +299,9 @@ func (c *cgroupsIsolator) EnableUsage(ctx context.Context) error {
 			}
 		}
 	}
-	if err := mgr.ToggleControllers([]string{"memory"}, cgroup2.Enable); err != nil {
+	// enabling memory control in the sub-group means enabling delegation for
+	// everything up to but not including it.
+	if err := altRoot.ToggleControllers([]string{"memory"}, cgroup2.Enable); err != nil {
 		return fmt.Errorf("unable to delegate memory control: %w", err)
 	}
 	return nil
@@ -315,20 +329,36 @@ func (*cgroupsIsolator) Usage(ctx context.Context, group string) (IsolateUsage, 
 }
 
 func (c *cgroupsIsolator) getParentGroup() (string, error) {
-	if c.parentGroup == "" {
-		// default: put the new scope below whatever contains the current process
-		cur, err := cgroup2.PidGroupPath(os.Getpid())
-		if err != nil {
-			return cur, err
-		}
-		if err := c.tryParentGroup(cur); err != nil {
-			return cur, err
+	if c.parentGroup != "" {
+		return c.parentGroup, nil
+	}
+	// default: put the new scope below whatever contains the current process
+	cur, err := cgroup2.PidGroupPath(os.Getpid())
+	if err != nil {
+		return cur, err
+	}
+	// we want to be able to do usage tracking in isolated children, so we
+	// really want to create things in the parent of our own cgroup. But if we
+	// are in the root cgroup, there's nowhere up to go, but Dir will just
+	// return the root path back in that case anyways.
+	par := filepath.Dir(cur)
+	candidates := []string{par, cur}
+	if par == cur {
+		candidates = candidates[1:]
+	}
+	var errs []error
+	for _, candidate := range candidates {
+		if err := c.tryGroup(candidate); err != nil {
+			errs = append(errs, err)
+		} else {
+			c.parentGroup = candidate
+			return c.parentGroup, nil
 		}
 	}
-	return c.parentGroup, nil
+	return "", errors.Join(errs...)
 }
 
-func (c *cgroupsIsolator) tryParentGroup(cur string) error {
+func (c *cgroupsIsolator) tryGroup(cur string) error {
 	// if we aren't root, we need to check permissions to see if we can
 	// manipulate our own cgroup
 	if uid, gid := os.Geteuid(), os.Getegid(); uid != 0 {

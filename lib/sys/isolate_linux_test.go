@@ -238,7 +238,7 @@ func TestTryCloneIntoGroup(t *testing.T) {
 	if err == nil {
 		t.Skipf("this test requires current process to be in cgroup it can't control")
 	}
-	err = i.tryParentGroup(fmt.Sprintf("/user.slice/user-%[1]d.slice/user@%[1]d.service", os.Geteuid()))
+	err = i.tryGroup(fmt.Sprintf("/user.slice/user-%[1]d.slice/user@%[1]d.service", os.Geteuid()))
 	if err != nil {
 		t.Skipf("need the systemd user service cgroup to be available for test: %v", err)
 	}
