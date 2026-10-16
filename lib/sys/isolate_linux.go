@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -15,6 +16,8 @@ import (
 	"github.com/containerd/cgroups/v3/cgroup2"
 	"github.com/coreos/go-systemd/v22/dbus"
 	godbus "github.com/godbus/dbus/v5"
+
+	"fastcat.org/go/gdev/instance"
 )
 
 func init() {
@@ -116,17 +119,17 @@ func (s *systemdIsolator) Isolate(ctx context.Context, name string, pid int) (st
 	}
 }
 
-func (s *systemdIsolator) Cleanup(ctx context.Context, group string) error {
+func (s *systemdIsolator) Cleanup(ctx context.Context, unit string) error {
 	conn, err := s.getConn()
 	if err != nil {
 		return err
 	}
 	ch := make(chan string, 1)
-	_, err = conn.StopUnitContext(ctx, group, "fail", ch)
+	_, err = conn.StopUnitContext(ctx, unit, "fail", ch)
 	if err != nil {
 		// suppress a common error where systemd has already removed the empty scope
 		// on exit
-		if err.Error() == "Unit "+group+" not loaded." {
+		if err.Error() == "Unit "+unit+" not loaded." {
 			return nil
 		}
 		return err
@@ -139,8 +142,22 @@ func (s *systemdIsolator) Cleanup(ctx context.Context, group string) error {
 		if status == "done" {
 			return nil
 		}
-		return fmt.Errorf("service termination for %s failed: %s", group, status)
+		return fmt.Errorf("service termination for %s failed: %s", unit, status)
 	}
+}
+
+func (s *systemdIsolator) EnableUsage(ctx context.Context) error {
+	// systemd automatically enables memory control, and CPU is always available,
+	// so this is a no-op
+	return nil
+}
+
+func (s *systemdIsolator) Usage(ctx context.Context, unit string) (IsolateUsage, error) {
+	group, err := s.resolveCgroup(ctx, unit)
+	if err != nil {
+		return IsolateUsage{}, err
+	}
+	return cgroupUsage(group)
 }
 
 func (s *systemdIsolator) resolveCgroup(ctx context.Context, unit string) (string, error) {
@@ -160,14 +177,6 @@ func (s *systemdIsolator) resolveCgroup(ctx context.Context, unit string) (strin
 		return "", fmt.Errorf("empty ControlGroup property for unit %q", unit)
 	}
 	return cgPath, nil
-}
-
-func (s *systemdIsolator) Usage(ctx context.Context, unit string) (IsolateUsage, error) {
-	group, err := s.resolveCgroup(ctx, unit)
-	if err != nil {
-		return IsolateUsage{}, err
-	}
-	return cgroupUsage(group)
 }
 
 type cgroupsIsolator struct {
@@ -233,6 +242,55 @@ func (*cgroupsIsolator) Cleanup(ctx context.Context, groupPath string) error {
 			}
 		}
 	}
+}
+
+func (c *cgroupsIsolator) EnableUsage(ctx context.Context) error {
+	pg, err := c.getParentGroup()
+	if err != nil {
+		return err
+	}
+	mgr, err := cgroup2.Load(pg)
+	if err != nil {
+		return err
+	}
+	controllers, err := mgr.Controllers()
+	if err != nil {
+		return err
+	}
+	if !slices.Contains(controllers, "memory") {
+		return fmt.Errorf("memory controller not available to delegate in %s", pg)
+	}
+
+	// the root cgroup has special rules, but if we're in the container, what
+	// looks like the root may not really be so.
+	if _, err := mgr.GetType(); errors.Is(err, os.ErrNotExist) {
+		// this is the real root cgroup, no action is required
+		return nil
+	}
+
+	// in order to enable subtree control we have to evict all PIDs from our group
+	// into a sub-group
+	altRoot, err := mgr.NewChild(instance.AppName()+"-isolate-root.scope", nil)
+	if err != nil {
+		return fmt.Errorf("failed to create cgroup to move away procs: %w", err)
+	}
+	for {
+		pids, err := mgr.Procs(false)
+		if err != nil {
+			return fmt.Errorf("failed to list pids in group %s: %w", pg, err)
+		} else if len(pids) == 0 {
+			break
+		}
+		for _, pid := range pids {
+			if err := altRoot.AddProc(pid); err != nil {
+				return fmt.Errorf("failed to move pid %d to alternate root cgroup: %w", pid, err)
+			}
+		}
+	}
+	if err := mgr.ToggleControllers([]string{"memory"}, cgroup2.Enable); err != nil {
+		return fmt.Errorf("unable to delegate memory control: %w", err)
+	}
+	return nil
 }
 
 func cgroupUsage(group string) (IsolateUsage, error) {

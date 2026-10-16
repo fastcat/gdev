@@ -169,6 +169,58 @@ func Test_cgroupsIsolator_Cleanup_Noise(t *testing.T) {
 	assert.Empty(t, buf.String(), "double cleanup should not log")
 }
 
+func Test_cgroupsIsolator_EnableUsage(t *testing.T) {
+	// we need to create an alternate cgroup and make the isolator think that it
+	// is its own
+	i := &cgroupsIsolator{}
+	_, err := i.getParentGroup()
+	require.NoError(t, err)
+	// If we are in the root cgroup, whether or not it is the true one, then we
+	// can't run this test without semi-permanently changing it, which we should
+	// not do.
+	if i.parentGroup == "/" {
+		t.Skip("cannot run test when in the root cgroup")
+	}
+	// whatever other cgroup this process is in, it's there, and so we won't be able to
+	// enable subtree delegation unless we are in the root cgroup. If we aren't in
+	// the root, try going up a level, hopefully that will be a systemd slice we
+	// can use for testing.
+	i.parentGroup = filepath.Dir(i.parentGroup)
+
+	// create the child group and point the isolator at it
+	pgm, err := cgroup2.Load(i.parentGroup)
+	require.NoError(t, err)
+
+	cgm, err := pgm.NewChild("test.scope", nil)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		assert.NoError(t, cgm.Delete())
+	})
+
+	// start a new process in the test scope
+	cmd := startSleep(t)
+	t.Logf("process %d started", cmd.Process.Pid)
+	group, err := i.Isolate(t.Context(), "test.scope", cmd.Process.Pid)
+	require.NoError(t, err)
+	t.Logf("process %d isolated into %q", cmd.Process.Pid, group)
+
+	// now we actually do the test: make another isolator with the test scope as
+	// its root, and verify that it can move the sleep process into another
+	// sub-group and enable memory control delegation on the test scope.
+	ti := &cgroupsIsolator{filepath.Join(i.parentGroup, "test.scope")}
+	require.NoError(t, ti.EnableUsage(t.Context()),
+		"should be able to enable memory delegation by moving away a pid",
+	)
+
+	// now the child process should be in a different cgroup
+	movedGroup, err := cgroup2.PidGroupPath(cmd.Process.Pid)
+	require.NoError(t, err)
+	assert.NotEqual(t, group, movedGroup,
+		"the process should have been moved to a different cgroup",
+	)
+	t.Logf("process %d moved to %q", cmd.Process.Pid, movedGroup)
+}
+
 func startSleep(t *testing.T) *exec.Cmd {
 	cmd := exec.CommandContext(t.Context(), "sleep", "1h")
 	require.NoError(t, cmd.Start())
