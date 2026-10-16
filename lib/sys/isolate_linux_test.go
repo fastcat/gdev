@@ -31,7 +31,7 @@ func Test_systemdIsolator_isolateProcess(t *testing.T) {
 	t.Run("kill via cgroup", func(t *testing.T) {
 		cmd := startSleep(t)
 
-		unit, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process)
+		unit, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process.Pid)
 		require.NoError(t, err)
 		t.Logf("started unit %q", unit)
 		g, err := i.resolveCgroup(t.Context(), unit)
@@ -80,7 +80,7 @@ func Test_systemdIsolator_isolateProcess(t *testing.T) {
 	t.Run("kill via systemd", func(t *testing.T) {
 		cmd := startSleep(t)
 
-		unit, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process)
+		unit, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process.Pid)
 		require.NoError(t, err)
 		t.Logf("started unit %q", unit)
 		require.NoError(t, i.Cleanup(t.Context(), unit))
@@ -115,7 +115,7 @@ func Test_cgroupsIsolator_isolateProcess(t *testing.T) {
 
 	t.Run("create and cleanup", func(t *testing.T) {
 		cmd := startSleep(t)
-		group, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process)
+		group, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process.Pid)
 		require.NoError(t, err)
 		t.Logf("started process in cgroup %q", group)
 		g, err := cgroup2.PidGroupPath(cmd.Process.Pid)
@@ -128,7 +128,7 @@ func Test_cgroupsIsolator_isolateProcess(t *testing.T) {
 		// this test is to verify we can recover from an unclean shutdown that left
 		// the empty cgroup behind
 		cmd := startSleep(t)
-		group, err := i.Isolate(t.Context(), "test-double-sleep.service", cmd.Process)
+		group, err := i.Isolate(t.Context(), "test-double-sleep.service", cmd.Process.Pid)
 		require.NoError(t, err)
 		t.Logf("started first process in cgroup %q", group)
 		require.NoError(t, cmd.Process.Kill())
@@ -136,7 +136,7 @@ func Test_cgroupsIsolator_isolateProcess(t *testing.T) {
 		require.NoError(t, err)
 
 		cmd = startSleep(t)
-		group2, err := i.Isolate(t.Context(), "test-double-sleep.service", cmd.Process)
+		group2, err := i.Isolate(t.Context(), "test-double-sleep.service", cmd.Process.Pid)
 		require.NoError(t, err)
 		t.Logf("started second process in cgroup %q", group2)
 		assert.Equal(t, group, group2)
@@ -158,7 +158,7 @@ func Test_cgroupsIsolator_Cleanup_Noise(t *testing.T) {
 	log.L.Logger.SetOutput(&buf)
 
 	cmd := startSleep(t)
-	group, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process)
+	group, err := i.Isolate(t.Context(), "test-sleep.scope", cmd.Process.Pid)
 	require.NoError(t, err)
 
 	assert.NoError(t, i.Cleanup(t.Context(), group))

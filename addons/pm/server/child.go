@@ -490,7 +490,7 @@ func (c *child) start(
 	if isolationGroup, err := c.isolator.Isolate(
 		ctx,
 		instance.AppName()+"-pm-"+name+".scope",
-		cmd.Process,
+		cmd.Process.Pid,
 	); err != nil {
 		if errors.Is(err, syscall.EROFS) {
 			printCGroupsROWarning()

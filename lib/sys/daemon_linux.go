@@ -161,7 +161,7 @@ func startDaemonNoSystemd(
 		return err
 	}
 	// TODO: re-use getIsolator() instance here, since it _should_ be a cgroups one
-	if _, err := (&cgroupsIsolator{}).Isolate(ctx, unitName, proc); err != nil {
+	if _, err := (&cgroupsIsolator{}).Isolate(ctx, unitName, proc.Pid); err != nil {
 		return err
 	}
 

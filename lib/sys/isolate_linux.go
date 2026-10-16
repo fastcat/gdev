@@ -69,11 +69,7 @@ func (s *systemdIsolator) getConn() (*dbus.Conn, error) {
 	return conn, nil
 }
 
-func (s *systemdIsolator) Isolate(
-	ctx context.Context,
-	name string,
-	process *os.Process,
-) (string, error) {
+func (s *systemdIsolator) Isolate(ctx context.Context, name string, pid int) (string, error) {
 	// systemd won't allow moving an existing pid into a .service
 	if !strings.HasSuffix(name, ".scope") {
 		return "", fmt.Errorf("unit name %q must end with .scope", name)
@@ -95,7 +91,7 @@ func (s *systemdIsolator) Isolate(
 			// auto-harvest the transient unit once all its processes exit
 			{Name: "CollectMode", Value: godbus.MakeVariant("inactive-or-failed")},
 			// put the given PID into it now
-			dbus.PropPids(uint32(process.Pid)),
+			dbus.PropPids(uint32(pid)),
 			// accounting copied from containerd/cgroups/v3/cgroups2
 			{Name: "MemoryAccounting", Value: godbus.MakeVariant(true)},
 			// NOTE: always enabled in newer systemd, this is a failsafe for older systems
@@ -116,7 +112,7 @@ func (s *systemdIsolator) Isolate(
 			return name, nil
 		}
 		// NOTE: this is a pretty common error if the process exits fast
-		return name, fmt.Errorf("service isolation for %s (%d) failed: %s", name, process.Pid, status)
+		return name, fmt.Errorf("service isolation for %s (%d) failed: %s", name, pid, status)
 	}
 }
 
@@ -178,11 +174,7 @@ type cgroupsIsolator struct {
 	parentGroup string
 }
 
-func (c *cgroupsIsolator) Isolate(
-	ctx context.Context,
-	name string,
-	process *os.Process,
-) (string, error) {
+func (c *cgroupsIsolator) Isolate(ctx context.Context, name string, pid int) (string, error) {
 	// don't apply the same rules as systemd so we can fake a .service we would
 	// have started via it
 	if !strings.HasSuffix(name, ".scope") && !strings.HasSuffix(name, ".service") {
@@ -202,7 +194,7 @@ func (c *cgroupsIsolator) Isolate(
 	if err != nil {
 		return groupPath, err
 	}
-	if err := mgr.AddProc(uint64(process.Pid)); err != nil {
+	if err := mgr.AddProc(uint64(pid)); err != nil {
 		return groupPath, err
 	}
 	// TODO: need to delete the cgroup when the process exits

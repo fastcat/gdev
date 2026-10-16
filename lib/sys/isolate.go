@@ -2,7 +2,6 @@ package sys
 
 import (
 	"context"
-	"os"
 	"time"
 )
 
@@ -18,19 +17,9 @@ func (u IsolateUsage) Total() time.Duration {
 }
 
 type Isolator interface {
-	Isolate(
-		ctx context.Context,
-		name string,
-		process *os.Process,
-	) (group string, err error)
-	Cleanup(
-		ctx context.Context,
-		group string,
-	) error
-	Usage(
-		ctx context.Context,
-		group string,
-	) (IsolateUsage, error)
+	Isolate(ctx context.Context, name string, pid int) (group string, err error)
+	Cleanup(ctx context.Context, group string) error
+	Usage(ctx context.Context, group string) (IsolateUsage, error)
 }
 
 // GetIsolator is initialized in platform-specific files, and should generally
