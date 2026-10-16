@@ -307,11 +307,11 @@ MANAGER:
 			now := time.Now()
 			dur := now.Sub(lastUsageLogged)
 
-			var total time.Duration
+			var totalCPU time.Duration
 			memNow, memPeakNow := uint64(0), uint64(0)
 			accumulate := func(s api.ExecStatus) {
 				if u := s.Usage; u != nil {
-					total += time.Duration(float64(time.Second) * (u.SystemSecs + u.UserSecs))
+					totalCPU += time.Duration(float64(time.Second) * (u.SystemSecs + u.UserSecs))
 					if s.State == api.ExecRunning || s.State == api.ExecStopping {
 						memNow += u.MemoryBytes
 						memPeakNow += u.MemoryPeakBytes
@@ -322,18 +322,21 @@ MANAGER:
 				accumulate(s)
 			}
 			accumulate(status.Main)
-			delta := total - lastTotalCPU
+
+			deltaCPU := totalCPU - lastTotalCPU
 			// only log if it is using a "measurable" amount of CPU time
-			if pct := 100.0 * delta.Seconds() / dur.Seconds(); pct >= 1 {
+			if pct := 100.0 * deltaCPU.Seconds() / dur.Seconds(); pct >= 1 {
 				log.Printf(
 					"child %s total CPU usage over last %v: %v (%.2f%%)",
-					c.def.Name, dur.Round(time.Millisecond), delta.Round(time.Millisecond),
+					c.def.Name, dur.Round(time.Millisecond), deltaCPU.Round(time.Millisecond),
 					pct,
 				)
 			}
+			lastTotalCPU = totalCPU
 
 			// log memory usage if we got a new peak, or we have deviated by >= 10%
-			// since the last memory log. This
+			// since the last memory log. Inside containers we often can't get memory,
+			// so this has to deal with zeros safely.
 			if memNow > 0 || memPeakNow > 0 {
 				memDiffRat := math.Abs(float64(memNow-lastMem) / float64(max(lastMem, 1)))
 				if memPeakNow != lastMemPeak || memDiffRat >= 0.1 {
@@ -341,13 +344,17 @@ MANAGER:
 						"child %s memory now=%d peak=%d",
 						c.def.Name, memNow, memPeakNow,
 					)
+					// NOTE: unlike CPU we only update these if we logged so that slow
+					// accumulations of memory eventually trigger a log message. mental
+					// model: CPU is a renewing resource, so we only care what it used out
+					// of the recent budget, while memory is non-renewable, so we care
+					// about everything it has ever used.
 					lastMem, lastMemPeak = memNow, memPeakNow
 				}
-
-				lastTotalCPU = total
-				lastUsageLogged = now
-				usageLogDue = false
 			}
+
+			lastUsageLogged = now
+			usageLogDue = false
 		}
 
 		c.status.Store(cloneStatus(status))
