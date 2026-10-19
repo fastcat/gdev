@@ -70,6 +70,16 @@ func (c *ContainerResource) WithEnv(env map[string]string) *ContainerResource {
 	return c
 }
 
+// WithLabels **appends** the labels on the container, overwriting any existing
+// labels of the same names.
+func (c *ContainerResource) WithLabels(labels map[string]string) *ContainerResource {
+	if c.Labels == nil {
+		c.Labels = make(map[string]string, len(labels))
+	}
+	maps.Copy(c.Labels, labels)
+	return c
+}
+
 // WithPort **appends** the specified port(s) to the container.
 func (c *ContainerResource) WithPorts(port ...string) *ContainerResource {
 	c.Ports = append(c.Ports, port...)
@@ -112,7 +122,7 @@ func (c *ContainerResource) WithStopOptions(opts client.ContainerStopOptions) *C
 }
 
 func (c *ContainerResource) WithInstanceVersionLabel() *ContainerResource {
-	return c.WithEnv(map[string]string{
+	return c.WithLabels(map[string]string{
 		containers.LabelInstanceVersion(): instance.Version(),
 	})
 }
