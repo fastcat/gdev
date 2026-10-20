@@ -7,6 +7,7 @@ require (
 	github.com/containerd/cgroups/v3 v3.1.3
 	github.com/containerd/log v0.2.0
 	github.com/coreos/go-systemd/v22 v22.7.0
+	github.com/fatih/color v1.19.0
 	github.com/go-playground/validator/v10 v10.30.5
 	github.com/goccy/go-yaml v1.19.2
 	github.com/godbus/dbus/v5 v5.2.4
@@ -27,6 +28,8 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/leodido/go-urn v1.5.0 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
+	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mattn/go-runewidth v0.0.31 // indirect
 	github.com/mdlayher/socket v0.7.0 // indirect
 	github.com/opencontainers/runtime-spec v1.3.0 // indirect

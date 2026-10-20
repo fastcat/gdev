@@ -6,6 +6,8 @@ import (
 	"maps"
 	"slices"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 type Plan struct {
@@ -101,7 +103,10 @@ func (p *Plan) Run(ctx context.Context) error {
 
 	if needsReboot(bc) {
 		fmt.Println()
-		fmt.Println("IMPORTANT: You need to reboot before you can use the newly installed/updated tools!")
+		// NOTE: most terminals will refuse to blink
+		fmt.Println(color.New(color.FgRed, color.Bold, color.BlinkSlow).Sprint(
+			"IMPORTANT: You need to reboot before you can use the newly installed/updated tools!",
+		))
 		fmt.Println()
 	}
 
