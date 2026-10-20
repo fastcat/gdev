@@ -3,6 +3,7 @@ package sys
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -174,6 +175,9 @@ func Test_cgroupsIsolator_EnableUsage(t *testing.T) {
 	// is its own
 	i := &cgroupsIsolator{}
 	_, err := i.getParentGroup()
+	if errors.Is(err, os.ErrPermission) && os.Getenv("CI") != "" {
+		t.Skipf("cgroups access denied in CI: %v", err)
+	}
 	require.NoError(t, err)
 	// If we are in the root cgroup, whether or not it is the true one, then we
 	// can't run this test without semi-permanently changing it, which we should
