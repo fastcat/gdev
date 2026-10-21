@@ -371,8 +371,9 @@ func (c *cgroupsIsolator) tryGroup(cur string) error {
 				(stt.Gid != uint32(gid) || (stt.Mode&syscall.S_IWGRP) == 0) &&
 				(stt.Mode&syscall.S_IWOTH) == 0 {
 				// we probably can't create sub-groups here (unless there are ACLs)
-				return fmt.Errorf("insufficient permissions to create cgroup in %q: %w", cur, &os.PathError{
-					Op:   "cgroup",
+				return fmt.Errorf("insufficient permissions to create cgroup: %w", &os.PathError{
+					// we are assuming mkdir here will fail
+					Op:   "mkdir",
 					Path: cur,
 					Err:  os.ErrPermission,
 				})

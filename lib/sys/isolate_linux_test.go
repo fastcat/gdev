@@ -175,8 +175,8 @@ func Test_cgroupsIsolator_EnableUsage(t *testing.T) {
 	// is its own
 	i := &cgroupsIsolator{}
 	_, err := i.getParentGroup()
-	if errors.Is(err, os.ErrPermission) && os.Getenv("CI") != "" {
-		t.Skipf("cgroups access denied in CI: %v", err)
+	if errors.Is(err, os.ErrPermission) {
+		t.Skipf("cgroups access denied: %v", err)
 	}
 	require.NoError(t, err)
 	// If we are in the root cgroup, whether or not it is the true one, then we
@@ -236,10 +236,11 @@ func startSleep(t *testing.T) *exec.Cmd {
 }
 
 func TestTryCloneIntoGroup(t *testing.T) {
-	t.Skipf("this test shows how to use CLONE_INTO_CGROUP, but it does not solve the permissions issues")
 	i := &cgroupsIsolator{}
 	_, err := i.getParentGroup()
 	if err == nil {
+		// we could set this up, but it would interfere with all the other tests, so
+		// we would need to make this test re-exec and run in a child process
 		t.Skipf("this test requires current process to be in cgroup it can't control")
 	}
 	err = i.tryGroup(fmt.Sprintf("/user.slice/user-%[1]d.slice/user@%[1]d.service", os.Geteuid()))
