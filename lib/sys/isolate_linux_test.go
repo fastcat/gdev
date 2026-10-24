@@ -243,10 +243,17 @@ func TestTryCloneIntoGroup(t *testing.T) {
 		// we would need to make this test re-exec and run in a child process
 		t.Skipf("this test requires current process to be in cgroup it can't control")
 	}
-	err = i.tryGroup(fmt.Sprintf("/user.slice/user-%[1]d.slice/user@%[1]d.service", os.Geteuid()))
+	// this needs to be a group with no subtree control so that we can add processes into it
+	err = i.tryGroup(fmt.Sprintf("/user.slice/user-%[1]d.slice/user@%[1]d.service/init.scope", os.Geteuid()))
 	if err != nil {
 		t.Skipf("need the systemd user service cgroup to be available for test: %v", err)
 	}
+
+	// of course, if we don't control our own cgroup, we can't fork a child into
+	// some other cgroup, because that logically requires permission to remove
+	// things from our current group ... which we don't control.
+	t.Skip("cgroups don't work this way")
+
 	cgd := filepath.Join(cgroupsMountPath, i.parentGroup)
 	cgf, err := os.Open(cgd)
 	require.NoError(t, err)
