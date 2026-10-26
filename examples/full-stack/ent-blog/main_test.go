@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -19,7 +18,7 @@ func TestIndex(t *testing.T) {
 	defer client.Close() // nolint:errcheck
 
 	// seed the database with our "Hello, world" post and user.
-	err := seed(context.Background(), client)
+	err := seed(t.Context(), client)
 	require.NoError(t, err)
 
 	// Initialize a server and router.
@@ -46,7 +45,7 @@ func TestIndex(t *testing.T) {
 func TestAdd(t *testing.T) {
 	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 	defer client.Close() // nolint:errcheck
-	err := seed(context.Background(), client)
+	err := seed(t.Context(), client)
 	require.NoError(t, err)
 
 	srv := newServer(client)
