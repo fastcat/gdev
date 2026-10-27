@@ -1,7 +1,7 @@
 fastcat.org/go/gdev v0.16.0 h1:gDW/pj4BPID0bgMX48t5lzgcPQxcTtkLmDg1gxFPgT0=
 fastcat.org/go/gdev v0.16.0/go.mod h1:6slE0J01KDbM5/VsEDREmbe/riADt9zpzMYsFMk0BgE=
-fastcat.org/go/gdev/addons/docker v0.16.0 h1:5ZGVDmdXAjO7vQL+jM8CvJxUuHJnePbp7hGUONedKFE=
-fastcat.org/go/gdev/addons/docker v0.16.0/go.mod h1:CylLMOVTdCx7wSpJDVcJg58fvjif8A56autXYn7rKak=
+fastcat.org/go/gdev/addons/docker v0.17.0 h1:uL3mGUYSQr/lxiVk4Io21UDOP64YkDFfBmlucNqU2JQ=
+fastcat.org/go/gdev/addons/docker v0.17.0/go.mod h1:UdnuZ834bc1Bu9tTRHqO7yYqVdz2Pf4NGusI/sFFqzk=
 github.com/Microsoft/go-winio v0.6.3-0.20251027160822-ad3df93bed29 h1:0kQAzHq8vLs7Pptv+7TxjdETLf/nIqJpIB4oC6Ba4vY=
 github.com/Microsoft/go-winio v0.6.3-0.20251027160822-ad3df93bed29/go.mod h1:ZWa7ssZJT30CCDGJ7fk/2SBTq9BIQrrVjrcss0UW2s0=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
@@ -30,6 +30,7 @@ github.com/docker/go-units v0.5.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDD
 github.com/felixge/httpsnoop v1.1.0 h1:3YtUj32ZZkqZtt3sZZsClsymw/QDuVfpNhoA31zeORc=
 github.com/felixge/httpsnoop v1.1.0/go.mod h1:Zqxgdd+1Rkcz8euOqdr7lqgCRJztwr5hp9vDSi5UZCE=
 github.com/gabriel-vasile/mimetype v1.4.16 h1:5izNFuvA37st1dDRAcA7TtmngBmRgiIPDmTtiEvjx1E=
+github.com/gabriel-vasile/mimetype v1.4.16/go.mod h1:3oFFwxX8kTklZwzIl2aQEDZT0lKY8xH92ST88bAwba4=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
 github.com/go-logr/logr v1.4.4 h1:tG4xh9yMsRCAiodLVTxyrkzSZ9+o0L1Kg/+cPVcbP/8=
 github.com/go-logr/logr v1.4.4/go.mod h1:9T104GzyrTigFIr8wt5mBrctHMim0Nb2HLGrmQ40KvY=

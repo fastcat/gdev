@@ -4,17 +4,17 @@ go 1.27.1
 
 require (
 	fastcat.org/go/gdev v0.16.0
-	fastcat.org/go/gdev/addons/bootstrap/input v0.16.0
-	fastcat.org/go/gdev/addons/containerd v0.16.0
-	fastcat.org/go/gdev/addons/docker v0.16.0
-	fastcat.org/go/gdev/addons/gcs v0.16.0
-	fastcat.org/go/gdev/addons/gocache v0.16.0
-	fastcat.org/go/gdev/addons/gocache/gcs v0.16.0
-	fastcat.org/go/gdev/addons/gocache/s3 v0.16.0
-	fastcat.org/go/gdev/addons/k3s v0.16.0
-	fastcat.org/go/gdev/addons/k8s v0.16.0
-	fastcat.org/go/gdev/addons/postgres v0.16.0
-	fastcat.org/go/gdev/addons/valkey v0.16.0
+	fastcat.org/go/gdev/addons/bootstrap/input v0.17.0
+	fastcat.org/go/gdev/addons/containerd v0.17.0
+	fastcat.org/go/gdev/addons/docker v0.17.0
+	fastcat.org/go/gdev/addons/gcs v0.17.0
+	fastcat.org/go/gdev/addons/gocache v0.17.0
+	fastcat.org/go/gdev/addons/gocache/gcs v0.17.0
+	fastcat.org/go/gdev/addons/gocache/s3 v0.17.0
+	fastcat.org/go/gdev/addons/k3s v0.17.0
+	fastcat.org/go/gdev/addons/k8s v0.17.0
+	fastcat.org/go/gdev/addons/postgres v0.17.0
+	fastcat.org/go/gdev/addons/valkey v0.17.0
 )
 
 require (

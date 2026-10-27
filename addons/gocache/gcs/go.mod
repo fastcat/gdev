@@ -5,7 +5,7 @@ go 1.27.1
 require (
 	cloud.google.com/go/storage v1.70.0
 	fastcat.org/go/gdev v0.16.0
-	fastcat.org/go/gdev/addons/gocache v0.16.0
+	fastcat.org/go/gdev/addons/gocache v0.17.0
 )
 
 require (

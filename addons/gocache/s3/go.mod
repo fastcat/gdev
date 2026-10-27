@@ -4,7 +4,7 @@ go 1.27.1
 
 require (
 	fastcat.org/go/gdev v0.16.0
-	fastcat.org/go/gdev/addons/gocache v0.16.0
+	fastcat.org/go/gdev/addons/gocache v0.17.0
 	github.com/aws/aws-sdk-go-v2 v1.47.4
 	github.com/aws/aws-sdk-go-v2/config v1.33.10
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.114.5
