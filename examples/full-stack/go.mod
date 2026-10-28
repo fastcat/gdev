@@ -5,10 +5,10 @@ go 1.27.1
 require (
 	entgo.io/ent v0.14.6
 	fastcat.org/go/gdev v0.16.0
-	fastcat.org/go/gdev/addons/docker v0.16.0
-	fastcat.org/go/gdev/addons/k3s v0.16.0
-	fastcat.org/go/gdev/addons/k8s v0.16.0
-	fastcat.org/go/gdev/addons/postgres v0.16.0
+	fastcat.org/go/gdev/addons/docker v0.17.0
+	fastcat.org/go/gdev/addons/k3s v0.17.0
+	fastcat.org/go/gdev/addons/k8s v0.17.0
+	fastcat.org/go/gdev/addons/postgres v0.17.0
 	github.com/go-chi/chi/v5 v5.5.0
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/mattn/go-sqlite3 v1.14.52
@@ -43,7 +43,7 @@ require (
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.4 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/inflect v1.0.0 // indirect

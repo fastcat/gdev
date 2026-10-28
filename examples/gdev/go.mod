@@ -4,17 +4,17 @@ go 1.27.1
 
 require (
 	fastcat.org/go/gdev v0.16.0
-	fastcat.org/go/gdev/addons/bootstrap/input v0.16.0
-	fastcat.org/go/gdev/addons/containerd v0.16.0
-	fastcat.org/go/gdev/addons/docker v0.16.0
-	fastcat.org/go/gdev/addons/gcs v0.16.0
-	fastcat.org/go/gdev/addons/gocache v0.16.0
-	fastcat.org/go/gdev/addons/gocache/gcs v0.16.0
-	fastcat.org/go/gdev/addons/gocache/s3 v0.16.0
-	fastcat.org/go/gdev/addons/k3s v0.16.0
-	fastcat.org/go/gdev/addons/k8s v0.16.0
-	fastcat.org/go/gdev/addons/postgres v0.16.0
-	fastcat.org/go/gdev/addons/valkey v0.16.0
+	fastcat.org/go/gdev/addons/bootstrap/input v0.17.0
+	fastcat.org/go/gdev/addons/containerd v0.17.0
+	fastcat.org/go/gdev/addons/docker v0.17.0
+	fastcat.org/go/gdev/addons/gcs v0.17.0
+	fastcat.org/go/gdev/addons/gocache v0.17.0
+	fastcat.org/go/gdev/addons/gocache/gcs v0.17.0
+	fastcat.org/go/gdev/addons/gocache/s3 v0.17.0
+	fastcat.org/go/gdev/addons/k3s v0.17.0
+	fastcat.org/go/gdev/addons/k8s v0.17.0
+	fastcat.org/go/gdev/addons/postgres v0.17.0
+	fastcat.org/go/gdev/addons/valkey v0.17.0
 )
 
 require (
@@ -93,7 +93,7 @@ require (
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.4 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.6 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

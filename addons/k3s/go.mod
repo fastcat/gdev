@@ -4,7 +4,7 @@ go 1.27.1
 
 require (
 	fastcat.org/go/gdev v0.16.0
-	fastcat.org/go/gdev/addons/k8s v0.16.0
+	fastcat.org/go/gdev/addons/k8s v0.17.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/sync v0.24.0
 	k8s.io/api v0.37.1
@@ -20,7 +20,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emicklei/go-restful/v3 v3.13.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.4 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-openapi/jsonpointer v1.0.1 // indirect
 	github.com/go-openapi/jsonreference v1.0.2 // indirect
